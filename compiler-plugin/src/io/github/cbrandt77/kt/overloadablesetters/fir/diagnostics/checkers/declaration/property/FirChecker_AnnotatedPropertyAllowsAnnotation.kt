@@ -31,7 +31,9 @@ import org.jetbrains.kotlin.fir.declarations.FirDeclarationOrigin
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 
 /**
- * Make sure an annotated property is actually mutable
+ * Check that an annotated property:
+ * - Is mutable
+ * - Is an instance property
  */
 object FirChecker_AnnotatedPropertyAllowsAnnotation : FirPropertyChecker(MppCheckerKind.Common) {
 	context(context: CheckerContext, reporter: DiagnosticReporter)
