@@ -19,7 +19,6 @@
 
 package io.github.cbrandt77.kt.overloadablesetters.test
 
-import com.intellij.util.containers.stream
 import org.intellij.lang.annotations.Language
 import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
 import org.jetbrains.kotlin.compiler.plugin.template.runners.AbstractJvmDiagnosticTest
@@ -36,6 +35,7 @@ import org.jetbrains.kotlin.fir.analysis.checkers.expression.FirAnnotationChecke
 import org.jetbrains.kotlin.fir.analysis.extensions.FirAdditionalCheckersExtension
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.expressions.*
+import org.jetbrains.kotlin.fir.extensions.FirAssignExpressionAltererExtension
 import org.jetbrains.kotlin.fir.extensions.FirExtension
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrar
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrarAdapter
@@ -57,7 +57,6 @@ import java.util.Arrays
 import java.util.stream.Stream
 import kotlin.io.path.createFile
 import kotlin.io.path.createParentDirectories
-import kotlin.io.path.deleteIfExists
 import kotlin.io.path.exists
 import kotlin.io.path.writeText
 import kotlin.reflect.KClass
@@ -72,22 +71,47 @@ So at that point, we're basically doing this:
 	- Checker needs to catch test exceptions and print them? Or how do we hook into IJ's test preview
  */
 
-
-inline fun <T : FirDeclaration> checkDeclaration(crossinline action: (decl: T, session: FirSession) -> Unit): FirDeclarationChecker<T> {
-	return object : FirDeclarationChecker<T>(MppCheckerKind.Common) {
-		context(context: CheckerContext, reporter: DiagnosticReporter)
-		override fun check(declaration: T) {
-			action(declaration, context.session)
-		}
+class TestDeclarationChecker<T : FirDeclaration>(val tester: (decl: T, session: FirSession) -> Unit) : FirDeclarationChecker<T>(MppCheckerKind.Common) {
+	context(context: CheckerContext, reporter: DiagnosticReporter)
+	override fun check(declaration: T) {
+		tester(declaration, context.session)
 	}
 }
 
-inline fun <T : FirExpression> checkExpression(crossinline action: (expr: T, session: FirSession) -> Unit): FirExpressionChecker<T> {
-	return object : FirExpressionChecker<T>(MppCheckerKind.Common) {
-		context(context: CheckerContext, reporter: DiagnosticReporter)
-		override fun check(expression: T) {
-			action(expression, context.session)
-		}
+fun <T : FirDeclaration> checkDeclaration(action: (decl: T, session: FirSession) -> Unit): FirDeclarationChecker<T> {
+	return TestDeclarationChecker(action)
+}
+
+
+class TestExpressionChecker<T : FirExpression>(val action: (expr: T, session: FirSession) -> Unit) : FirExpressionChecker<T>(MppCheckerKind.Common) {
+	context(context: CheckerContext, reporter: DiagnosticReporter)
+	override fun check(expression: T) {
+		action(expression, context.session)
+	}
+}
+
+fun <T : FirExpression> checkExpression(action: (expr: T, session: FirSession) -> Unit): FirExpressionChecker<T> {
+	return TestExpressionChecker(action)
+}
+
+
+class TestAssignAlterer(session: FirSession, val tester: (assignment: FirVariableAssignment, session: FirSession) -> Unit) : FirAssignExpressionAltererExtension(session) {
+	companion object {
+		operator fun invoke(tester: (assignment: FirVariableAssignment, session: FirSession) -> Unit) = FirAssignExpressionAltererExtension.Factory { TestAssignAlterer(it, tester) }
+	}
+	
+	override fun transformVariableAssignment(variableAssignment: FirVariableAssignment): FirStatement? {
+		tester(variableAssignment, session)
+		return null
+	}
+}
+
+/**
+ * Makes a configurable, but trivial, assignment alterer, to check that a function works at that phase of the FIR compilation
+ */
+fun newAssignmentAlterer(action: (assignment: FirVariableAssignment, session: FirSession) -> Unit): FirExtension.Factory<FirAssignExpressionAltererExtension> {
+	return FirAssignExpressionAltererExtension.Factory {
+		TestAssignAlterer(it, action)
 	}
 }
 
@@ -306,9 +330,9 @@ abstract class FirUnitTester {
 		/**
 		 * Other extensions, so we can make sure methods also work in the context of, for example, a transformer, or an analyzer
 		 */
-		val otherExtensions = mutableListOf<Pair<KClass<out FirExtension>, FirExtension.Factory<*>>>()
+		val otherExtensions: MutableList<Pair<KClass<out FirExtension>, FirExtension.Factory<*>>> = mutableListOf()
 		
-		inline fun <reified T : FirExtension> MutableList<Pair<KClass<out FirExtension>, FirExtension.Factory<T>>>.plusEquals(factory: FirExtension.Factory<T>) {
+		inline operator fun <reified T : FirExtension> MutableList<Pair<KClass<out FirExtension>, FirExtension.Factory<*>>>.plusAssign(factory: FirExtension.Factory<T>) {
 			otherExtensions.add(T::class to factory)
 		}
 		
