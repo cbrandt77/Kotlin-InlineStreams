@@ -29,24 +29,6 @@ import org.jetbrains.kotlin.gradle.plugin.SubpluginOption
 
 @Suppress("unused") // Used via reflection.
 class OverloadableSettersGradlePlugin : KotlinCompilerPluginSupportPlugin {
-//    abstract class Extension {
-//        /**
-//         * Allow setters with the form `setBar` to be detected, not just `set-bar`.
-//         *
-//         * This is disabled by default, as both `Foo.bar` and `Foo.Bar` will correspond to the same `Foo.setBar` method, potentially causing issues.
-//         * When this option is set, any ambiguous properties will require their setter methods to be invoked directly.
-//         *
-//         * This option is only tested in English.
-//         */
-//        abstract val allowCamelCase: Property<Boolean>
-//
-//        /**
-//         * The [Regex] pattern used to detect setters.
-//         * Must contain a single capture group to capture the name of the target property.
-//         */
-//        abstract val setterNamePattern: Property<Regex?>
-//    }
-    
     override fun apply(target: Project) {
     
     }
@@ -71,13 +53,8 @@ class OverloadableSettersGradlePlugin : KotlinCompilerPluginSupportPlugin {
             project.dependencies.add("commonMainImplementation", OverloadableSettersBuildConfig.ANNOTATIONS_LIBRARY_COORDINATES)
         }
         
-//        val ext = project.extensions.getByType(Extension::class.java)
-        
         return project.provider {
             listOf()
-//            listOf(
-//                    SubpluginOption("", ext.allowCamelCase.orNull)
-//            )
         }
     }
 }

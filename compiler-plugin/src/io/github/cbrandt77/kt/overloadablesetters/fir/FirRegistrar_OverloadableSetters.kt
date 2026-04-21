@@ -24,12 +24,8 @@ import io.github.cbrandt77.kt.overloadablesetters.fir.diagnostics.FirOverloadabl
 import io.github.cbrandt77.kt.overloadablesetters.fir.extensions.generators.FirSetterDefaultSetterGenerator
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrar
 
-class FirRegistrar_OverloadableSetters(private val annotations: Collection<String> = listOf("io.github.cbrandt77.kt.overloadablesetters.HasCustomSetters")) : FirExtensionRegistrar() {
+class FirRegistrar_OverloadableSetters() : FirExtensionRegistrar() {
 	override fun ExtensionRegistrarContext.configurePlugin() {
-		+FirSetterOverloadFinderService.getFactory(annotations)
-		+::FirSetterAssignmentAlterer
-		+::FirSetterDefaultSetterGenerator
-		+::FirOverloadableSettersCheckersExtension
 		
 		registerDiagnosticContainers(FirOverloadableSetters_ErrorTypes)
 	}

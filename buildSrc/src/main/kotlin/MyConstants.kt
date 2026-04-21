@@ -12,7 +12,7 @@ object MyPublishingInfo {
 	
 	const val name = "OverloadableSetters"
 	
-	const val description = "Give properties multiple setters! Define multiple ways to set a field, and invoke them with standard property syntax."
+	const val description = ""
 	
 	private const val _vcsurl_noHttps = "github.com/cbrandt77/Kotlin-OverloadableSetters"
 	
@@ -46,33 +46,3 @@ enum class EMyProjectType {
 fun <T : Enum<T>> enumSetOf(first: T, vararg rest: T): EnumSet<T> {
 	return EnumSet.of(first, *rest)
 }
-
-//object MyBuildConfigGlobals {
-//	const val PACKAGE_NAME = PROJ_GROUP
-//	const val CLASS_NAME = "OverloadableSettersBuildConfig"
-//
-//	data class ConfigField(val first: String, val second: String, val third: String)
-//
-//	private val metadata = listOf(
-//			ConfigField("String", "KOTLIN_PLUGIN_ID", "\"${MyMetaInfo.plugin_id}\"")
-//	)
-//
-//	private val cliOptions = listOf(
-//			ConfigField("String", "OPT_ALLOW_AMBIGUOUS_CASE_SETTERS", "\"allow-ambiguous-case\""),
-//			ConfigField("String", "OPT_SETTERPATTERN_CLINAME", "\"setter-pattern\"")
-//	)
-//
-//	fun getFieldsForProjectType(type: EMyProjectType): List<ConfigField> {
-//		return mutableListOf<ConfigField>().apply {
-//			addAll(metadata)
-//
-//			if (type == EMyProjectType.GRADLE || type == EMyProjectType.COMPILER) {
-//				addAll(cliOptions)
-//			}
-//
-//			if (type == EMyProjectType.GRADLE) {
-//				// TODO I think I'm spiraling here
-//			}
-//		}
-//	}
-//}

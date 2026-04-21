@@ -27,7 +27,6 @@ import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrarAdapter
 
 class CompilerPluginRegistrar_OverloadableSetters : CompilerPluginRegistrar() {
-	
 	override val supportsK2: Boolean
 		get() = true
 	

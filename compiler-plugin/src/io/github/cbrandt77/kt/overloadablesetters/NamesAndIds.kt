@@ -24,7 +24,5 @@ import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 
 object NamesAndIds {
-	
-	val ANNOT_HASCUSTOMSETTERS = FqName("io.github.cbrandt77.kt.overloadablesetters.HasCustomSetters")
-	val ANNOT_DEFAULTSETTERMETADATA = FqName("io.github.cbrandt77.kt.overloadablesetters.OverloadableSettersDefaultSetterMetadata")
+
 }
