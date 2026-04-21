@@ -13,7 +13,7 @@ allprojects {
 }
 
 tasks.register("publishToMavenLocal") {
-    arrayOf(project(":compiler-plugin"), project(":gradle-plugin"), project(":plugin-annotations")).forEach {
+    arrayOf(project(":compiler-plugin"), project(":gradle-plugin"), project(":runtime")).forEach {
         dependsOn(it.tasks["publishToMavenLocal"])
     }
     group = "custom"
@@ -24,7 +24,7 @@ tasks.register("publishToMavenLocal") {
 tasks.register("publishForRelease") {
     group = "custom"
     dependsOn(project(":gradle-plugin").tasks["publishPlugins"])
-    arrayOf(project(":compiler-plugin"), project(":plugin-annotations")).forEach {
+    arrayOf(project(":compiler-plugin"), project(":runtime")).forEach {
         dependsOn(it.tasks["publishAndReleaseToMavenCentral"])
     }
     

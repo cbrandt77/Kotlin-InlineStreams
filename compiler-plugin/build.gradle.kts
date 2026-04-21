@@ -44,7 +44,7 @@ dependencies {
     testFixturesApi(kotlin("compiler-internal-test-framework"))
     testFixturesApi(kotlin("compiler"))
 
-    annotationsRuntimeClasspath(project(":plugin-annotations"))
+    annotationsRuntimeClasspath(project(":runtime"))
 
     // Dependencies required to run the internal test framework.
     testRuntimeOnly(libs.junit)

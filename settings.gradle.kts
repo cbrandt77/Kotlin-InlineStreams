@@ -28,7 +28,7 @@ rootProject.name = "InlineStreams"
 
 include("compiler-plugin")
 include("gradle-plugin")
-include("plugin-annotations")
+include("runtime")
 include("compiler-compat")
 
 rootProject.projectDir.resolve("compiler-compat").listFiles()!!.forEach {
