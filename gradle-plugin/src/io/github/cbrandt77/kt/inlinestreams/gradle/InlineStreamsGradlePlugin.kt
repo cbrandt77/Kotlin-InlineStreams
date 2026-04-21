@@ -1,14 +1,14 @@
 /*
- * Copyright (C) 2025 Caleb Brandt
+ * Copyright (C) 2026 Caleb Brandt
  *
- * This file is part of Overloadable Setters.
+ * This file is part of Inline Streams.
  *
- * Overloadable Setters is free software: you can redistribute it and/or modify
+ * Inline Streams is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Overloadable Setters is distributed in the hope that it will be useful,
+ * Inline Streams is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -17,9 +17,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.cbrandt77.kt.overloadablesetters.gradle
+package io.github.cbrandt77.kt.inlinestreams.gradle
 
-import io.github.cbrandt77.kt.overloadablesetters.OverloadableSettersBuildConfig
+import io.github.cbrandt77.kt.inlinestreams.InlineStreamsBuildConfig
 import org.gradle.api.Project
 import org.gradle.api.provider.Provider
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
@@ -28,19 +28,19 @@ import org.jetbrains.kotlin.gradle.plugin.SubpluginArtifact
 import org.jetbrains.kotlin.gradle.plugin.SubpluginOption
 
 @Suppress("unused") // Used via reflection.
-class OverloadableSettersGradlePlugin : KotlinCompilerPluginSupportPlugin {
+class InlineStreamsGradlePlugin : KotlinCompilerPluginSupportPlugin {
     override fun apply(target: Project) {
     
     }
     
     override fun isApplicable(kotlinCompilation: KotlinCompilation<*>): Boolean = true
     
-    override fun getCompilerPluginId(): String = OverloadableSettersBuildConfig.KOTLIN_PLUGIN_ID
+    override fun getCompilerPluginId(): String = InlineStreamsBuildConfig.KOTLIN_PLUGIN_ID
     
     override fun getPluginArtifact(): SubpluginArtifact = SubpluginArtifact(
-		    groupId = OverloadableSettersBuildConfig.KOTLIN_PLUGIN_GROUP,
-		    artifactId = OverloadableSettersBuildConfig.KOTLIN_PLUGIN_NAME,
-		    version = OverloadableSettersBuildConfig.KOTLIN_PLUGIN_VERSION,
+		    groupId = InlineStreamsBuildConfig.KOTLIN_PLUGIN_GROUP,
+		    artifactId = InlineStreamsBuildConfig.KOTLIN_PLUGIN_NAME,
+		    version = InlineStreamsBuildConfig.KOTLIN_PLUGIN_VERSION,
     )
     
     override fun applyToCompilation(
@@ -48,9 +48,9 @@ class OverloadableSettersGradlePlugin : KotlinCompilerPluginSupportPlugin {
     ): Provider<List<SubpluginOption>> {
         val project = kotlinCompilation.target.project
         
-        kotlinCompilation.dependencies { implementation(OverloadableSettersBuildConfig.ANNOTATIONS_LIBRARY_COORDINATES) }
+        kotlinCompilation.dependencies { implementation(InlineStreamsBuildConfig.ANNOTATIONS_LIBRARY_COORDINATES) }
         if (kotlinCompilation.implementationConfigurationName == "metadataCompilationImplementation") {
-            project.dependencies.add("commonMainImplementation", OverloadableSettersBuildConfig.ANNOTATIONS_LIBRARY_COORDINATES)
+            project.dependencies.add("commonMainImplementation", InlineStreamsBuildConfig.ANNOTATIONS_LIBRARY_COORDINATES)
         }
         
         return project.provider {

@@ -3,7 +3,7 @@ import kotlin.jvm.JvmName
 class MyClass {
 	var bar: String = "MADBAGIC"
 	
-	@JvmName($$$"$$OverloadableSetters$set-bar")
+	@JvmName($$$"$$InlineStreams$set-bar")
 	fun `set-bar`(value: String) {
 		bar = value
 	}

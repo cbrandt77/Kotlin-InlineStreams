@@ -24,13 +24,12 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "0.10.0"
 }
 
-rootProject.name = "OverloadableSetters"
+rootProject.name = "InlineStreams"
 
 include("compiler-plugin")
 include("gradle-plugin")
 include("plugin-annotations")
 include("compiler-compat")
-includeBuild("test-project")
 
 rootProject.projectDir.resolve("compiler-compat").listFiles()!!.forEach {
     if (it.isDirectory && it.name.startsWith("k")) {

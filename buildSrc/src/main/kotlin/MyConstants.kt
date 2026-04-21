@@ -1,6 +1,6 @@
 import java.util.EnumSet
 
-const val PROJ_GROUP = "io.github.cbrandt77.kt.overloadablesetters"
+const val PROJ_GROUP = "io.github.cbrandt77.kt.inlinestreams"
 const val PROJ_VERSION = "1.0.0"
 
 const val MY_NEXUS_ID = "io.github.cbrandt77"
@@ -8,13 +8,13 @@ const val MY_NEXUS_ID = "io.github.cbrandt77"
 const val JAVA_VERSION = 21
 
 object MyPublishingInfo {
-	const val plugin_id = "io.github.cbrandt77.kt.overloadablesetters"
+	const val plugin_id = "io.github.cbrandt77.kt.inlinestreams"
 	
-	const val name = "OverloadableSetters"
+	const val name = "InlineStreams"
 	
 	const val description = ""
 	
-	private const val _vcsurl_noHttps = "github.com/cbrandt77/Kotlin-OverloadableSetters"
+	private const val _vcsurl_noHttps = "github.com/cbrandt77/Kotlin-InlineStreams"
 	
 	const val vcsurl = "https://${_vcsurl_noHttps}"
 	const val url = vcsurl

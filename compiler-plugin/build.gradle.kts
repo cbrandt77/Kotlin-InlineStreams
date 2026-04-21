@@ -161,7 +161,7 @@ fun Test.setLibraryProperty(propName: String, jarName: String) {
 buildConfig {
     packageName(project.group.toString())
     
-    className = "OverloadableSettersBuildConfig"
+    className = "InlineStreamsBuildConfig"
     
     buildConfigField("String", "KOTLIN_PLUGIN_ID", "\"${rootProject.group}\"")
     

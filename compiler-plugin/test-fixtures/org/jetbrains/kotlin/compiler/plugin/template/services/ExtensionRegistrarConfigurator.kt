@@ -1,6 +1,6 @@
 package org.jetbrains.kotlin.compiler.plugin.template.services
 
-import io.github.cbrandt77.kt.overloadablesetters.fir.FirRegistrar_OverloadableSetters
+import io.github.cbrandt77.kt.inlinestreams.fir.FirRegistrar_InlineStreams
 import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrarAdapter
@@ -27,7 +27,7 @@ private class ExtensionRegistrarConfigurator(testServices: TestServices) : Envir
         module: TestModule,
         configuration: CompilerConfiguration
     ) {
-        FirExtensionRegistrarAdapter.registerExtension(FirRegistrar_OverloadableSetters(TEST_ANNOTATIONS))
+        FirExtensionRegistrarAdapter.registerExtension(FirRegistrar_InlineStreams(TEST_ANNOTATIONS))
 //        IrGenerationExtension.registerExtension(SimpleIrGenerationExtension())
     }
 }

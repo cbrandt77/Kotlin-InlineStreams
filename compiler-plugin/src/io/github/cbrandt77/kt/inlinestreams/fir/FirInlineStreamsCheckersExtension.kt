@@ -1,14 +1,14 @@
 /*
- * Copyright (C) 2025 Caleb Brandt
+ * Copyright (C) 2026 Caleb Brandt
  *
- * This file is part of Overloadable Setters.
+ * This file is part of Inline Streams.
  *
- * Overloadable Setters is free software: you can redistribute it and/or modify
+ * Inline Streams is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Overloadable Setters is distributed in the hope that it will be useful,
+ * Inline Streams is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -17,12 +17,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.cbrandt77.kt.overloadablesetters
+package io.github.cbrandt77.kt.inlinestreams.fir
 
-import org.jetbrains.kotlin.builtins.StandardNames
-import org.jetbrains.kotlin.name.FqName
-import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.fir.FirSession
+import org.jetbrains.kotlin.fir.analysis.extensions.FirAdditionalCheckersExtension
 
-object NamesAndIds {
+class FirInlineStreamsCheckersExtension(session: FirSession) : FirAdditionalCheckersExtension(session) {
 
 }

@@ -25,7 +25,7 @@ dependencies {
 buildConfig {
     packageName(project.group.toString())
     
-    className = "OverloadableSettersBuildConfig"
+    className = "InlineStreamsBuildConfig"
     
     buildConfigField("String", "KOTLIN_PLUGIN_ID", "\"${rootProject.group}\"")
     
@@ -54,15 +54,15 @@ buildConfig {
 }
 
 gradlePlugin {
-    vcsUrl = "https://github.com/cbrandt77/Kotlin-OverloadableSetters.git"
-    website = "https://github.com/cbrandt77/Kotlin-OverloadableSetters"
+    vcsUrl = "https://github.com/cbrandt77/Kotlin-InlineStreams.git"
+    website = "https://github.com/cbrandt77/Kotlin-InlineStreams"
     
     plugins {
-        create("OverloadableSettersPlugin") {
+        create("InlineStreamsPlugin") {
             id = MyPublishingInfo.plugin_id
-            displayName = "OverloadableSettersPlugin"
+            displayName = "InlineStreamsPlugin"
             description = "Add custom setters for your Kotlin properties with different types, like setting a String field with an Int or a Char."
-            implementationClass = "io.github.cbrandt77.kt.overloadablesetters.gradle.OverloadableSettersGradlePlugin"
+            implementationClass = "io.github.cbrandt77.kt.inlinestreams.gradle.InlineStreamsGradlePlugin"
             tags = listOf("kotlin", "kotlin-compiler-plugin")
         }
     }

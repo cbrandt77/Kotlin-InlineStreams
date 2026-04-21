@@ -1,14 +1,14 @@
 /*
- * Copyright (C) 2025 Caleb Brandt
+ * Copyright (C) 2026 Caleb Brandt
  *
- * This file is part of Overloadable Setters.
+ * This file is part of Inline Streams.
  *
- * Overloadable Setters is free software: you can redistribute it and/or modify
+ * Inline Streams is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Overloadable Setters is distributed in the hope that it will be useful,
+ * Inline Streams is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -17,12 +17,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.cbrandt77.kt.overloadablesetters.test.fir.utils
+package io.github.cbrandt77.kt.inlinestreams.test.fir.utils
 
-import io.github.cbrandt77.kt.overloadablesetters.test.FirUnitTester
-import io.github.cbrandt77.kt.overloadablesetters.test.checkDeclaration
-import io.github.cbrandt77.kt.overloadablesetters.test.newAssignmentAlterer
-import io.github.cbrandt77.kt.overloadablesetters.util.getDeclaredAndInheritedCallables
+import io.github.cbrandt77.kt.inlinestreams.test.FirUnitTester
+import io.github.cbrandt77.kt.inlinestreams.test.checkDeclaration
+import io.github.cbrandt77.kt.inlinestreams.test.newAssignmentAlterer
+import io.github.cbrandt77.kt.inlinestreams.util.getDeclaredAndInheritedCallables
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.declarations.FirClass
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
