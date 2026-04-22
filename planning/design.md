@@ -115,3 +115,36 @@ list.map { it.thing }.flatMap { it.members }.collect(Collectors.toList())
 forEachElement(list) { el -> collect(input = { flatMap(input = { map(input = el, functor = { it.thing }) }, functor = { it.members }) }, collector = Collectors.toList()) }
 ```
 
+
+But, is this actually necessary? I don't think so, because inline functions don't actually inline any lambdas within said function.
+This might need custom coding to formulate it into a `for` loop.  
+
+OR maybe we could try it functionally, but it will need some custom inlining and probably annotation-based variable management for the state.
+
+
+
+
+# State
+Yes, some of the mapping operations are stateful, namely `drop` and `take`. 
+This runs counter to the idea of a stateless mapper function, but it's a useful part of the API, so it's worth it.  
+Plus, we can still do it since this is all run synchronously.
+
+
+
+# Taking counts
+
+Wait there was something else I remembered wanting- 
+RIGHT, BEING ABLE TO GET A COUNT MID-STREAM AND CONTINUE OPERATING FROM THERE
+specifically for this: `list.filter(...).count().mapTo(ArrayList::new, ...)` 
+or something to get a map with a preallocated size at the cost of resolving the stream
+
+
+The cool thing about all of these being inlined is that you can BREAK or RETURN EARLY
+
+
+
+
+# Extending inlined chains
+
+I actually want to make fully-inlined chains, for things like builders or idk something else
+honestly this is the only thing I actually want it for, this can be a stretch goal
