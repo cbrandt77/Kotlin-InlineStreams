@@ -23,21 +23,9 @@ public class JvmBoxTestGenerated extends AbstractJvmBoxTest {
   }
 
   @Test
-  @TestMetadata("extensionMethod.kt")
-  public void testExtensionMethod() {
-    runTest("compiler-plugin/testData/box/extensionMethod.kt");
-  }
-
-  @Test
-  @TestMetadata("remapsOriginalSetCall.kt")
-  public void testRemapsOriginalSetCall() {
-    runTest("compiler-plugin/testData/box/remapsOriginalSetCall.kt");
-  }
-
-  @Test
-  @TestMetadata("standardMethod.kt")
-  public void testStandardMethod() {
-    runTest("compiler-plugin/testData/box/standardMethod.kt");
+  @TestMetadata("experimentation.kt")
+  public void testExperimentation() {
+    runTest("compiler-plugin/testData/box/experimentation.kt");
   }
 
   @Nested
@@ -59,28 +47,6 @@ public class JvmBoxTestGenerated extends AbstractJvmBoxTest {
     @TestMetadata("control2.kt")
     public void testControl2() {
       runTest("compiler-plugin/testData/box/control-group/control2.kt");
-    }
-
-    @Test
-    @TestMetadata("expectedDefaultPropertySet.kt")
-    public void testExpectedDefaultPropertySet() {
-      runTest("compiler-plugin/testData/box/control-group/expectedDefaultPropertySet.kt");
-    }
-  }
-
-  @Nested
-  @TestMetadata("compiler-plugin/testData/box/generate-default-setter")
-  @TestDataPath("$PROJECT_ROOT")
-  public class Generate_default_setter {
-    @Test
-    public void testAllFilesPresentInGenerate_default_setter() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler-plugin/testData/box/generate-default-setter"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), TargetBackend.JVM_IR, true);
-    }
-
-    @Test
-    @TestMetadata("test1.kt")
-    public void testTest1() {
-      runTest("compiler-plugin/testData/box/generate-default-setter/test1.kt");
     }
   }
 }

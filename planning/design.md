@@ -141,7 +141,8 @@ or something to get a map with a preallocated size at the cost of resolving the 
 
 The cool thing about all of these being inlined is that you can BREAK or RETURN EARLY
 
-
+wait a second, what do we actually need the count for? that's right, making a new collection to put the results in
+so we could actually just make a function like `mapTo<T : Collection>((Int) -> T)` to instantiate the thing with the new size
 
 
 # Extending inlined chains

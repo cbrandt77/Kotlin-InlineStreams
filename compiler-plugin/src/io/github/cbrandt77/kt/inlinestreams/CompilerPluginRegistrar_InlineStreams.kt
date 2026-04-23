@@ -19,16 +19,38 @@
 
 package io.github.cbrandt77.kt.inlinestreams
 
-import io.github.cbrandt77.kt.inlinestreams.fir.FirRegistrar_InlineStreams
+import io.github.cbrandt77.kt.inlinestreams.fir.diagnostics.FirErrorTypes_InlineStreams
+import io.github.cbrandt77.kt.inlinestreams.ir.transformers.IrStreamInliner
+import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
+import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
 import org.jetbrains.kotlin.config.CompilerConfiguration
+import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrar
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrarAdapter
+import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
+import org.jetbrains.kotlin.ir.visitors.transformChildrenVoid
 
 class CompilerPluginRegistrar_InlineStreams : CompilerPluginRegistrar() {
 	override val supportsK2: Boolean
 		get() = true
 	
 	override fun ExtensionStorage.registerExtensions(configuration: CompilerConfiguration) {
-		FirExtensionRegistrarAdapter.registerExtension(FirRegistrar_InlineStreams())
+		FirExtensionRegistrarAdapter.registerExtension(FirRegistrar())
+		IrGenerationExtension.registerExtension(IrRegistrar())
+	}
+	
+	
+	
+	class FirRegistrar : FirExtensionRegistrar() {
+		override fun ExtensionRegistrarContext.configurePlugin() {
+			registerDiagnosticContainers(FirErrorTypes_InlineStreams)
+		}
+	}
+	
+	class IrRegistrar : IrGenerationExtension {
+		override fun generate(moduleFragment: IrModuleFragment, pluginContext: IrPluginContext) {
+			moduleFragment.transformChildrenVoid(IrStreamInliner(pluginContext))
+		}
 	}
 }
+
