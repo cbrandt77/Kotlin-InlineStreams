@@ -328,7 +328,7 @@ inline fun <T> InlineSequence<T>.take(N: Int): InlineSequence<T> {
 	var numTaken = 0
     
     // Action:
-    return terminatingSequenceAction { el: T, `break`: (() -> Unit), downstreamAction: ((T) -> Unit) ->
+    return sequenceAction { el: T, downstreamAction: ((T) -> Unit), `break`: (() -> Unit) ->
 		if (numTaken < N) {
 			++numTaken
             downstreamAction()
@@ -366,6 +366,7 @@ run {
 }
 ```
 
+
 ## Terminal steps
 Terminal steps return a value. We can identify them by the fact that they do not return their `sequenceAction`, and also I guess they don't need a `downstream` parameter either sooooo ok.
 
@@ -385,7 +386,7 @@ fun <T> InlineSequence<T>.toList(): List<T> {
 
 ### Generates:
 ```kotlin
-inline fun <T> toList(getOutList: () -> MutableList<T> /* only getter because `val` */, el: T) {
+inline fun <T> toList(getOutList: () -> MutableList<T> /* only need getter because `val` */, el: T) {
 	getOutList().add(el)
 }
 ```
@@ -407,3 +408,101 @@ val x = run {
     return@run `toList1$outList`;
 }
 ```
+
+# Parts of a Sequence Operation
+
+Preamble, action, finalizer
+
+Preamble sets up state outside the loop, action occurs within the loop, finalizer happens before the `run` returns.
+Having a finalizer allows things like `first()` (aka `firstOrFail`) to work properly, throwing if the var is still not initialized
+
+
+
+# Problems
+
+We need to be able to reuse actions. 
+
+For example:
+```kotlin
+public inline fun <T, OUT : Collection<T>> InlineStream<T>.collect(collectionFactory: () -> OUT, accumulator: (OUT, T) -> Unit): OUT {
+	val outCollection = collectionFactory()
+	
+	streamOperation<T, T> { el, _, _ -> 
+		accumulator(outCollection, el)
+	}
+	
+	return outCollection;
+}
+
+public inline fun <T> InlineStream<T>.toArrayList(): ArrayList<T> { 
+	return collect({ ArrayList() }, { list, el -> list.add(el) }) // this call should actually be inlined FIRST, then read like a stream operation
+}
+
+public inline fun <T> InlineStream<T>.toMutableList(): MutableList<T> {
+	return toArrayList() // this call should also be inlined
+}
+
+public inline fun <T> InlineStream<T>.toList(): List<T> {
+	return toArrayList().compactIfPossible() // this postprocessing happens solely on the return value, so yes ok inlining it first does work for our reader
+}
+```
+
+
+# Implementation Details
+
+## Loop
+1. Everything inside the list operation is pasted into a new inline function for the operation, which is what will actually be called inside the loop.
+   - Replace references to properties in the preamble with references to getters and setters, which are provided as parameters
+2. Everything in the preamble is directly pasted above the loop, possibly with variables renamed to avoid conflicts.
+3. Nest everything inside the loop like `map(el, functor) { flatMap(it, fmFunctor) { etc } }` with our generated functions.
+   - Use getters and setters to give those inline functions access to their state from their preambles, as well as access to the `break` if desired.
+4. Everything in the finalizer is directly pasted below the loop, in order. (what order do we use? last to first, since last finishes first? probably that, actually)
+   - Really only terminal operations should have a finalizer, so we could always just do that and implement "multiple finalizers" later if it becomes necessary.
+
+
+## Functions
+Any function with an `InlineStream` receiver parameter needs to have its calls to other operations flattened.
+
+~~Considering using annotations to designate-~~ no, InlineStreams are NOT OBJECTS, 
+so _anything_ that has them as a receiver has to be a stream operation.
+
+
+### Composing
+We need to let people compose functions inside other functions too:
+```kotlin
+public inline fun <T, U : Any> InlineStream<T>.mapNotNull(mapper: (T) -> U?): InlineStream<U> {
+	return map(mapper).filterNotNull()
+}
+```
+
+
+# Warnings
+
+## Operation Definition (Functions with InlineStream as receiver, that call )
+Errors:
+- InlineStream operation function is not `inline`
+- Calls `streamOperation` more than once
+- Calls `streamOperation` and doesn't return it
+- Calls both `streamOperation` and `terminalOperation`
+- References InlineStream inside of `streamOperation`
+- ~~Returns `terminalOperation`~~ (actually nevermind, this is fine. `terminalOperation` returns `Unit`, so it's a shorthand for doing something and returning `Unit`)
+
+## _Any_ function definition
+- Error: Uses an InlineStream as a non-receiver parameter (because it's not a real object)
+  - Recommend using a regular Sequence
+
+
+## Usage within a function
+Errors:
+- Lets an InlineStream "object" escape a function
+  - Returns it
+  - Passes it to another function (including as receiver to a non-operation function)
+  - Assigns it to a field in an object
+- Attempts to assign an InlineStream object to a variable (again, not a real object)
+  - Note: we need a way to let a user choose what's done on the loop fluidly, maybe an API function like "if else" that lets users create a condition and conditionally execute one downstream path or another downstream path?
+- Uses it as a context parameter
+
+
+# Rejected Ideas
+- Using annotations to denote a function being a "stream operation"
+  - Rejected because InlineStreams are _not real objects_, so there are no valid non-streamop functions that could be called on them.

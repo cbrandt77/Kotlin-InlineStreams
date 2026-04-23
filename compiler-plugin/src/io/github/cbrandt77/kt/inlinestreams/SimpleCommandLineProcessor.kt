@@ -34,3 +34,14 @@ class SimpleCommandLineProcessor : CommandLineProcessor {
     
     }
 }
+
+
+inline fun foo(something: () -> Unit) {
+
+}
+
+fun bar() {
+    loop@ for (i in 0..1) {
+        foo { break@loop }
+    }
+}
