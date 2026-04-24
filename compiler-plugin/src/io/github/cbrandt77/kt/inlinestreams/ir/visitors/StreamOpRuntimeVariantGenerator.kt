@@ -93,7 +93,8 @@ class StreamOpRuntimeVariantGenerator(
 						is IrReturn -> it.value
 						else -> it
 					}
-				} as? IrCall ?: continue;
+				} as? IrCall
+	                    ?: continue;
 				
 				val generatedFunction = when {
 					callsFunction.isIntermediateOpBlock -> IntermediateOperationDefinition(context, declaration).visitIntermediateOperationBlock()
@@ -280,7 +281,7 @@ class IntermediateOperationDefinition(val context: IrPluginContext, val dslFunct
 		
 		/** The thing that should actually be executed inside the loop */
 		val action: IntermediateOperationAction
-			get() = IntermediateOperationAction((call.arguments[0] as IrFunctionExpression).function)
+			get() = IntermediateOperationAction((call.arguments[1] as IrFunctionExpression).function)
 	}
 	
 	/**
