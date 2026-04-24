@@ -12,6 +12,7 @@ import org.jetbrains.kotlin.ir.builders.declarations.buildFun
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationContainer
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
 import org.jetbrains.kotlin.ir.declarations.IrFunction
+import org.jetbrains.kotlin.ir.declarations.IrParameterKind
 import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
 import org.jetbrains.kotlin.ir.declarations.IrTypeParameter
 import org.jetbrains.kotlin.ir.declarations.IrValueParameter
@@ -75,7 +76,7 @@ class StreamOpRuntimeVariantGenerator(
 	}
 	
 	private val IrFunction.actsOnInlineStream: Boolean
-		get() = dispatchReceiverParameter?.type?.classOrNull == inlineStreamClassSymbol
+		get() = parameters.firstOrNull { it.kind == IrParameterKind.ExtensionReceiver }?.type?.classOrNull == inlineStreamClassSymbol
 	
 	/**
 	 * Visits `InlineStream.something` functions
