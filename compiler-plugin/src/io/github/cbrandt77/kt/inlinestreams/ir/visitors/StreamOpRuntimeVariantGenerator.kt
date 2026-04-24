@@ -162,7 +162,7 @@ class IntermediateOperationDefinition(val context: IrPluginContext, val dslFunct
 		}
 		
 		private val IrVariable.isDeclaredOutsideLoopAction: Boolean
-			get() = loopAction.ir in this.parents
+			get() = loopAction.ir !in this.parents
 		
 		private val IrValueAccessExpression.takeTargetIfNeedsRemapping: IrVariable?
 			get() = (symbol as? IrVariableSymbol)
