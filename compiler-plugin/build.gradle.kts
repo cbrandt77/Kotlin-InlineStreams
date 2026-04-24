@@ -120,9 +120,6 @@ tasks.test {
     systemProperty("idea.ignore.disabled.plugins", "true")
     systemProperty("idea.home.path", rootDir)
 }
-java {
-    toolchain.languageVersion = JavaLanguageVersion.of(21)
-}
 
 kotlin {
     compilerOptions {

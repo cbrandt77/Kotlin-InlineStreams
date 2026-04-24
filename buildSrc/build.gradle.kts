@@ -16,8 +16,6 @@ dependencies {
 	pluginImplementation(libs.plugins.mavenPublish.vanniktech, libs.versions.mavenPublish.vanniktech)
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
-
 kotlin {
 	jvmToolchain(21)
 }
