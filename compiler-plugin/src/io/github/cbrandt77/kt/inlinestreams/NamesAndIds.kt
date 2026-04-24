@@ -28,9 +28,9 @@ object NamesAndIds {
 	@JvmField val InlineStreamClassId: ClassId = ClassId.fromString("io/github/cbrandt77/kt/inlinestreams/InlineStream")
 	@JvmField val InlineStreamClassIdFqName: FqName = InlineStreamClassId.asSingleFqName()
 	
-	
 	@JvmField val STREAM_PACKAGE = FqName("io.github.cbrandt77.kt.inlinestreams")
+	@JvmField val inlineStreamKt = ClassId(STREAM_PACKAGE, Name.identifier("InlineStreamKt"))
 	
-	@JvmField val intermediateOperation: CallableId = CallableId(STREAM_PACKAGE, Name.identifier("intermediateOperation"))
-	@JvmField val terminalOperation: CallableId = CallableId(STREAM_PACKAGE, Name.identifier("terminalOperation"))
+	@JvmField val intermediateOperation: CallableId = CallableId(inlineStreamKt, Name.identifier("intermediateOperation"))
+	@JvmField val terminalOperation: CallableId = CallableId(inlineStreamKt, Name.identifier("terminalOperation"))
 }
