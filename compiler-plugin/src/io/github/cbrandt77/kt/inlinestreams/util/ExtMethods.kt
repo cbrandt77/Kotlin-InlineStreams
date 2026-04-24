@@ -19,10 +19,10 @@
 
 package io.github.cbrandt77.kt.inlinestreams.util
 
-import dev.zacsweers.metro.compiler.compat.CompatContext.Companion.getContainingClassSymbol
-import dev.zacsweers.metro.compiler.compat.ext.toRegularClassSymbol
 import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.fir.FirSession
+import org.jetbrains.kotlin.fir.analysis.checkers.getContainingClassSymbol
+import org.jetbrains.kotlin.fir.analysis.checkers.toRegularClassSymbol
 import org.jetbrains.kotlin.fir.declarations.FirDeclarationStatus
 import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirResolvePhase

@@ -80,7 +80,7 @@ public inline fun <T> InlineStream<T>.onEach(action: (T) -> Unit): InlineStream<
 public inline fun <T, OUT : Collection<T>> InlineStream<T>.collect(collectionFactory: () -> OUT, accumulator: (OUT, T) -> Unit): OUT {
 	val outCollection = collectionFactory()
 	
-	intermediateOperation<T, T> { el, _, _ ->
+	terminalOperation { el, _ ->
 		accumulator(outCollection, el)
 	}
 	

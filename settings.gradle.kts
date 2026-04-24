@@ -29,10 +29,16 @@ rootProject.name = "InlineStreams"
 include("compiler-plugin")
 include("gradle-plugin")
 include("runtime")
-include("compiler-compat")
 
-rootProject.projectDir.resolve("compiler-compat").listFiles()!!.forEach {
-    if (it.isDirectory && it.name.startsWith("k")) {
-        include(":compiler-compat:${it.name}")
-    }
+
+fun addCompilerCompatModule() {
+    include("compiler-compat")
+    
+    rootProject.projectDir.resolve("compiler-compat")
+        .listFiles()!!
+        .forEach {
+            if (it.isDirectory && it.name.startsWith("k")) {
+                include(":compiler-compat:${it.name}")
+            }
+        }
 }

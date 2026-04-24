@@ -1,5 +1,6 @@
 package org.jetbrains.kotlin.compiler.plugin.template
 
+import org.jetbrains.kotlin.compiler.plugin.template.runners.AbstractIrJvmBoxTest
 import org.jetbrains.kotlin.compiler.plugin.template.runners.AbstractJvmBoxTest
 import org.jetbrains.kotlin.compiler.plugin.template.runners.AbstractJvmDiagnosticTest
 import org.jetbrains.kotlin.generators.generateTestGroupSuiteWithJUnit5
@@ -14,6 +15,10 @@ fun main() {
             
             testClass<AbstractJvmBoxTest> {
                 model("box", excludedPattern = TestGeneratorUtil.KT_OR_KTS_WITH_FIR_PREFIX)
+            }
+            
+            testClass<AbstractIrJvmBoxTest> {
+                model("ir-box")
             }
         }
     }
