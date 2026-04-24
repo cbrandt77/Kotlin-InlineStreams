@@ -450,7 +450,7 @@ public inline fun <T> InlineStream<T>.toList(): List<T> {
 
 # Implementation Details
 
-Do we actually have to do this in FIR?  While they _could_ be useful by hand, in all honesty idk if I actually want them to be.
+Do we actually have to do this in FIR?  While they _could_ be useful by hand, in all honesty idk if it's worth the effort to find and generate them in FIR.
 
 ## Loop
 1. Everything inside the list operation is pasted into a new inline function for the operation, which is what will actually be called inside the loop.
@@ -461,8 +461,15 @@ Do we actually have to do this in FIR?  While they _could_ be useful by hand, in
 4. Everything in the finalizer is directly pasted below the loop, in order. (what order do we use? last to first, since last finishes first? probably that, actually)
    - Really only terminal operations should have a finalizer, so we could always just do that and implement "multiple finalizers" later if it becomes necessary.
 
-
 ## Functions
+
+Stream Operation Block:
+- Replace GET_VAR variableDeclaredOutsideBlock with call to getter from parameters
+  - Add getter to parameters also
+- Replace SET_VAR variableDeclaredOutsideBlock with call to setter from parameters
+  - Add setter to parameters also
+
+
 Any function with an `InlineStream` receiver parameter needs to have its calls to other operations flattened.
 
 ~~Considering using annotations to designate-~~ no, InlineStreams are NOT OBJECTS, 
@@ -477,37 +484,5 @@ public inline fun <T, U : Any> InlineStream<T>.mapNotNull(mapper: (T) -> U?): In
 }
 ```
 
-
-# Warnings
-
-## Operation Definition (Functions with InlineStream as receiver, that call )
-Errors:
-- InlineStream operation function is not `inline`
-- Calls `streamOperation` more than once
-- Calls `streamOperation` and doesn't return it
-- Calls both `streamOperation` and `terminalOperation`
-- References InlineStream inside of `streamOperation`
-- ~~Returns `terminalOperation`~~ (actually nevermind, this is fine. `terminalOperation` returns `Unit`, so it's a shorthand for doing something and returning `Unit`)
-
-Questioning:
-- InlineStream operation function is not top-level?
-  - I mean, I can't see a problem with it... but for now, it's easier for all of them to be top-level
-
-
-## _Any_ function definition
-- Error: Uses an InlineStream as a parameter of any kind (because it's not a real object)
-  - suggests using a regular Sequence
-- Error: Uses an InlineStream as a receiver parameter without being annotated with @InlineStreamOperation
-
-
-## Usage within a function
-Errors:
-- Lets an InlineStream "object" escape a function
-  - Returns it
-  - Passes it to another function (including as receiver to a non-operation function)
-  - Assigns it to a field in an object
-- Attempts to assign an InlineStream object to a variable (again, not a real object)
-  - Note: we need a way to let a user choose what's done on the loop fluidly, maybe an API function like "if else" that lets users create a condition and conditionally execute one downstream path or another downstream path?
-- Uses it as a context parameter
 
 

@@ -3,7 +3,7 @@ import io.github.cbrandt77.kt.inlinestreams.*
 fun <T> InlineStream<T>.testOperation(): InlineStream<T> {
 	var state = 4
 	
-	return streamOperation { el, breakLoop, downstreamAction ->
+	return intermediateOperation { el, breakLoop, downstreamAction ->
 		state++
 		downstreamAction(el)
 		breakLoop()

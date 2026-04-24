@@ -1,0 +1,54 @@
+FILE fqName:<root> fileName:/experimentation.kt
+  FUN name:box visibility:public modality:FINAL returnType:kotlin.String
+    BLOCK_BODY
+      RETURN type=kotlin.Nothing from='public final fun box (): kotlin.String declared in <root>'
+        CONST String type=kotlin.String value="OK"
+  FUN name:testOperation visibility:public modality:FINAL returnType:io.github.cbrandt77.kt.inlinestreams.InlineStream<T of <root>.testOperation>
+    TYPE_PARAMETER name:T index:0 variance: superTypes:[kotlin.Any?] reified:false
+    VALUE_PARAMETER kind:ExtensionReceiver name:<this> index:0 type:io.github.cbrandt77.kt.inlinestreams.InlineStream<T of <root>.testOperation>
+    BLOCK_BODY
+      VAR name:state type:kotlin.Int [var]
+        CONST Int type=kotlin.Int value=4
+      RETURN type=kotlin.Nothing from='public final fun testOperation <T> (<this>: io.github.cbrandt77.kt.inlinestreams.InlineStream<T of <root>.testOperation>): io.github.cbrandt77.kt.inlinestreams.InlineStream<T of <root>.testOperation> declared in <root>'
+        CALL 'public final fun intermediateOperation <T, U> (<this>: io.github.cbrandt77.kt.inlinestreams.InlineStream<T of io.github.cbrandt77.kt.inlinestreams.intermediateOperation>, action: kotlin.Function3<@[ParameterName(name = "element")] T of io.github.cbrandt77.kt.inlinestreams.intermediateOperation, @[ParameterName(name = "breakLoop")] kotlin.Function0<kotlin.Unit>, @[ParameterName(name = "downstreamAction")] kotlin.Function1<U of io.github.cbrandt77.kt.inlinestreams.intermediateOperation, kotlin.Unit>, kotlin.Unit>): io.github.cbrandt77.kt.inlinestreams.InlineStream<U of io.github.cbrandt77.kt.inlinestreams.intermediateOperation> declared in io.github.cbrandt77.kt.inlinestreams' type=io.github.cbrandt77.kt.inlinestreams.InlineStream<T of <root>.testOperation> origin=null
+          TYPE_ARG T: T of <root>.testOperation
+          TYPE_ARG U: T of <root>.testOperation
+          ARG <this>: GET_VAR '<this>: io.github.cbrandt77.kt.inlinestreams.InlineStream<T of <root>.testOperation> declared in <root>.testOperation' type=io.github.cbrandt77.kt.inlinestreams.InlineStream<T of <root>.testOperation> origin=IMPLICIT_ARGUMENT
+          ARG action: FUN_EXPR type=kotlin.Function3<T of <root>.testOperation, kotlin.Function0<kotlin.Unit>, kotlin.Function1<T of <root>.testOperation, kotlin.Unit>, kotlin.Unit> origin=LAMBDA
+            FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
+              VALUE_PARAMETER kind:Regular name:el index:0 type:T of <root>.testOperation
+              VALUE_PARAMETER kind:Regular name:breakLoop index:1 type:kotlin.Function0<kotlin.Unit>
+              VALUE_PARAMETER kind:Regular name:downstreamAction index:2 type:kotlin.Function1<T of <root>.testOperation, kotlin.Unit>
+              BLOCK_BODY
+                TYPE_OP type=kotlin.Unit origin=IMPLICIT_COERCION_TO_UNIT typeOperand=kotlin.Unit
+                  BLOCK type=kotlin.Int origin=POSTFIX_INCR
+                    VAR IR_TEMPORARY_VARIABLE name:tmp_0 type:kotlin.Int [val]
+                      GET_VAR 'var state: kotlin.Int declared in <root>.testOperation' type=kotlin.Int origin=POSTFIX_INCR
+                    SET_VAR 'var state: kotlin.Int declared in <root>.testOperation' type=kotlin.Unit origin=POSTFIX_INCR
+                      CALL 'public final fun inc (): kotlin.Int declared in kotlin.Int' type=kotlin.Int origin=POSTFIX_INCR
+                        ARG <this>: GET_VAR 'val tmp_0: kotlin.Int declared in <root>.testOperation.<anonymous>' type=kotlin.Int origin=null
+                    GET_VAR 'val tmp_0: kotlin.Int declared in <root>.testOperation.<anonymous>' type=kotlin.Int origin=null
+                CALL 'public abstract fun invoke (p1: P1 of kotlin.Function1): R of kotlin.Function1 declared in kotlin.Function1' type=kotlin.Unit origin=INVOKE
+                  ARG <this>: GET_VAR 'downstreamAction: kotlin.Function1<T of <root>.testOperation, kotlin.Unit> declared in <root>.testOperation.<anonymous>' type=kotlin.Function1<T of <root>.testOperation, kotlin.Unit> origin=VARIABLE_AS_FUNCTION
+                  ARG p1: GET_VAR 'el: T of <root>.testOperation declared in <root>.testOperation.<anonymous>' type=T of <root>.testOperation origin=null
+                CALL 'public abstract fun invoke (): R of kotlin.Function0 declared in kotlin.Function0' type=kotlin.Unit origin=INVOKE
+                  ARG <this>: GET_VAR 'breakLoop: kotlin.Function0<kotlin.Unit> declared in <root>.testOperation.<anonymous>' type=kotlin.Function0<kotlin.Unit> origin=VARIABLE_AS_FUNCTION
+  FUN name:testOperation_runtime visibility:public modality:FINAL returnType:kotlin.Unit [inline]
+    TYPE_PARAMETER name:T index:0 variance: superTypes:[kotlin.Any?] reified:false
+    VALUE_PARAMETER kind:Regular name:el index:0 type:T of <root>.testOperation_runtime
+    VALUE_PARAMETER kind:Regular name:breakLoop index:1 type:kotlin.Function0<kotlin.Unit>
+    VALUE_PARAMETER kind:Regular name:downstreamAction index:2 type:kotlin.Function1<T of <root>.testOperation_runtime, kotlin.Unit>
+    VALUE_PARAMETER kind:Regular name:getState index:3 type:kotlin.Function0<kotlin.Int>
+    VALUE_PARAMETER kind:Regular name:setState index:4 type:kotlin.Function1<kotlin.Int, kotlin.Unit>
+    BLOCK_BODY
+      CALL 'public abstract fun invoke (p1: P1 of kotlin.Function1): R of kotlin.Function1 declared in kotlin.Function1' type=kotlin.Unit origin=INVOKE
+        ARG <this>: GET_VAR 'setState: kotlin.Function1<kotlin.Int, kotlin.Unit> declared in <root>.testOperation_runtime' type=kotlin.Function1<kotlin.Int, kotlin.Unit> origin=VARIABLE_AS_FUNCTION
+        ARG p1: CALL 'public final fun plus (other: kotlin.Int): kotlin.Int declared in kotlin.Int' type=kotlin.Int origin=PLUS
+          ARG <this>: CALL 'public abstract fun invoke (): R of kotlin.Function0 declared in kotlin.Function0' type=kotlin.Int origin=INVOKE
+            ARG <this>: GET_VAR 'getState: kotlin.Function0<kotlin.Int> declared in <root>.testOperation_runtime' type=kotlin.Function0<kotlin.Int> origin=VARIABLE_AS_FUNCTION
+          ARG other: CONST Int type=kotlin.Int value=1
+      CALL 'public abstract fun invoke (p1: P1 of kotlin.Function1): R of kotlin.Function1 declared in kotlin.Function1' type=kotlin.Unit origin=INVOKE
+        ARG <this>: GET_VAR 'downstreamAction: kotlin.Function1<T of <root>.testOperation_runtime, kotlin.Unit> declared in <root>.testOperation_runtime' type=kotlin.Function1<T of <root>.testOperation_runtime, kotlin.Unit> origin=VARIABLE_AS_FUNCTION
+        ARG p1: GET_VAR 'el: T of <root>.testOperation_runtime declared in <root>.testOperation_runtime' type=T of <root>.testOperation_runtime origin=null
+      CALL 'public abstract fun invoke (): R of kotlin.Function0 declared in kotlin.Function0' type=kotlin.Unit origin=INVOKE
+        ARG <this>: GET_VAR 'breakLoop: kotlin.Function0<kotlin.Unit> declared in <root>.testOperation_runtime' type=kotlin.Function0<kotlin.Unit> origin=VARIABLE_AS_FUNCTION

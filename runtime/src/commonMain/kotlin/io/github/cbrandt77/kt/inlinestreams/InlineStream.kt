@@ -34,7 +34,7 @@ public fun <T> Iterator<T>.inlineStream(): InlineStream<T> {
  * @param downstreamAction Whatever is supposed to happen next.  You may call this once (see [map]), more than once (see [flatMap]), or not at all (see [drop]).
  */
 @Suppress("UNCHECKED_CAST", "KotlinUnreachableCode", "KDocUnresolvedReference")
-public inline fun <T, U> InlineStream<T>.streamOperation(action: (element: T, breakLoop: () -> Unit, downstreamAction: (U) -> Unit) -> Unit): InlineStream<U> {
+public inline fun <T, U> InlineStream<T>.intermediateOperation(action: (element: T, breakLoop: () -> Unit, downstreamAction: (U) -> Unit) -> Unit): InlineStream<U> {
 	error("Stream operation executed without being transformed by compiler plugin.") // TODO flesh out error message
 	return this as InlineStream<U>;
 }

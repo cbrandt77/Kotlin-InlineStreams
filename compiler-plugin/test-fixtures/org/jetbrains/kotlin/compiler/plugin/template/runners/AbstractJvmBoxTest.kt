@@ -30,7 +30,7 @@ open class AbstractJvmBoxTest : AbstractFirBlackBoxCodegenTestBase(FirParser.Lig
          * All of them are located in `org.jetbrains.kotlin.test.directives` package
          */
         defaultDirectives {
-//            +CodegenTestDirectives.DUMP_IR
+            +CodegenTestDirectives.DUMP_IR
 //            +FirDiagnosticsDirectives.FIR_DUMP
             +JvmEnvironmentConfigurationDirectives.FULL_JDK
 

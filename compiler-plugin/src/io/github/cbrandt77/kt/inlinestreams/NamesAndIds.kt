@@ -19,9 +19,6 @@
 
 package io.github.cbrandt77.kt.inlinestreams
 
-import io.github.cbrandt77.kt.inlinestreams.NamesAndIds.STREAM_PACKAGE
-import org.jetbrains.kotlin.builtins.StandardNames
-import org.jetbrains.kotlin.fir.extensions.AnnotationFqn
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
@@ -34,6 +31,6 @@ object NamesAndIds {
 	
 	@JvmField val STREAM_PACKAGE = FqName("io.github.cbrandt77.kt.inlinestreams")
 	
-	@JvmField val streamOperation: CallableId = CallableId(STREAM_PACKAGE, Name.identifier("streamOperation"))
+	@JvmField val intermediateOperation: CallableId = CallableId(STREAM_PACKAGE, Name.identifier("intermediateOperation"))
 	@JvmField val terminalOperation: CallableId = CallableId(STREAM_PACKAGE, Name.identifier("terminalOperation"))
 }
