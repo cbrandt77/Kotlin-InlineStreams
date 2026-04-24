@@ -6,7 +6,6 @@ import com.intellij.testFramework.TestDataPath;
 import org.jetbrains.kotlin.test.util.KtTestUtil;
 import org.jetbrains.kotlin.test.TargetBackend;
 import org.jetbrains.kotlin.test.TestMetadata;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -26,27 +25,5 @@ public class JvmBoxTestGenerated extends AbstractJvmBoxTest {
   @TestMetadata("experimentation.kt")
   public void testExperimentation() {
     runTest("compiler-plugin/testData/box/experimentation.kt");
-  }
-
-  @Nested
-  @TestMetadata("compiler-plugin/testData/box/control-group")
-  @TestDataPath("$PROJECT_ROOT")
-  public class Control_group {
-    @Test
-    public void testAllFilesPresentInControl_group() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler-plugin/testData/box/control-group"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), TargetBackend.JVM_IR, true);
-    }
-
-    @Test
-    @TestMetadata("control.kt")
-    public void testControl() {
-      runTest("compiler-plugin/testData/box/control-group/control.kt");
-    }
-
-    @Test
-    @TestMetadata("control2.kt")
-    public void testControl2() {
-      runTest("compiler-plugin/testData/box/control-group/control2.kt");
-    }
   }
 }

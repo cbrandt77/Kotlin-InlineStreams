@@ -1,14 +1,25 @@
+@file:Suppress("UnusedReceiverParameter")
+
 package io.github.cbrandt77.kt.inlinestreams
 
 import kotlin.jvm.JvmInline
-
 
 @JvmInline @Suppress("UNUSED")
 public value class InlineStream<T> // TODO figure out type variance
 internal constructor(private val dummy: Nothing?) // TODO should this hold the iterable itself?
 
-@PublishedApi internal val instance: InlineStream<Any> = InlineStream(null)
+private val instance: InlineStream<Any> = InlineStream(null)
+@Suppress("UNCHECKED_CAST")
+internal fun <T> instance(): InlineStream<T> = instance as InlineStream<T>
 
+
+public fun <T> Iterable<T>.inlineStream(): InlineStream<T> {
+	return instance()
+}
+
+public fun <T> Iterator<T>.inlineStream(): InlineStream<T> {
+	return instance()
+}
 
 /**
  * Use this to define new stream operations.

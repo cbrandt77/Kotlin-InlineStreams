@@ -19,6 +19,7 @@
 
 package io.github.cbrandt77.kt.inlinestreams.test
 
+import io.github.cbrandt77.kt.inlinestreams.test.FirUnitTester.TestData.Companion.METHODHANDLE_REGISTEREXTENSION
 import org.intellij.lang.annotations.Language
 import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
 import org.jetbrains.kotlin.compiler.plugin.template.runners.AbstractJvmDiagnosticTest
@@ -52,6 +53,7 @@ import org.junit.jupiter.api.TestFactory
 import java.io.File
 import java.lang.invoke.MethodHandles
 import java.lang.invoke.MethodType
+import java.lang.reflect.Method
 import java.nio.file.Path
 import java.util.Arrays
 import java.util.stream.Stream
@@ -137,7 +139,7 @@ abstract class FirUnitTester {
 			}
 		}
 		
-		val filePath = Path.of(BASE_FILE_PATH, testData.owningClass.name.replace('.', File.separatorChar), testData.methodName + ".kt")
+		val filePath = kotlin.io.path.Path(BASE_FILE_PATH, testData.owningClass.name.replace('.', File.separatorChar), testData.methodName + ".kt")
 		
 		
 		
@@ -346,7 +348,9 @@ abstract class FirUnitTester {
 		}
 		
 		companion object {
-			private val METHODHANDLE_REGISTEREXTENSION = MethodHandles.privateLookupIn(FirExtensionRegistrar::class.java, MethodHandles.lookup()).findVirtual(FirExtensionRegistrar::class.java, "registerExtension", MethodType.methodType(Void.TYPE, KClass::class.java, FirExtension.Factory::class.java))
+			private val METHODHANDLE_REGISTEREXTENSION: Method by lazy {
+				FirExtensionRegistrar::class.java.getDeclaredMethod("registerExtension", KClass::class.java, FirExtension.Factory::class.java)
+			}
 			
 			/**
 			 * Provides access to the private [FirExtensionRegistrar.registerExtension] method,

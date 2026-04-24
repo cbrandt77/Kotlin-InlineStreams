@@ -60,7 +60,8 @@ fun FirClassSymbol<*>.getDeclaredAndInheritedCallables(session: FirSession, memb
 		}
 }
 
-fun FirFunction.getReceiverClass(session: FirSession): FirRegularClassSymbol? {
+context(session: FirSession)
+fun FirFunction.getReceiverClass(): FirRegularClassSymbol? {
 	return when {
 		this.isExtension -> this.receiverParameter?.typeRef?.toRegularClassSymbol(session)
 		else -> this.getContainingClass()?.symbol

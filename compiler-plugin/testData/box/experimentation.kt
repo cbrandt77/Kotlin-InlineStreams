@@ -1,24 +1,19 @@
+import io.github.cbrandt77.kt.inlinestreams.*
 
-class InlineSequence<T>
-private constructor() {
-	companion object {
-		@PublishedApi
-		@JvmField internal val inst = InlineSequence<Any>()
-		
-		@Suppress("UNCHECKED_CAST")
-		@JvmStatic inline fun <T> intermediateOperation(action: (downstream: (T) -> Unit) -> Unit): InlineSequence<T> = inst as InlineSequence<T>
-		
-		@JvmStatic inline fun <T> terminalOperation(action: () -> Unit): T = error("not transformed")
+fun <T> InlineStream<T>.testOperation(): InlineStream<T> {
+	var state = 4
+	
+	return streamOperation { el, breakLoop, downstreamAction ->
+		state++
+		downstreamAction(el)
+		breakLoop()
 	}
-	
-	
-	operator fun invoke(): T { TODO() }
 }
 
-inline fun <T, U> InlineSequence<T>.map(functor: (T) -> U): InlineSequence<U> {
-	return InlineSequence.intermediateOperation { downstream ->
-		downstream(functor(this()))
-	}
+inline fun <T> testOperation_runtime(el: T, breakLoop: () -> Unit, downstreamAction: (T) -> Unit, getState: () -> Int, setState: (Int) -> Unit) {
+	setState(getState() + 1)
+	downstreamAction(el)
+	breakLoop()
 }
 
 fun box(): String {

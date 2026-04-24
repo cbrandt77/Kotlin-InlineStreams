@@ -450,6 +450,8 @@ public inline fun <T> InlineStream<T>.toList(): List<T> {
 
 # Implementation Details
 
+Do we actually have to do this in FIR?  While they _could_ be useful by hand, in all honesty idk if I actually want them to be.
+
 ## Loop
 1. Everything inside the list operation is pasted into a new inline function for the operation, which is what will actually be called inside the loop.
    - Replace references to properties in the preamble with references to getters and setters, which are provided as parameters
@@ -487,9 +489,15 @@ Errors:
 - References InlineStream inside of `streamOperation`
 - ~~Returns `terminalOperation`~~ (actually nevermind, this is fine. `terminalOperation` returns `Unit`, so it's a shorthand for doing something and returning `Unit`)
 
+Questioning:
+- InlineStream operation function is not top-level?
+  - I mean, I can't see a problem with it... but for now, it's easier for all of them to be top-level
+
+
 ## _Any_ function definition
-- Error: Uses an InlineStream as a non-receiver parameter (because it's not a real object)
-  - Recommend using a regular Sequence
+- Error: Uses an InlineStream as a parameter of any kind (because it's not a real object)
+  - suggests using a regular Sequence
+- Error: Uses an InlineStream as a receiver parameter without being annotated with @InlineStreamOperation
 
 
 ## Usage within a function
@@ -503,6 +511,3 @@ Errors:
 - Uses it as a context parameter
 
 
-# Rejected Ideas
-- Using annotations to denote a function being a "stream operation"
-  - Rejected because InlineStreams are _not real objects_, so there are no valid non-streamop functions that could be called on them.

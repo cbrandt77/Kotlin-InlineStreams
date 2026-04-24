@@ -5,10 +5,10 @@ const val PROJ_VERSION = "1.0.0"
 
 const val MY_NEXUS_ID = "io.github.cbrandt77"
 
-const val JAVA_VERSION = 21
+const val JAVA_VERSION = 8
 
 object MyPublishingInfo {
-	const val plugin_id = "io.github.cbrandt77.kt.inlinestreams"
+	const val plugin_id = PROJ_GROUP
 	
 	const val name = "InlineStreams"
 	
