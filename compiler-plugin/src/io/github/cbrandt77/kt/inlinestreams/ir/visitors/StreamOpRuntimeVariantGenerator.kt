@@ -154,7 +154,7 @@ class IntermediateOperationDefinition(val context: IrPluginContext, val dslFunct
 		private val newFun = context.irFactory.buildFun {
 			startOffset = loopAction.ir.startOffset
 			endOffset = loopAction.ir.endOffset
-			name = Name.identifier("${loopAction.ir.name.identifier}_loopOperation") // TODO generate proper name
+			name = Name.identifier("${dslFunction.name.identifier}_loopOperation") // TODO generate proper name
 			returnType = context.irBuiltIns.unitType
 			isInline = true
 //			originalDeclaration = dslFunction
