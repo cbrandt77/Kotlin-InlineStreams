@@ -4,6 +4,8 @@ import io.github.cbrandt77.kt.inlinestreams.NamesAndIds
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 import org.jetbrains.kotlin.GeneratedDeclarationKey
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
+import org.jetbrains.kotlin.backend.common.ir.moveBodyTo
+import org.jetbrains.kotlin.fir.java.enhancement.FirEmptyJavaDeclarationList.declarations
 import org.jetbrains.kotlin.ir.IrElement
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.builders.declarations.addFunction
@@ -27,18 +29,24 @@ import org.jetbrains.kotlin.ir.expressions.IrStatementOrigin
 import org.jetbrains.kotlin.ir.expressions.IrValueAccessExpression
 import org.jetbrains.kotlin.ir.expressions.impl.IrCallImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrGetValueImpl
+import org.jetbrains.kotlin.ir.symbols.IrValueParameterSymbol
 import org.jetbrains.kotlin.ir.symbols.IrVariableSymbol
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.classOrNull
 import org.jetbrains.kotlin.ir.types.typeWith
 import org.jetbrains.kotlin.ir.util.addChild
 import org.jetbrains.kotlin.ir.util.callableId
+import org.jetbrains.kotlin.ir.util.copyParametersFrom
+import org.jetbrains.kotlin.ir.util.copyValueAndTypeParametersFrom
 import org.jetbrains.kotlin.ir.util.deepCopyWithSymbols
+import org.jetbrains.kotlin.ir.util.deepCopyWithoutPatchingParents
 import org.jetbrains.kotlin.ir.util.invokeFun
 import org.jetbrains.kotlin.ir.util.isTopLevel
 import org.jetbrains.kotlin.ir.util.parents
+import org.jetbrains.kotlin.ir.util.patchDeclarationParents
 import org.jetbrains.kotlin.ir.util.statements
 import org.jetbrains.kotlin.ir.visitors.IrElementTransformerVoid
+import org.jetbrains.kotlin.ir.visitors.IrTransformer
 import org.jetbrains.kotlin.ir.visitors.IrVisitorVoid
 import org.jetbrains.kotlin.ir.visitors.acceptChildrenVoid
 import org.jetbrains.kotlin.ir.visitors.transformChildrenVoid
@@ -59,20 +67,21 @@ class StreamOpRuntimeVariantGenerator(
 	 * Map of `InlineStream.definedOperation` to `definedOperation_runtime`
 	 */
 	val generatedFunctions: MutableMap<IrFunction, IrFunction>
-) : IrVisitorVoid() {
+) : IrElementTransformerVoid() {
 	val inlineStreamClassSymbol by lazy {
 		context.referenceClass(NamesAndIds.InlineStreamClassId)
 	}
 	
-	override fun visitElement(element: IrElement) {
-		element.acceptChildrenVoid(this)
+	override fun visitElement(element: IrElement): IrElement {
+		element.transformChildrenVoid(this)
+		return element;
 	}
 	
-	override fun visitFunction(declaration: IrFunction) {
+	override fun visitFunction(declaration: IrFunction): IrStatement {
 		if (declaration.actsOnInlineStream)
 			FunctionVisitor().visitFunction(declaration)
 		
-		super.visitFunction(declaration)
+		return super.visitFunction(declaration)
 	}
 	
 	private val IrFunction.actsOnInlineStream: Boolean
@@ -159,82 +168,88 @@ class IntermediateOperationDefinition(val context: IrPluginContext, val dslFunct
 			isInline = true
 //			originalDeclaration = dslFunction
 			origin = StreamOpGeneratedLoopActionDeclarationKey.origin
+		}.apply {
+			copyValueAndTypeParametersFrom(loopAction.ir)
 		}
 		
-		private val IrVariable.isDeclaredOutsideLoopAction: Boolean
-			get() = loopAction.ir !in this.parents
 		
-		private val IrValueAccessExpression.takeTargetIfNeedsRemapping: IrVariable?
-			get() = (symbol as? IrVariableSymbol)
-						?.owner
-						?.takeIf { it.isDeclaredOutsideLoopAction }
-		
-		
-		
-		private val getters = object {
-			private val functions: Object2ObjectOpenHashMap<IrVariable, IrValueParameter> = Object2ObjectOpenHashMap()
-			
-			private val getterType by lazy {
-				context.irBuiltIns.functionN(0)
-			}
-			private val getterInvokeFun by lazy {
-				getterType.invokeFun!!.symbol
-			}
-			
-			private fun getOrCreateGetterParameter(variable: IrVariable): IrValueParameter {
-				return functions.computeIfAbsent(variable) {
-					newFun.addValueParameter {
-						name = Name.identifier("get-${variable.name.identifier}")
-						type = getterType.typeWith(variable.type)
-						origin = StreamOpGeneratedLoopActionDeclarationKey.origin
-					}
-				}
-			}
-			
-			fun IrGetValue.orGetterIfNeeded(): IrExpression {
-				val targetVariable = takeTargetIfNeedsRemapping
-				                        ?: return this;
-				
-				return IrCallImpl(startOffset, endOffset, this.type, getterInvokeFun).also {
-					it.dispatchReceiver = IrGetValueImpl(startOffset, endOffset, getOrCreateGetterParameter(targetVariable).symbol, IrStatementOrigin.VARIABLE_AS_FUNCTION)
-				}
-			}
-		}
-		
-		private val setters = object {
-			private val functions = Object2ObjectOpenHashMap<IrVariable, IrValueParameter>()
-			
-			private val setterType by lazy {
-				context.irBuiltIns.functionN(1)
-			}
-			private val setterInvokeFun by lazy {
-				setterType.invokeFun!!.symbol
-			}
-			
-			private fun getOrCreateParameter(variable: IrVariable): IrValueParameter {
-				return functions.computeIfAbsent(variable) { it: IrVariable ->
-					newFun.addValueParameter {
-						name = Name.identifier("set-${it.name.identifier}")
-						type = setterType.typeWith(it.type, context.irBuiltIns.unitType)
-						origin = StreamOpGeneratedLoopActionDeclarationKey.origin
-					}
-				}
-			}
-			
-			/** If [this] sets a variable declared outside the loopAction, remap it to a call to a setter parameter. */
-			fun IrSetValue.orSetterIfNeeded(): IrExpression {
-				val variableBeingSet = this.takeTargetIfNeedsRemapping ?: return this;
-				
-				return IrCallImpl(startOffset, endOffset, context.irBuiltIns.unitType, setterInvokeFun, origin = IrStatementOrigin.INVOKE).also {
-					it.dispatchReceiver = IrGetValueImpl(startOffset, endOffset, getOrCreateParameter(variableBeingSet).symbol, origin = IrStatementOrigin.VARIABLE_AS_FUNCTION) // TODO replace with arguments.add
-					it.arguments += this.value
-				};
-			}
-		}
 		
 		inner class GetterSetterRemapper : IrElementTransformerVoid() {
+			private val IrVariable.isDeclaredOutsideLoopAction: Boolean
+				get() = newFun !in this.parents // TODO figure out how we do this, I think we might need to do a custom copier
+			
+			private val IrValueAccessExpression.takeTargetIfNeedsRemapping: IrVariable?
+				get() = (symbol as? IrVariableSymbol)
+					?.owner
+					?.takeIf { it.isDeclaredOutsideLoopAction }
+			
+			
+			
+			private val getters = object {
+				private val functions: Object2ObjectOpenHashMap<IrVariable, IrValueParameter> = Object2ObjectOpenHashMap()
+				
+				private val getterType by lazy {
+					context.irBuiltIns.functionN(0)
+				}
+				private val getterInvokeFun by lazy {
+					getterType.invokeFun!!.symbol
+				}
+				
+				private fun getOrCreateGetterParameter(variable: IrVariable): IrValueParameter {
+					return functions.computeIfAbsent(variable) {
+						newFun.addValueParameter {
+							name = Name.identifier("get-${variable.name.identifier}")
+							type = getterType.typeWith(variable.type)
+							origin = StreamOpGeneratedLoopActionDeclarationKey.origin
+						}
+					}
+				}
+				
+				fun IrGetValue.orGetterIfNeeded(): IrExpression {
+					val targetVariable = takeTargetIfNeedsRemapping
+					                     ?: return this;
+					
+					return IrCallImpl(startOffset, endOffset, this.type, getterInvokeFun).also {
+						it.dispatchReceiver = IrGetValueImpl(startOffset, endOffset, getOrCreateGetterParameter(targetVariable).symbol, IrStatementOrigin.VARIABLE_AS_FUNCTION)
+					}
+				}
+			}
+			
+			private val setters = object {
+				private val functions = Object2ObjectOpenHashMap<IrVariable, IrValueParameter>()
+				
+				private val setterType by lazy {
+					context.irBuiltIns.functionN(1)
+				}
+				private val setterInvokeFun by lazy {
+					setterType.invokeFun!!.symbol
+				}
+				
+				private fun getOrCreateParameter(variable: IrVariable): IrValueParameter {
+					return functions.computeIfAbsent(variable) { it: IrVariable ->
+						newFun.addValueParameter {
+							name = Name.identifier("set-${it.name.identifier}")
+							type = setterType.typeWith(it.type, context.irBuiltIns.unitType)
+							origin = StreamOpGeneratedLoopActionDeclarationKey.origin
+						}
+					}
+				}
+				
+				/** If [this] sets a variable declared outside the loopAction, remap it to a call to a setter parameter. */
+				fun IrSetValue.orSetterIfNeeded(): IrExpression {
+					val variableBeingSet = this.takeTargetIfNeedsRemapping ?: return this;
+					
+					return IrCallImpl(startOffset, endOffset, context.irBuiltIns.unitType, setterInvokeFun, origin = IrStatementOrigin.INVOKE).also {
+						it.dispatchReceiver = IrGetValueImpl(startOffset, endOffset, getOrCreateParameter(variableBeingSet).symbol, origin = IrStatementOrigin.VARIABLE_AS_FUNCTION) // TODO replace with arguments.add
+						it.arguments += this.value
+					};
+				}
+			}
+			
 			override fun visitGetValue(expression: IrGetValue): IrExpression {
-				return with (getters) { expression.orGetterIfNeeded() }
+				return with (getters) {
+					expression.orGetterIfNeeded()
+				}
 			}
 			
 			override fun visitSetValue(expression: IrSetValue): IrExpression {
@@ -244,11 +259,19 @@ class IntermediateOperationDefinition(val context: IrPluginContext, val dslFunct
 		
 		
 		fun buildLoopActionFun(): IrSimpleFunction {
-			newFun.body = loopAction.ir.body?.deepCopyWithSymbols(newFun)?.also {
-				it.transformChildrenVoid(GetterSetterRemapper())
+			val dslFunParent = (dslFunction.parent as IrDeclarationContainer).also {
+				it.declarations += newFun
 			}
 			
-			(dslFunction.parent as IrDeclarationContainer).addChild(newFun)
+			newFun.parent = dslFunParent
+			
+			loopAction.ir.body?.deepCopyWithSymbols(loopAction.ir).also { tmp ->
+				newFun.body = loopAction.ir.moveBodyTo(newFun)?.patchDeclarationParents(newFun)
+				
+				loopAction.ir.body = tmp
+			}
+			
+			newFun.body?.transformChildrenVoid(GetterSetterRemapper())
 			
 			return newFun;
 		}
