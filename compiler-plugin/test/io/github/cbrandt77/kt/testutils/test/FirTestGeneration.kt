@@ -349,7 +349,9 @@ abstract class FirUnitTester {
 		
 		companion object {
 			private val METHODHANDLE_REGISTEREXTENSION: Method by lazy {
-				FirExtensionRegistrar::class.java.getDeclaredMethod("registerExtension", KClass::class.java, FirExtension.Factory::class.java)
+				FirExtensionRegistrar::class.java.getDeclaredMethod("registerExtension", KClass::class.java, FirExtension.Factory::class.java).also {
+					it.isAccessible = true
+				}
 			}
 			
 			/**

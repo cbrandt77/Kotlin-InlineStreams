@@ -1,5 +1,7 @@
 FILE fqName:pkg fileName:/flatMapExperiment.kt
   FUN GENERATED[io.github.cbrandt77.kt.inlinestreams.ir.visitors.StreamOpGeneratedLoopActionDeclarationKey] name:flatMap_loopOperation visibility:public modality:FINAL returnType:kotlin.Unit [inline]
+    TYPE_PARAMETER name:T index:0 variance: superTypes:[kotlin.Any?] reified:false
+    TYPE_PARAMETER name:U index:1 variance: superTypes:[kotlin.Any?] reified:false
     VALUE_PARAMETER kind:Regular name:el index:0 type:kotlin.collections.Iterable<T of pkg.flatMap_loopOperation>
     VALUE_PARAMETER kind:Regular name:breakLoop index:1 type:kotlin.Function0<kotlin.Unit>
     VALUE_PARAMETER kind:Regular name:downstreamAction index:2 type:kotlin.Function1<U of pkg.flatMap_loopOperation, kotlin.Unit>
@@ -20,7 +22,7 @@ FILE fqName:pkg fileName:/flatMapExperiment.kt
             BLOCK type=kotlin.Unit origin=null
               CALL 'public abstract fun invoke (p1: P1 of kotlin.Function1): R of kotlin.Function1 declared in kotlin.Function1' type=kotlin.Unit origin=INVOKE
                 ARG <this>: GET_VAR 'set-state: kotlin.Function1<kotlin.Int, kotlin.Unit> declared in pkg.flatMap_loopOperation' type=kotlin.Function1<kotlin.Int, kotlin.Unit> origin=VARIABLE_AS_FUNCTION
-                ARG 3: CONST Int type=kotlin.Int value=2
+                ARG p1: CONST Int type=kotlin.Int value=2
               CALL 'public abstract fun invoke (p1: P1 of kotlin.Function1): R of kotlin.Function1 declared in kotlin.Function1' type=kotlin.Unit origin=INVOKE
                 ARG <this>: GET_VAR 'downstreamAction: kotlin.Function1<U of pkg.flatMap_loopOperation, kotlin.Unit> declared in pkg.flatMap_loopOperation' type=kotlin.Function1<U of pkg.flatMap_loopOperation, kotlin.Unit> origin=VARIABLE_AS_FUNCTION
                 ARG p1: CALL 'public abstract fun invoke (p1: P1 of kotlin.Function1): R of kotlin.Function1 declared in kotlin.Function1' type=U of pkg.flatMap_loopOperation origin=INVOKE

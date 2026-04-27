@@ -1,5 +1,6 @@
 FILE fqName:<root> fileName:/experimentation.kt
   FUN GENERATED[io.github.cbrandt77.kt.inlinestreams.ir.visitors.StreamOpGeneratedLoopActionDeclarationKey] name:testOperation_loopOperation visibility:public modality:FINAL returnType:kotlin.Unit [inline]
+    TYPE_PARAMETER name:T index:0 variance: superTypes:[kotlin.Any?] reified:false
     VALUE_PARAMETER kind:Regular name:el index:0 type:T of <root>.testOperation_loopOperation
     VALUE_PARAMETER kind:Regular name:breakLoop index:1 type:kotlin.Function0<kotlin.Unit>
     VALUE_PARAMETER kind:Regular name:downstreamAction index:2 type:kotlin.Function1<T of <root>.testOperation_loopOperation, kotlin.Unit>
@@ -13,7 +14,7 @@ FILE fqName:<root> fileName:/experimentation.kt
               ARG <this>: GET_VAR 'get-state: kotlin.Function0<kotlin.Int> declared in <root>.testOperation_loopOperation' type=kotlin.Function0<kotlin.Int> origin=VARIABLE_AS_FUNCTION
           CALL 'public abstract fun invoke (p1: P1 of kotlin.Function1): R of kotlin.Function1 declared in kotlin.Function1' type=kotlin.Unit origin=INVOKE
             ARG <this>: GET_VAR 'set-state: kotlin.Function1<kotlin.Int, kotlin.Unit> declared in <root>.testOperation_loopOperation' type=kotlin.Function1<kotlin.Int, kotlin.Unit> origin=VARIABLE_AS_FUNCTION
-            ARG 3: CALL 'public final fun inc (): kotlin.Int declared in kotlin.Int' type=kotlin.Int origin=POSTFIX_INCR
+            ARG p1: CALL 'public final fun inc (): kotlin.Int declared in kotlin.Int' type=kotlin.Int origin=POSTFIX_INCR
               ARG <this>: GET_VAR 'val tmp_0: kotlin.Int declared in <root>.testOperation_loopOperation' type=kotlin.Int origin=null
           GET_VAR 'val tmp_0: kotlin.Int declared in <root>.testOperation_loopOperation' type=kotlin.Int origin=null
       CALL 'public abstract fun invoke (p1: P1 of kotlin.Function1): R of kotlin.Function1 declared in kotlin.Function1' type=kotlin.Unit origin=INVOKE

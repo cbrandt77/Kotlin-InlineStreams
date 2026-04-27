@@ -1,4 +1,4 @@
-FUN LOCAL_FUNCTION_FOR_LAMBDA name:flatMap_loopAction visibility:local modality:FINAL returnType:kotlin.Unit
+FUN name:flatMap_loopAction visibility:local modality:FINAL returnType:kotlin.Unit
   TYPE_PARAMETER name:T index:0 variance: superTypes:[kotlin.Any?] reified:false // as we encounter new type parameters, add them to this function's type parameters
   TYPE_PARAMETER name:U index:1 variance: superTypes:[kotlin.Any?] reified:false
 
