@@ -5,12 +5,12 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 import org.jetbrains.kotlin.GeneratedDeclarationKey
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.ir.moveBodyTo
-import org.jetbrains.kotlin.fir.java.enhancement.FirEmptyJavaDeclarationList.declarations
 import org.jetbrains.kotlin.ir.IrElement
 import org.jetbrains.kotlin.ir.IrStatement
-import org.jetbrains.kotlin.ir.builders.declarations.addFunction
+import org.jetbrains.kotlin.ir.builders.declarations.addTypeParameter
 import org.jetbrains.kotlin.ir.builders.declarations.addValueParameter
 import org.jetbrains.kotlin.ir.builders.declarations.buildFun
+import org.jetbrains.kotlin.ir.declarations.DelicateIrParameterIndexSetter
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationContainer
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
 import org.jetbrains.kotlin.ir.declarations.IrFunction
@@ -29,26 +29,22 @@ import org.jetbrains.kotlin.ir.expressions.IrStatementOrigin
 import org.jetbrains.kotlin.ir.expressions.IrValueAccessExpression
 import org.jetbrains.kotlin.ir.expressions.impl.IrCallImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrGetValueImpl
+import org.jetbrains.kotlin.ir.symbols.IrTypeParameterSymbol
 import org.jetbrains.kotlin.ir.symbols.IrValueParameterSymbol
 import org.jetbrains.kotlin.ir.symbols.IrVariableSymbol
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.classOrNull
 import org.jetbrains.kotlin.ir.types.typeWith
-import org.jetbrains.kotlin.ir.util.addChild
 import org.jetbrains.kotlin.ir.util.callableId
 import org.jetbrains.kotlin.ir.util.copyParametersFrom
-import org.jetbrains.kotlin.ir.util.copyValueAndTypeParametersFrom
 import org.jetbrains.kotlin.ir.util.deepCopyWithSymbols
-import org.jetbrains.kotlin.ir.util.deepCopyWithoutPatchingParents
 import org.jetbrains.kotlin.ir.util.invokeFun
 import org.jetbrains.kotlin.ir.util.isTopLevel
 import org.jetbrains.kotlin.ir.util.parents
 import org.jetbrains.kotlin.ir.util.patchDeclarationParents
 import org.jetbrains.kotlin.ir.util.statements
 import org.jetbrains.kotlin.ir.visitors.IrElementTransformerVoid
-import org.jetbrains.kotlin.ir.visitors.IrTransformer
 import org.jetbrains.kotlin.ir.visitors.IrVisitorVoid
-import org.jetbrains.kotlin.ir.visitors.acceptChildrenVoid
 import org.jetbrains.kotlin.ir.visitors.transformChildrenVoid
 import org.jetbrains.kotlin.name.Name
 
@@ -169,12 +165,12 @@ class IntermediateOperationDefinition(val context: IrPluginContext, val dslFunct
 //			originalDeclaration = dslFunction
 			origin = StreamOpGeneratedLoopActionDeclarationKey.origin
 		}.apply {
-			copyValueAndTypeParametersFrom(loopAction.ir)
+			body = loopAction.ir.body?.deepCopyWithSymbols(this)
 		}
 		
 		
 		
-		inner class GetterSetterRemapper : IrElementTransformerVoid() {
+		inner class ElementTransformer : IrElementTransformerVoid() {
 			private val IrVariable.isDeclaredOutsideLoopAction: Boolean
 				get() = newFun !in this.parents // TODO figure out how we do this, I think we might need to do a custom copier
 			
@@ -205,12 +201,12 @@ class IntermediateOperationDefinition(val context: IrPluginContext, val dslFunct
 					}
 				}
 				
-				fun IrGetValue.orGetterIfNeeded(): IrExpression {
-					val targetVariable = takeTargetIfNeedsRemapping
-					                     ?: return this;
+				fun remapToGetterIfNeeded(value: IrGetValue): IrExpression {
+					val targetVariable = value.takeTargetIfNeedsRemapping
+					                     ?: return value;
 					
-					return IrCallImpl(startOffset, endOffset, this.type, getterInvokeFun).also {
-						it.dispatchReceiver = IrGetValueImpl(startOffset, endOffset, getOrCreateGetterParameter(targetVariable).symbol, IrStatementOrigin.VARIABLE_AS_FUNCTION)
+					return IrCallImpl(value.startOffset, value.endOffset, value.type, getterInvokeFun).also {
+						it.dispatchReceiver = IrGetValueImpl(value.startOffset, value.endOffset, getOrCreateGetterParameter(targetVariable).symbol, IrStatementOrigin.VARIABLE_AS_FUNCTION)
 					}
 				}
 			}
@@ -235,43 +231,77 @@ class IntermediateOperationDefinition(val context: IrPluginContext, val dslFunct
 					}
 				}
 				
-				/** If [this] sets a variable declared outside the loopAction, remap it to a call to a setter parameter. */
-				fun IrSetValue.orSetterIfNeeded(): IrExpression {
-					val variableBeingSet = this.takeTargetIfNeedsRemapping ?: return this;
+				/** If [value] sets a variable declared outside the loopAction, remap it to a call to a setter parameter. */
+				fun remapToSetterIfNeeded(value: IrSetValue): IrExpression {
+					val variableBeingSet = value.takeTargetIfNeedsRemapping ?: return value;
 					
-					return IrCallImpl(startOffset, endOffset, context.irBuiltIns.unitType, setterInvokeFun, origin = IrStatementOrigin.INVOKE).also {
-						it.dispatchReceiver = IrGetValueImpl(startOffset, endOffset, getOrCreateParameter(variableBeingSet).symbol, origin = IrStatementOrigin.VARIABLE_AS_FUNCTION) // TODO replace with arguments.add
-						it.arguments += this.value
+					return IrCallImpl(value.startOffset, value.endOffset, context.irBuiltIns.unitType, setterInvokeFun, origin = IrStatementOrigin.INVOKE).also {
+						it.dispatchReceiver = IrGetValueImpl(value.startOffset, value.endOffset, getOrCreateParameter(variableBeingSet).symbol, origin = IrStatementOrigin.VARIABLE_AS_FUNCTION) // TODO replace with arguments.add
+						it.arguments += value.value
 					};
 				}
 			}
 			
+			@OptIn(DelicateIrParameterIndexSetter::class)
+			private val parameters = object {
+				private val oldFuncToNewFuncMap: Map<IrValueParameterSymbol, IrValueParameterSymbol> = (loopAction.ir.parameters + dslFunction.parameters).filter { it.kind != IrParameterKind.ExtensionReceiver }.map { it.symbol }.associateWith {
+					newFun.addValueParameter {
+						updateFrom(it.owner)
+						name = it.owner.name
+					}.symbol
+				}
+				
+				fun remap(parameter: IrValueParameterSymbol): IrValueParameterSymbol {
+					return oldFuncToNewFuncMap[parameter]
+					       ?: TODO()
+				}
+			}
+			
+			// as we encounter type parameters, add them to this function
+			private val typeParameters = object {
+				private val added = Object2ObjectOpenHashMap<IrTypeParameterSymbol, IrTypeParameterSymbol>()
+				
+				private fun getOrCreateTypeParam(fromDslFunc: IrTypeParameterSymbol): IrTypeParameterSymbol {
+					return added.computeIfAbsent(fromDslFunc) { it: IrTypeParameterSymbol ->
+						newFun.addTypeParameter {
+							updateFrom(it.owner)
+							name = it.owner.name
+						}.symbol
+					}
+				}
+				
+				fun remap(parameter: IrTypeParameterSymbol): IrTypeParameterSymbol {
+					return getOrCreateTypeParam(parameter)
+				}
+			}
+			
 			override fun visitGetValue(expression: IrGetValue): IrExpression {
-				return with (getters) {
-					expression.orGetterIfNeeded()
+				return when (val target = expression.symbol) {
+					is IrValueParameterSymbol -> {
+						expression.symbol = parameters.remap(target)
+						expression
+					}
+					is IrVariableSymbol -> getters.remapToGetterIfNeeded(expression)
 				}
 			}
 			
 			override fun visitSetValue(expression: IrSetValue): IrExpression {
-				return with (setters) { expression.orSetterIfNeeded() }
+				return setters.remapToSetterIfNeeded(expression)
+			}
+			
+			override fun visitTypeParameter(declaration: IrTypeParameter): IrStatement {
+				return typeParameters.remap(declaration.symbol).owner
 			}
 		}
 		
 		
 		fun buildLoopActionFun(): IrSimpleFunction {
-			val dslFunParent = (dslFunction.parent as IrDeclarationContainer).also {
+			(dslFunction.parent as IrDeclarationContainer).also {
 				it.declarations += newFun
+				newFun.parent = it
 			}
 			
-			newFun.parent = dslFunParent
-			
-			loopAction.ir.body?.deepCopyWithSymbols(loopAction.ir).also { tmp ->
-				newFun.body = loopAction.ir.moveBodyTo(newFun)?.patchDeclarationParents(newFun)
-				
-				loopAction.ir.body = tmp
-			}
-			
-			newFun.body?.transformChildrenVoid(GetterSetterRemapper())
+			newFun.body?.transformChildrenVoid(ElementTransformer())
 			
 			return newFun;
 		}

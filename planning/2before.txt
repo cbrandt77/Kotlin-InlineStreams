@@ -1,0 +1,24 @@
+FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
+  VALUE_PARAMETER kind:Regular name:el index:0 type:kotlin.collections.Iterable<T of pkg.flatMap>
+  VALUE_PARAMETER kind:Regular name:breakLoop index:1 type:kotlin.Function0<kotlin.Unit>
+  VALUE_PARAMETER kind:Regular name:downstreamAction index:2 type:kotlin.Function1<U of pkg.flatMap, kotlin.Unit>
+  BLOCK_BODY
+    BLOCK type=kotlin.Unit origin=FOR_LOOP
+      VAR FOR_LOOP_ITERATOR name:tmp_1 type:kotlin.collections.Iterator<T of pkg.flatMap> [val]
+        CALL 'public abstract fun iterator (): kotlin.collections.Iterator<T of kotlin.collections.Iterable> declared in kotlin.collections.Iterable' type=kotlin.collections.Iterator<T of pkg.flatMap> origin=FOR_LOOP_ITERATOR
+          ARG <this>: GET_VAR 'el: kotlin.collections.Iterable<T of pkg.flatMap> declared in pkg.flatMap.<anonymous>' type=kotlin.collections.Iterable<T of pkg.flatMap> origin=null
+      WHILE label=null origin=FOR_LOOP_INNER_WHILE
+        condition: CALL 'public abstract fun hasNext (): kotlin.Boolean declared in kotlin.collections.Iterator' type=kotlin.Boolean origin=FOR_LOOP_HAS_NEXT
+          ARG <this>: GET_VAR 'val tmp_1: kotlin.collections.Iterator<T of pkg.flatMap> declared in pkg.flatMap.<anonymous>' type=kotlin.collections.Iterator<T of pkg.flatMap> origin=null
+        body: BLOCK type=kotlin.Unit origin=FOR_LOOP_INNER_WHILE
+          VAR FOR_LOOP_VARIABLE name:item type:T of pkg.flatMap [val]
+            CALL 'public abstract fun next (): T of kotlin.collections.Iterator declared in kotlin.collections.Iterator' type=T of pkg.flatMap origin=FOR_LOOP_NEXT
+              ARG <this>: GET_VAR 'val tmp_1: kotlin.collections.Iterator<T of pkg.flatMap> declared in pkg.flatMap.<anonymous>' type=kotlin.collections.Iterator<T of pkg.flatMap> origin=null
+          BLOCK type=kotlin.Unit origin=null
+            SET_VAR 'var state: kotlin.Int declared in pkg.flatMap' type=kotlin.Unit origin=EQ
+              CONST Int type=kotlin.Int value=2
+            CALL 'public abstract fun invoke (p1: P1 of kotlin.Function1): R of kotlin.Function1 declared in kotlin.Function1' type=kotlin.Unit origin=INVOKE
+              ARG <this>: GET_VAR 'downstreamAction: kotlin.Function1<U of pkg.flatMap, kotlin.Unit> declared in pkg.flatMap.<anonymous>' type=kotlin.Function1<U of pkg.flatMap, kotlin.Unit> origin=VARIABLE_AS_FUNCTION
+              ARG p1: CALL 'public abstract fun invoke (p1: P1 of kotlin.Function1): R of kotlin.Function1 declared in kotlin.Function1' type=U of pkg.flatMap origin=INVOKE
+                ARG <this>: GET_VAR 'mapper: kotlin.Function1<T of pkg.flatMap, U of pkg.flatMap> declared in pkg.flatMap' type=kotlin.Function1<T of pkg.flatMap, U of pkg.flatMap> origin=VARIABLE_AS_FUNCTION
+                ARG p1: GET_VAR 'val item: T of pkg.flatMap declared in pkg.flatMap.<anonymous>' type=T of pkg.flatMap origin=null
