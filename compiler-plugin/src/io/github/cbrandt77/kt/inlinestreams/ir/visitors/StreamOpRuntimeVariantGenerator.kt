@@ -1,6 +1,7 @@
 package io.github.cbrandt77.kt.inlinestreams.ir.visitors
 
 import io.github.cbrandt77.kt.inlinestreams.NamesAndIds
+import io.github.cbrandt77.kt.inlinestreams.ir.StreamOpContext
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 import org.jetbrains.kotlin.GeneratedDeclarationKey
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
@@ -31,7 +32,6 @@ import org.jetbrains.kotlin.ir.expressions.impl.IrGetValueImpl
 import org.jetbrains.kotlin.ir.symbols.IrValueParameterSymbol
 import org.jetbrains.kotlin.ir.symbols.IrVariableSymbol
 import org.jetbrains.kotlin.ir.types.IrType
-import org.jetbrains.kotlin.ir.types.classOrNull
 import org.jetbrains.kotlin.ir.types.typeWith
 import org.jetbrains.kotlin.ir.util.callableId
 import org.jetbrains.kotlin.ir.util.deepCopyWithSymbols
@@ -53,33 +53,24 @@ object StreamOpGeneratedLoopActionDeclarationKey : GeneratedDeclarationKey() {
 /**
  * From the `fun InlineStream<T>.someOperation` function the user writes,
  * generate the `inline fun someOperation(el: T, downstream: () -> Unit): Unit`
- * that actually gets called at runtime.
+ * that actually gets called at runtime under the same parent as the `InlineStream.someOperation` function.
  */
 class StreamOpRuntimeVariantGenerator(
 	val context: IrPluginContext,
-	/**
-	 * Map of `InlineStream.definedOperation` to `definedOperation_runtime`
-	 */
-	val generatedFunctions: MutableMap<IrFunction, IrFunction>
+	val data: StreamOpContext
 ) : IrElementTransformerVoid() {
-	val inlineStreamClassSymbol by lazy {
-		context.referenceClass(NamesAndIds.InlineStreamClassId)
-	}
-	
 	override fun visitElement(element: IrElement): IrElement {
 		element.transformChildrenVoid(this)
 		return element;
 	}
 	
 	override fun visitFunction(declaration: IrFunction): IrStatement {
-		if (declaration.actsOnInlineStream)
+		if (data.actsOnInlineStream(declaration))
 			FunctionVisitor().visitFunction(declaration)
 		
 		return super.visitFunction(declaration)
 	}
 	
-	private val IrFunction.actsOnInlineStream: Boolean
-		get() = parameters.firstOrNull { it.kind == IrParameterKind.ExtensionReceiver }?.type?.classOrNull == inlineStreamClassSymbol
 	
 	/**
 	 * Visits `InlineStream.something` functions
@@ -99,19 +90,11 @@ class StreamOpRuntimeVariantGenerator(
 				} as? IrCall
 	                    ?: continue;
 				
-				val generatedFunction = when {
-					callsFunction.isIntermediateOpBlock || callsFunction.isTerminalOpBlock -> LoopFunctionGenerator(context, declaration, Call_intermediateOperation(callsFunction)).buildLoopActionFun()
-					else -> continue;
+				if (callsFunction.isIntermediateOpBlock || callsFunction.isTerminalOpBlock) {
+					LoopFunctionGenerator(context, declaration, Call_intermediateOperation(callsFunction)).buildLoopActionFun()
+					break;
 				}
-				
-				generatedFunctions[declaration] = generatedFunction
-				
-				break;
 			}
-		}
-		
-		fun visitTerminalOperationBlock(statement: IrCall): IrFunction {
-			TODO()
 		}
 	}
 }
