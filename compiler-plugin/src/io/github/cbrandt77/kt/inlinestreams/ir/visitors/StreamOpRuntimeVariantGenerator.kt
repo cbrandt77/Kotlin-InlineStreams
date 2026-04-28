@@ -36,7 +36,6 @@ import org.jetbrains.kotlin.ir.types.typeWith
 import org.jetbrains.kotlin.ir.util.callableId
 import org.jetbrains.kotlin.ir.util.deepCopyWithSymbols
 import org.jetbrains.kotlin.ir.util.invokeFun
-import org.jetbrains.kotlin.ir.util.isTopLevel
 import org.jetbrains.kotlin.ir.util.parents
 import org.jetbrains.kotlin.ir.util.remapTypeParameters
 import org.jetbrains.kotlin.ir.util.statements
@@ -101,8 +100,7 @@ class StreamOpRuntimeVariantGenerator(
 	                    ?: continue;
 				
 				val generatedFunction = when {
-					callsFunction.isIntermediateOpBlock -> IntermediateOperationDefinition(context, declaration).visitIntermediateOperationBlock()
-					callsFunction.isTerminalOpBlock -> visitTerminalOperationBlock(callsFunction)
+					callsFunction.isIntermediateOpBlock || callsFunction.isTerminalOpBlock -> LoopFunctionGenerator(context, declaration, Call_intermediateOperation(callsFunction)).buildLoopActionFun()
 					else -> continue;
 				}
 				
@@ -112,249 +110,173 @@ class StreamOpRuntimeVariantGenerator(
 			}
 		}
 		
-		
-		fun IntermediateOperationDefinition.visitIntermediateOperationBlock(): IrFunction {
-			return this.makeLoopFunction()
-		}
-		
 		fun visitTerminalOperationBlock(statement: IrCall): IrFunction {
 			TODO()
 		}
 	}
 }
 
-class IntermediateOperationDefinition(val context: IrPluginContext, val dslFunction: IrFunction) {
-	val loopAction: IntermediateOperationAction
+/**
+ * Create the inline function to be executed within the loop
+ * - Replace GET_VAR variableDeclaredOutsideBlock with call to getter from parameters
+ *   - Add getter to parameters also
+ * - Replace SET_VAR variableDeclaredOutsideBlock with call to setter from parameters
+ *   - Add setter to parameters also
+ */
+class LoopFunctionGenerator(val context: IrPluginContext, val dslFunction: IrFunction, call: Call_intermediateOperation) {
+	val loopAction = call.action.ir
 	
-	init {
-		require(dslFunction.isTopLevel) { "Stream operations must be top level." }
-		requireNotNull(dslFunction.body) { "Must have body" }
-		var tempLoopAction: IntermediateOperationAction? = null
-		
-		dslFunction.body!!.statements.forEach {
-			if (it is IrReturn) {
-				val value = it.value
-				require(value is IrCall && value.isIntermediateOpBlock) { "Intermediate operations must return their `intermediateOperation` call." }
-				require(tempLoopAction == null) { "Intermediate operations must only have one return statement." }
-				tempLoopAction = Call_intermediateOperation(it.value as IrCall).action
-			}
-		}
-		
-		loopAction = tempLoopAction!!
-	}
-	
-	/**
-	 * Create the inline function to be executed within the loop
-	 * - Replace GET_VAR variableDeclaredOutsideBlock with call to getter from parameters
-	 *   - Add getter to parameters also
-	 * - Replace SET_VAR variableDeclaredOutsideBlock with call to setter from parameters
-	 *   - Add setter to parameters also
-	 */
-	fun makeLoopFunction(): IrFunction {
-		return LoopFunctionGenerator().buildLoopActionFun()
-	}
-	
-	inner class LoopFunctionGenerator {
-		private val newFun = context.irFactory.buildFun {
-			startOffset = loopAction.ir.startOffset
-			endOffset = loopAction.ir.endOffset
-			name = Name.identifier("${dslFunction.name.identifier}_loopOperation") // TODO generate proper name
-			returnType = context.irBuiltIns.unitType
-			isInline = true
+	private val newFun = context.irFactory.buildFun {
+		startOffset = loopAction.startOffset
+		endOffset = loopAction.endOffset
+		name = Name.identifier("${dslFunction.name.identifier}_loopOperation") // TODO generate proper name
+		returnType = context.irBuiltIns.unitType
+		isInline = true
 //			originalDeclaration = dslFunction
-			origin = StreamOpGeneratedLoopActionDeclarationKey.origin
-		}.apply {
-			body = loopAction.ir.body?.deepCopyWithSymbols(this)
+		origin = StreamOpGeneratedLoopActionDeclarationKey.origin
+	}.apply {
+		body = loopAction.body?.deepCopyWithSymbols(this)
+	}
+	
+	private val IrVariable.isDeclaredOutsideLoopAction: Boolean
+		get() = newFun !in this.parents // TODO figure out how we do this, I think we might need to do a custom copier
+	
+	private val IrValueAccessExpression.takeTargetIfNeedsRemapping: IrVariable?
+		get() = (symbol as? IrVariableSymbol)
+			?.owner
+			?.takeIf { it.isDeclaredOutsideLoopAction }
+	
+	
+	
+	private val getters = object {
+		private val functions: Object2ObjectOpenHashMap<IrVariable, IrValueParameter> = Object2ObjectOpenHashMap()
+		
+		private val getterType by lazy {
+			context.irBuiltIns.functionN(0)
+		}
+		private val getterInvokeFun by lazy {
+			getterType.invokeFun!!.symbol
 		}
 		
-		private val IrVariable.isDeclaredOutsideLoopAction: Boolean
-			get() = newFun !in this.parents // TODO figure out how we do this, I think we might need to do a custom copier
-		
-		private val IrValueAccessExpression.takeTargetIfNeedsRemapping: IrVariable?
-			get() = (symbol as? IrVariableSymbol)
-				?.owner
-				?.takeIf { it.isDeclaredOutsideLoopAction }
-		
-		
-		
-		private val getters = object {
-			private val functions: Object2ObjectOpenHashMap<IrVariable, IrValueParameter> = Object2ObjectOpenHashMap()
-			
-			private val getterType by lazy {
-				context.irBuiltIns.functionN(0)
-			}
-			private val getterInvokeFun by lazy {
-				getterType.invokeFun!!.symbol
-			}
-			
-			private fun getOrCreateGetterParameter(variable: IrVariable): IrValueParameter {
-				return functions.computeIfAbsent(variable) {
-					newFun.addValueParameter {
-						name = Name.identifier("get-${variable.name.identifier}")
-						type = getterType.typeWith(variable.type)
-						origin = StreamOpGeneratedLoopActionDeclarationKey.origin
-					}
-				}
-			}
-			
-			fun remapToGetterIfNeeded(value: IrGetValue): IrExpression {
-				val targetVariable = value.takeTargetIfNeedsRemapping
-				                     ?: return value;
-				
-				return IrCallImpl(value.startOffset, value.endOffset, value.type, getterInvokeFun).also {
-					it.dispatchReceiver = IrGetValueImpl(value.startOffset, value.endOffset, getOrCreateGetterParameter(targetVariable).symbol, IrStatementOrigin.VARIABLE_AS_FUNCTION)
-				}
-			}
-		}
-		
-		private val setters = object {
-			private val functions = Object2ObjectOpenHashMap<IrVariable, IrValueParameter>()
-			
-			private val setterType by lazy {
-				context.irBuiltIns.functionN(1)
-			}
-			private val setterInvokeFun by lazy {
-				setterType.invokeFun!!.symbol
-			}
-			
-			private fun getOrCreateParameter(variable: IrVariable): IrValueParameter {
-				return functions.computeIfAbsent(variable) { it: IrVariable ->
-					newFun.addValueParameter {
-						name = Name.identifier("set-${it.name.identifier}")
-						type = setterType.typeWith(it.type, context.irBuiltIns.unitType)
-						origin = StreamOpGeneratedLoopActionDeclarationKey.origin
-					}
-				}
-			}
-			
-			/** If [setValue] sets a variable declared outside the loopAction, remap it to a call to a setter parameter. */
-			fun remapToSetterIfNeeded(setValue: IrSetValue): IrExpression {
-				val variableBeingSet = setValue.takeTargetIfNeedsRemapping ?: return setValue;
-				
-				return IrCallImpl(setValue.startOffset, setValue.endOffset, context.irBuiltIns.unitType, setterInvokeFun, origin = IrStatementOrigin.INVOKE).also {
-					it.dispatchReceiver = IrGetValueImpl(setValue.startOffset, setValue.endOffset, getOrCreateParameter(variableBeingSet).symbol, origin = IrStatementOrigin.VARIABLE_AS_FUNCTION) // TODO replace with arguments.add
-					it.arguments[1] = setValue.value
-				};
-			}
-		}
-		
-		@OptIn(DelicateIrParameterIndexSetter::class)
-		private val parameters = object {
-			private val oldFuncToNewFuncMap: Map<IrValueParameterSymbol, IrValueParameterSymbol> = (loopAction.ir.parameters + dslFunction.parameters).filter { it.kind != IrParameterKind.ExtensionReceiver }.map { it.symbol }.associateWith {
+		private fun getOrCreateGetterParameter(variable: IrVariable): IrValueParameter {
+			return functions.computeIfAbsent(variable) {
 				newFun.addValueParameter {
-					updateFrom(it.owner)
-					name = it.owner.name
-				}.symbol
-			}
-			
-			fun remap(parameter: IrValueParameterSymbol): IrValueParameterSymbol {
-				return oldFuncToNewFuncMap[parameter]
-				       ?: TODO("functions should never be nested, but people might try to, so I need an FIR error")
-			}
-		}
-		
-		// as we encounter type parameters, add them to this function
-		private val typeParameters = object : IrTypeTransformerVoid() {
-			val added = Object2ObjectOpenHashMap<IrTypeParameter, IrTypeParameter>()
-			
-			private fun getOrCreateTypeParam(fromDslFunc: IrTypeParameter): IrTypeParameter {
-				return added.computeIfAbsent(fromDslFunc) { it: IrTypeParameter ->
-					newFun.addTypeParameter {
-						updateFrom(it)
-						if (superTypes.isEmpty())
-							superTypes.addAll(it.superTypes)
-						name = it.name
-					}
+					name = Name.identifier("get-${variable.name.identifier}")
+					type = getterType.typeWith(variable.type)
+					origin = StreamOpGeneratedLoopActionDeclarationKey.origin
 				}
 			}
-			override fun <Type : IrType?> transformTypeRecursively(container: IrElement, type: Type): Type {
-				if (type == null)
-					return type;
-				
-				return type.remapTypeParameters(
-					dslFunction, newFun,
-					Map_ComputeInsteadOfGet(added, ::getOrCreateTypeParam)
-				) as Type
-			}
 		}
 		
-		inner class ElementTransformer : IrElementTransformerVoid() {
-			override fun visitGetValue(expression: IrGetValue): IrExpression {
-				return when (val target = expression.symbol) {
-					is IrValueParameterSymbol -> {
-						expression.symbol = parameters.remap(target)
-						expression
-					}
-					is IrVariableSymbol -> getters.remapToGetterIfNeeded(expression)
-				}
+		fun remapToGetterIfNeeded(value: IrGetValue): IrExpression {
+			val targetVariable = value.takeTargetIfNeedsRemapping
+			                     ?: return value;
+			
+			return IrCallImpl(value.startOffset, value.endOffset, value.type, getterInvokeFun).also {
+				it.dispatchReceiver = IrGetValueImpl(value.startOffset, value.endOffset, getOrCreateGetterParameter(targetVariable).symbol, IrStatementOrigin.VARIABLE_AS_FUNCTION)
 			}
-			
-			override fun visitSetValue(expression: IrSetValue): IrExpression {
-				return setters.remapToSetterIfNeeded(expression)
-			}
-			
-			// TODO I need a type remapper, because the "Iterable<T of so-and-so>" is an "Iterable IrClass" that's TYPED WITH that type parameter
-		}
-		
-		fun buildLoopActionFun(): IrSimpleFunction {
-			(dslFunction.parent as IrDeclarationContainer).also {
-				it.declarations += newFun
-				newFun.parent = it
-			}
-			
-			newFun.body?.transformChildrenVoid(ElementTransformer())
-			newFun.acceptVoid(typeParameters)
-			
-			return newFun;
 		}
 	}
 	
-	
-	/** The type of the stream it acts on. `InlineStream<T>.doAction` */
-	val inputType: IrTypeParameter
-		get() = dslFunction.typeParameters[0] //FIXME This is incorrect
-	
-	/** The type of the stream it returns. `doAction(): InlineStream<U>` */
-	val outputType: IrTypeParameter
-		get() = this@IntermediateOperationDefinition.dslFunction.typeParameters[1] //FIXME This is incorrect
-	
-	/** External state, preprocessing, etc, happening outside the loop. */
-	val preamble: Sequence<IrStatement>
-		get() = this@IntermediateOperationDefinition.dslFunction.body!!.statements.asSequence().takeWhile {
-			!(it is IrReturn || (it is IrCall && it.isIntermediateOpBlock))
+	private val setters = object {
+		private val functions = Object2ObjectOpenHashMap<IrVariable, IrValueParameter>()
+		
+		private val setterType by lazy {
+			context.irBuiltIns.functionN(1)
 		}
-	
-	
-	class Call_intermediateOperation(val call: IrCall) {
-		/** The type of the stream it acts on. `InlineStream<T>.doAction` */
-		val inputType: IrType
-			get() = call.typeArguments[0]!!
+		private val setterInvokeFun by lazy {
+			setterType.invokeFun!!.symbol
+		}
 		
-		/** The type of the stream it returns. `doAction(): InlineStream<U>` */
-		val outputType: IrType
-			get() = call.typeArguments[1]!!
+		private fun getOrCreateParameter(variable: IrVariable): IrValueParameter {
+			return functions.computeIfAbsent(variable) { it: IrVariable ->
+				newFun.addValueParameter {
+					name = Name.identifier("set-${it.name.identifier}")
+					type = setterType.typeWith(it.type, context.irBuiltIns.unitType)
+					origin = StreamOpGeneratedLoopActionDeclarationKey.origin
+				}
+			}
+		}
 		
-		/** The thing that should actually be executed inside the loop */
-		val action: IntermediateOperationAction
-			get() = IntermediateOperationAction((call.arguments[1] as IrFunctionExpression).function)
+		/** If [setValue] sets a variable declared outside the loopAction, remap it to a call to a setter parameter. */
+		fun remapToSetterIfNeeded(setValue: IrSetValue): IrExpression {
+			val variableBeingSet = setValue.takeTargetIfNeedsRemapping ?: return setValue;
+			
+			return IrCallImpl(setValue.startOffset, setValue.endOffset, context.irBuiltIns.unitType, setterInvokeFun, origin = IrStatementOrigin.INVOKE).also {
+				it.dispatchReceiver = IrGetValueImpl(setValue.startOffset, setValue.endOffset, getOrCreateParameter(variableBeingSet).symbol, origin = IrStatementOrigin.VARIABLE_AS_FUNCTION) // TODO replace with arguments.add
+				it.arguments[1] = setValue.value
+			};
+		}
 	}
 	
-	/**
-	 * The lambda passed to `intermediateOperation`,
-	 * the action actually being performed within the loop.
-	 */
-	class IntermediateOperationAction(val ir: IrFunction) {
-		val pEl: IrValueParameter
-			get() = ir.parameters[0]
+	@OptIn(DelicateIrParameterIndexSetter::class)
+	private val parameters = object {
+		private val oldFuncToNewFuncMap: Map<IrValueParameterSymbol, IrValueParameterSymbol> = (loopAction.parameters + dslFunction.parameters).filter { it.kind != IrParameterKind.ExtensionReceiver }.map { it.symbol }.associateWith {
+			newFun.addValueParameter {
+				updateFrom(it.owner)
+				name = it.owner.name
+			}.symbol
+		}
 		
-		val pBreakLoop: IrValueParameter
-			get() = ir.parameters[1]
+		fun remap(parameter: IrValueParameterSymbol): IrValueParameterSymbol {
+			return oldFuncToNewFuncMap[parameter]
+			       ?: TODO("functions should never be nested, but people might try to, so I need an FIR error")
+		}
+	}
+	
+	// as we encounter type parameters, add them to this function
+	private val typeParameters = object : IrTypeTransformerVoid() {
+		val added = Object2ObjectOpenHashMap<IrTypeParameter, IrTypeParameter>()
 		
-		val pDownstreamAction: IrValueParameter
-			get() = ir.parameters[2]
+		private fun getOrCreateTypeParam(fromDslFunc: IrTypeParameter): IrTypeParameter {
+			return added.computeIfAbsent(fromDslFunc) { it: IrTypeParameter ->
+				newFun.addTypeParameter {
+					updateFrom(it)
+					if (superTypes.isEmpty())
+						superTypes.addAll(it.superTypes)
+					name = it.name
+				}
+			}
+		}
+		override fun <Type : IrType?> transformTypeRecursively(container: IrElement, type: Type): Type {
+			if (type == null)
+				return type;
+			
+			return type.remapTypeParameters(
+				dslFunction, newFun,
+				Map_ComputeInsteadOfGet(added, ::getOrCreateTypeParam)
+			) as Type
+		}
+	}
+	
+	inner class ElementTransformer : IrElementTransformerVoid() {
+		override fun visitGetValue(expression: IrGetValue): IrExpression {
+			return when (val target = expression.symbol) {
+				is IrValueParameterSymbol -> {
+					expression.symbol = parameters.remap(target)
+					expression
+				}
+				is IrVariableSymbol -> getters.remapToGetterIfNeeded(expression)
+			}
+		}
 		
-		val statements: List<IrStatement>
-			get() = ir.body!!.statements
+		override fun visitSetValue(expression: IrSetValue): IrExpression {
+			return setters.remapToSetterIfNeeded(expression)
+		}
+		
+		// TODO I need a type remapper, because the "Iterable<T of so-and-so>" is an "Iterable IrClass" that's TYPED WITH that type parameter
+	}
+	
+	fun buildLoopActionFun(): IrSimpleFunction {
+		(dslFunction.parent as IrDeclarationContainer).also {
+			it.declarations += newFun
+			newFun.parent = it
+		}
+		
+		newFun.body?.transformChildrenVoid(ElementTransformer())
+		newFun.acceptVoid(typeParameters)
+		
+		return newFun;
 	}
 }
 
@@ -366,6 +288,38 @@ class Map_ComputeInsteadOfGet<K, V>(val wrapped: MutableMap<K, V>, val computeFu
 	override fun getOrDefault(key: K, defaultValue: V): V {
 		return get(key)
 	}
+}
+
+@JvmInline value class Call_intermediateOperation(val call: IrCall) {
+//	/** The type of the stream it acts on. `InlineStream<T>.doAction` */
+//	val inputType: IrType
+//		get() = call.typeArguments[0]!! // TODO this is wrong
+//
+//	/** The type of the stream it returns. `doAction(): InlineStream<U>` */
+//	val outputType: IrType
+//		get() = call.typeArguments[1]!! // TODO this is wrong
+	
+	/** The thing that should actually be executed inside the loop */
+	val action: IntermediateOperationAction
+		get() = IntermediateOperationAction((call.arguments[1] as IrFunctionExpression).function)
+}
+
+/**
+ * The lambda passed to `intermediateOperation`,
+ * the action actually being performed within the loop.
+ */
+@JvmInline value class IntermediateOperationAction(val ir: IrFunction) {
+	val pEl: IrValueParameter
+		get() = ir.parameters[0]
+	
+	val pBreakLoop: IrValueParameter
+		get() = ir.parameters[1]
+	
+	val pDownstreamAction: IrValueParameter
+		get() = ir.parameters[2]
+	
+	val statements: List<IrStatement>
+		get() = ir.body!!.statements
 }
 
 private val IrCall.isIntermediateOpBlock: Boolean
