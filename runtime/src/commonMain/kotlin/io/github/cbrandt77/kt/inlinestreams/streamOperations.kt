@@ -19,6 +19,9 @@ public inline fun <T, U> InlineStream<T>.flatMap(transformation: (T) -> Iterable
 	}
 }
 
+public inline fun <T> InlineStream<Iterable<T>>.flatten(): InlineStream<T> {
+	return flatMap { it }
+}
 
 public inline fun <T> InlineStream<T>.filter(predicate: (T) -> Boolean): InlineStream<T> {
 	return intermediateOperation { element, _, downstreamAction ->
@@ -105,4 +108,19 @@ public inline fun <T> InlineStream<T>.toList(): List<T> {
 // this is really a composed map and filter, so we chain the two like we'd do outside the loop
 public inline fun <T, U : Any> InlineStream<T>.mapNotNull(mapper: (T) -> U?): InlineStream<U> {
 	return map(mapper).filterNotNull()
+}
+
+public inline fun <T> InlineStream<T>.firstOrNull(): T? {
+	var out: T? = null
+	
+	terminalOperation { element, breakLoop ->
+		out = element
+		breakLoop()
+	}
+	
+	return out;
+}
+
+public inline fun <T> InlineStream<T>.first(): T {
+	return firstOrNull() ?: throw NoSuchElementException("'first' expected element")
 }

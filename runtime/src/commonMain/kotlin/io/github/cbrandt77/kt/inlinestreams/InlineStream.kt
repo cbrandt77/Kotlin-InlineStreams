@@ -5,7 +5,7 @@ package io.github.cbrandt77.kt.inlinestreams
 import kotlin.jvm.JvmInline
 
 @JvmInline @Suppress("UNUSED")
-public value class InlineStream<T> // TODO figure out type variance
+public value class InlineStream<out T> // TODO figure out type variance
 internal constructor(private val dummy: Nothing?) // TODO should this hold the iterable itself?
 
 private val instance: InlineStream<Any> = InlineStream(null)
