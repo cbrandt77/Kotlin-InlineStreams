@@ -2,16 +2,19 @@
 
 package io.github.cbrandt77.kt.inlinestreams
 
+import io.github.cbrandt77.kt.inlinestreams.intermediateOperation
+
 public inline fun <T, U> InlineStream<T>.map(transformation: (T) -> U): InlineStream<U> {
 	return intermediateOperation { element, _, downstreamAction ->
 		downstreamAction(transformation(element))
 	}
 }
 
-public inline fun <T, U> InlineStream<Iterable<T>>.flatMap(transformation: (T) -> U): InlineStream<U> {
+// TODO add array versions of these
+public inline fun <T, U> InlineStream<T>.flatMap(transformation: (T) -> Iterable<U>): InlineStream<U> {
 	return intermediateOperation { element, _, downstreamAction ->
-		for (it in element) {
-			downstreamAction(transformation(it))
+		for (it in transformation(element)) {
+			downstreamAction(it)
 		}
 	}
 }
