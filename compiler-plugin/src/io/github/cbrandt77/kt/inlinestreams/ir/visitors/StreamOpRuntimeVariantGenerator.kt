@@ -64,8 +64,8 @@ class StreamOpRuntimeVariantGenerator(
 		return element;
 	}
 	
-	override fun visitFunction(declaration: IrFunction): IrStatement {
-		if (data.actsOnInlineStream(declaration))
+	override fun visitFunction(declaration: IrFunction): IrStatement = with (data) {
+		if (declaration.actsOnInlineStream)
 			FunctionVisitor().visitFunction(declaration)
 		
 		return super.visitFunction(declaration)
@@ -194,7 +194,7 @@ class LoopFunctionGenerator(val context: IrPluginContext, val dslFunction: IrFun
 	
 	@OptIn(DelicateIrParameterIndexSetter::class)
 	private val parameters = object {
-		private val oldFuncToNewFuncMap: Map<IrValueParameterSymbol, IrValueParameterSymbol> = (loopAction.parameters + dslFunction.parameters).filter { it.kind != IrParameterKind.ExtensionReceiver }.map { it.symbol }.associateWith {
+		private val oldFuncToNewFuncMap: Map<IrValueParameterSymbol, IrValueParameterSymbol> = (dslFunction.parameters + loopAction.parameters).filter { it.kind != IrParameterKind.ExtensionReceiver }.map { it.symbol }.associateWith {
 			newFun.addValueParameter {
 				updateFrom(it.owner)
 				name = it.owner.name
