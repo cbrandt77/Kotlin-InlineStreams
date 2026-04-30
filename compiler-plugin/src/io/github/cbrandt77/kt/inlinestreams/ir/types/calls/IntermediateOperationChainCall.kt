@@ -7,16 +7,16 @@ import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.classOrNull
 import org.jetbrains.kotlin.ir.util.substitute
 
-@JvmInline value class IntermediateOperationCall private constructor(private val internal: StreamOperationCall) {
+@JvmInline value class IntermediateOperationChainCall private constructor(private val internal: StreamOperationChainCall) {
 	companion object {
 		context(data: StreamOpContext)
-		operator fun invoke(call: IrCall): Result<IntermediateOperationCall> = with (data) {
-			return StreamOperationCall.invoke(call).mapCatching {
+		operator fun invoke(call: IrCall): Result<IntermediateOperationChainCall> = with (data) {
+			return StreamOperationChainCall.invoke(call).mapCatching {
 				if (it.ir.type.classOrNull != inlineStreamClassSymbol) {
 					throw IllegalArgumentException("Intermediate operation does not return an InlineStream.")
 				}
 				
-				IntermediateOperationCall(it)
+				IntermediateOperationChainCall(it)
 			}
 		}
 	}

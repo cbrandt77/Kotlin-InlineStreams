@@ -2,8 +2,8 @@ package io.github.cbrandt77.kt.inlinestreams.ir.types
 
 import io.github.cbrandt77.kt.inlinestreams.NamesAndIds.referenceStdStreamOperationFunction
 import io.github.cbrandt77.kt.inlinestreams.ir.StreamOpContext
-import io.github.cbrandt77.kt.inlinestreams.ir.types.calls.IntermediateOperationCall
-import io.github.cbrandt77.kt.inlinestreams.ir.types.calls.TerminalOperationCall
+import io.github.cbrandt77.kt.inlinestreams.ir.types.calls.IntermediateOperationChainCall
+import io.github.cbrandt77.kt.inlinestreams.ir.types.calls.TerminalOperationChainCall
 import io.github.cbrandt77.kt.inlinestreams.test.FirUnitTester
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.fir.backend.utils.defaultTypeWithoutArguments
@@ -41,7 +41,7 @@ fun dsl(): Int? {
 			}
 			
 			override fun visitCall(expression: IrCall, data: IrPluginContext): Unit = with (StreamOpContext(data)) { with (data) {
-				val termOp = TerminalOperationCall(expression).getOrThrow()
+				val termOp = TerminalOperationChainCall(expression).getOrThrow()
 				
 				assertEquals(irBuiltIns.intType, termOp.inputElementType)
 				assertEquals(irBuiltIns.intType.makeNullable(), termOp.outputType)
@@ -51,7 +51,7 @@ fun dsl(): Int? {
 					.also {
 						assertEquals(3, it.size)
 					}
-					.zip<_, (IntermediateOperationCall) -> Unit>(listOf(
+					.zip<_, (IntermediateOperationChainCall) -> Unit>(listOf(
 					{
 						assertAll( "map it.code",
 							{ assertEquals(data.referenceStdStreamOperationFunction("map"), it.ir.symbol) },

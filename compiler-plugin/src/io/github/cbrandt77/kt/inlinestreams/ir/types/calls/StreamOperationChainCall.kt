@@ -6,10 +6,10 @@ import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.util.substitute
 
-@JvmInline value class StreamOperationCall private constructor(val ir: IrCall) {
+@JvmInline value class StreamOperationChainCall private constructor(val ir: IrCall) {
 	companion object {
 		context(data: StreamOpContext)
-		operator fun invoke(call: IrCall): Result<StreamOperationCall> = with(data) {
+		operator fun invoke(call: IrCall): Result<StreamOperationChainCall> = with(data) {
 			call.extensionReceiver_.let {
 				when (it) {
 					null -> return Result.failure(IllegalArgumentException("Does not have an extension receiver."))
@@ -18,9 +18,10 @@ import org.jetbrains.kotlin.ir.util.substitute
 				}
 			}
 			
-			return Result.success(StreamOperationCall(call))
+			return Result.success(StreamOperationChainCall(call))
 		}
 	}
+	
 	context(data: StreamOpContext)
 	val receiver: IrExpression
 		get() = with (data) { ir.extensionReceiver_!! }
@@ -31,12 +32,14 @@ import org.jetbrains.kotlin.ir.util.substitute
 	 * Will not be the entrance function, and terminal operations cannot chain off of other terminals, so it must be an intermediate.
 	 */
 	context(_: StreamOpContext)
-	val previousOperation: IntermediateOperationCall?
-		get() = (receiver as? IrCall)?.let { IntermediateOperationCall(it).getOrNull() }
+	val previousOperation: IntermediateOperationChainCall?
+		get() = (receiver as? IrCall)?.let { IntermediateOperationChainCall(it).getOrNull() }
 	
 	context(data: StreamOpContext)
 	val inputElementType: IrType
 		get() = with (data) {
 			return (receiver as? IrCall)?.type?.substitute(ir.symbol.owner.typeParameters, ir.typeArguments.filterNotNull())?.let { getInlineStreamTypeParameterT(it) } ?: error("Stream operation receiver does not have type argument.")
 		}
+	
+	
 }

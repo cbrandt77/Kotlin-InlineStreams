@@ -1,25 +1,20 @@
 package io.github.cbrandt77.kt.inlinestreams.ir.transformers
 
 import io.github.cbrandt77.kt.inlinestreams.ir.StreamOpContext
-import io.github.cbrandt77.kt.inlinestreams.ir.types.calls.TerminalOperationCall
+import io.github.cbrandt77.kt.inlinestreams.ir.types.calls.TerminalOperationChainCall
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.descriptors.DescriptorVisibilities
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.ir.builders.declarations.buildFun
-import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
 import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
-import org.jetbrains.kotlin.ir.declarations.impl.IrVariableImpl
 import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.expressions.IrStatementOrigin
-import org.jetbrains.kotlin.ir.expressions.impl.IrBlockImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrCallImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrFunctionExpressionImpl
 import org.jetbrains.kotlin.ir.symbols.IrFunctionSymbol
-import org.jetbrains.kotlin.ir.symbols.impl.IrVariableSymbolImpl
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.visitors.IrElementTransformerVoid
-import org.jetbrains.kotlin.name.Name
 
 class InlineStreamLoopCreationException(cause: Throwable) : RuntimeException("Failure creating loop for InlineStream.", cause) {
 
@@ -39,7 +34,7 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 	
 	
 	private fun StreamOpContext.remappedInlineStream(expression: IrCall): IrExpression {
-		val terminalOperation = TerminalOperationCall(expression).getOrElse {
+		val terminalOperation = TerminalOperationChainCall(expression).getOrElse {
 			throw InlineStreamLoopCreationException(it)
 		}
 		

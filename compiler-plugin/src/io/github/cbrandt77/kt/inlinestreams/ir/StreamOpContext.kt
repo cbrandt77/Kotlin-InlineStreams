@@ -2,7 +2,7 @@ package io.github.cbrandt77.kt.inlinestreams.ir
 
 import io.github.cbrandt77.kt.inlinestreams.NamesAndIds
 import io.github.cbrandt77.kt.inlinestreams.NamesAndIds.isEntranceFunction
-import io.github.cbrandt77.kt.inlinestreams.ir.types.calls.StreamOperationCall
+import io.github.cbrandt77.kt.inlinestreams.ir.types.calls.StreamOperationChainCall
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrParameterKind
@@ -50,8 +50,10 @@ class StreamOpContext(val context: IrPluginContext) {
 	val IrCall.extensionReceiver_
 		get() = symbol.owner.parameters.firstOrNull { it.kind == IrParameterKind.ExtensionReceiver }?.let { arguments[it] }
 	
-	fun getLoopOpFunction(chainFunc: StreamOperationCall): IrSimpleFunctionSymbol {
-		return context.referenceFunctions(getLoopOpFunctionId(chainFunc.ir.symbol.owner)).disambiguate(chainFunc)
+	fun getLoopOpFunction(chainFunc: StreamOperationChainCall): IrSimpleFunctionSymbol {
+		return context.referenceFunctions(chainFunc.ir.symbol.owner.callableId.let {
+			it.copy(getLoopOpFunctionName(chainFunc.ir.symbol.owner))
+		}).disambiguate(chainFunc)
 	}
 	
 	/**
@@ -60,14 +62,8 @@ class StreamOpContext(val context: IrPluginContext) {
 	 * - Check the input type
 	 * - Check the output type
 	 */
-	private fun Iterable<IrSimpleFunctionSymbol>.disambiguate(chainFunc: StreamOperationCall): IrSimpleFunctionSymbol {
+	private fun Iterable<IrSimpleFunctionSymbol>.disambiguate(chainFunc: StreamOperationChainCall): IrSimpleFunctionSymbol {
 		TODO()
-	}
-	
-	fun getLoopOpFunctionId(chainFunc: IrFunction): CallableId {
-		return chainFunc.callableId.let {
-			it.copy(getLoopOpFunctionName(chainFunc))
-		}
 	}
 	
 	fun getLoopOpFunctionName(chainFunc: IrFunction): Name {
