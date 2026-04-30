@@ -15,11 +15,6 @@ fun TestConfigurationBuilder.configurePlugin() {
 }
 
 private class ExtensionRegistrarConfigurator(testServices: TestServices) : EnvironmentConfigurator(testServices) {
-    companion object {
-    
-    }
-    
-    
     override fun CompilerPluginRegistrar.ExtensionStorage.registerCompilerExtensions(
         module: TestModule,
         configuration: CompilerConfiguration

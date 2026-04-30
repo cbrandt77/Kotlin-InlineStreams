@@ -1,9 +1,15 @@
 package org.jetbrains.kotlin.compiler.plugin.template.runners
 
 import org.jetbrains.kotlin.compiler.plugin.template.services.configurePlugin
+import org.jetbrains.kotlin.config.ApiVersion
+import org.jetbrains.kotlin.config.LanguageFeature
+import org.jetbrains.kotlin.config.LanguageVersion
 import org.jetbrains.kotlin.test.builders.TestConfigurationBuilder
 import org.jetbrains.kotlin.test.directives.CodegenTestDirectives
+import org.jetbrains.kotlin.test.directives.DiagnosticsDirectives
 import org.jetbrains.kotlin.test.directives.JvmEnvironmentConfigurationDirectives
+import org.jetbrains.kotlin.test.directives.LanguageSettingsDirectives
+import org.jetbrains.kotlin.test.directives.ModuleStructureDirectives
 import org.jetbrains.kotlin.test.model.FrontendKinds
 import org.jetbrains.kotlin.test.runners.codegen.AbstractFirBlackBoxCodegenTestBase
 import org.jetbrains.kotlin.test.runners.codegen.AbstractIrBlackBoxCodegenTest

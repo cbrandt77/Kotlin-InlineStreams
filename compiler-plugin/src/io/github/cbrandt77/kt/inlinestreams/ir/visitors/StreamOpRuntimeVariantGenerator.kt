@@ -50,6 +50,8 @@ object StreamOpGeneratedLoopActionDeclarationKey : GeneratedDeclarationKey() {
 	val origin = IrDeclarationOrigin.GeneratedByPlugin(this)
 }
 
+
+
 /**
  * From the `fun InlineStream<T>.someOperation` function the user writes,
  * generate the `inline fun someOperation(el: T, downstream: () -> Unit): Unit`
@@ -91,13 +93,15 @@ class StreamOpRuntimeVariantGenerator(
 	                    ?: continue;
 				
 				if (callsFunction.isIntermediateOpBlock || callsFunction.isTerminalOpBlock) {
-					LoopFunctionGenerator(context, declaration, Call_intermediateOperation(callsFunction)).buildLoopActionFun()
+					LoopFunctionGenerator(context, data, declaration, Call_intermediateOperation(callsFunction)).buildLoopActionFun()
 					break;
 				}
 			}
 		}
 	}
 }
+
+// TODO make different origins for the dslfun params + getters and setters to tell them apart
 
 /**
  * Create the inline function to be executed within the loop
@@ -106,7 +110,7 @@ class StreamOpRuntimeVariantGenerator(
  * - Replace SET_VAR variableDeclaredOutsideBlock with call to setter from parameters
  *   - Add setter to parameters also
  */
-class LoopFunctionGenerator(val context: IrPluginContext, val dslFunction: IrFunction, call: Call_intermediateOperation) {
+class LoopFunctionGenerator(val context: IrPluginContext, val data: StreamOpContext, val dslFunction: IrFunction, call: Call_intermediateOperation) {
 	val loopAction = call.action.ir
 	
 	private val newFun = context.irFactory.buildFun {
@@ -194,12 +198,27 @@ class LoopFunctionGenerator(val context: IrPluginContext, val dslFunction: IrFun
 	
 	@OptIn(DelicateIrParameterIndexSetter::class)
 	private val parameters = object {
-		private val oldFuncToNewFuncMap: Map<IrValueParameterSymbol, IrValueParameterSymbol> = (dslFunction.parameters + loopAction.parameters).filter { it.kind != IrParameterKind.ExtensionReceiver }.map { it.symbol }.associateWith {
-			newFun.addValueParameter {
-				updateFrom(it.owner)
-				name = it.owner.name
-			}.symbol
-		}
+		private val oldFuncToNewFuncMap: Map<IrValueParameterSymbol, IrValueParameterSymbol> = dslFunction.parameters
+			                                                                                       .asSequence()
+			                                                                                       .filter { it.kind != IrParameterKind.ExtensionReceiver }
+			                                                                                       .map { it.symbol }
+			                                                                                       .associateWith {
+				                                                                                       newFun.addValueParameter {
+					                                                                                       updateFrom(it.owner)
+					                                                                                       name = data.getLoopOpParameterName(it.owner.name)
+				                                                                                       }.symbol
+			                                                                                       } +
+		                                                                                       loopAction.parameters
+																								   .asSequence()
+			                                                                                       .filter { it.kind != IrParameterKind.ExtensionReceiver }
+			                                                                                       .map { it.symbol }
+			                                                                                       .associateWith {
+				                                                                                       newFun.addValueParameter {
+					                                                                                       updateFrom(it.owner)
+					                                                                                       name = it.owner.name
+				                                                                                       }.symbol
+			                                                                                       }
+				
 		
 		fun remap(parameter: IrValueParameterSymbol): IrValueParameterSymbol {
 			return oldFuncToNewFuncMap[parameter]
@@ -225,6 +244,7 @@ class LoopFunctionGenerator(val context: IrPluginContext, val dslFunction: IrFun
 			if (type == null)
 				return type;
 			
+			@Suppress("UNCHECKED_CAST")
 			return type.remapTypeParameters(
 				dslFunction, newFun,
 				Map_ComputeInsteadOfGet(added, ::getOrCreateTypeParam)
@@ -246,8 +266,6 @@ class LoopFunctionGenerator(val context: IrPluginContext, val dslFunction: IrFun
 		override fun visitSetValue(expression: IrSetValue): IrExpression {
 			return setters.remapToSetterIfNeeded(expression)
 		}
-		
-		// TODO I need a type remapper, because the "Iterable<T of so-and-so>" is an "Iterable IrClass" that's TYPED WITH that type parameter
 	}
 	
 	fun buildLoopActionFun(): IrSimpleFunction {
@@ -281,7 +299,7 @@ class Map_ComputeInsteadOfGet<K, V>(val wrapped: MutableMap<K, V>, val computeFu
 //	/** The type of the stream it returns. `doAction(): InlineStream<U>` */
 //	val outputType: IrType
 //		get() = call.typeArguments[1]!! // TODO this is wrong
-	
+//
 	/** The thing that should actually be executed inside the loop */
 	val action: IntermediateOperationAction
 		get() = IntermediateOperationAction((call.arguments[1] as IrFunctionExpression).function)

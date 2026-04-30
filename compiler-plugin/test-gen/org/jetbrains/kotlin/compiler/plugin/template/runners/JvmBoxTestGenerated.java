@@ -6,6 +6,7 @@ import com.intellij.testFramework.TestDataPath;
 import org.jetbrains.kotlin.test.util.KtTestUtil;
 import org.jetbrains.kotlin.test.TargetBackend;
 import org.jetbrains.kotlin.test.TestMetadata;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -25,5 +26,49 @@ public class JvmBoxTestGenerated extends AbstractJvmBoxTest {
   @TestMetadata("experimentation.kt")
   public void testExperimentation() {
     runTest("compiler-plugin/testData/box/experimentation.kt");
+  }
+
+  @Nested
+  @TestMetadata("compiler-plugin/testData/box/loopCreation")
+  @TestDataPath("$PROJECT_ROOT")
+  public class LoopCreation {
+    @Test
+    public void testAllFilesPresentInLoopCreation() {
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler-plugin/testData/box/loopCreation"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), TargetBackend.JVM_IR, true);
+    }
+
+    @Test
+    @TestMetadata("withoutState.kt")
+    public void testWithoutState() {
+      runTest("compiler-plugin/testData/box/loopCreation/withoutState.kt");
+    }
+  }
+
+  @Nested
+  @TestMetadata("compiler-plugin/testData/box/loopFunctionGeneration")
+  @TestDataPath("$PROJECT_ROOT")
+  public class LoopFunctionGeneration {
+    @Test
+    public void testAllFilesPresentInLoopFunctionGeneration() {
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler-plugin/testData/box/loopFunctionGeneration"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), TargetBackend.JVM_IR, true);
+    }
+
+    @Test
+    @TestMetadata("experimentation.kt")
+    public void testExperimentation() {
+      runTest("compiler-plugin/testData/box/loopFunctionGeneration/experimentation.kt");
+    }
+
+    @Test
+    @TestMetadata("flatMapExperiment.kt")
+    public void testFlatMapExperiment() {
+      runTest("compiler-plugin/testData/box/loopFunctionGeneration/flatMapExperiment.kt");
+    }
+
+    @Test
+    @TestMetadata("flattenExperiment.kt")
+    public void testFlattenExperiment() {
+      runTest("compiler-plugin/testData/box/loopFunctionGeneration/flattenExperiment.kt");
+    }
   }
 }

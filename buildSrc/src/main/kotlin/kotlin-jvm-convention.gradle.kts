@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
 	kotlin("jvm")
@@ -6,4 +5,7 @@ plugins {
 
 kotlin {
 	jvmToolchain(JAVA_VERSION)
+	compilerOptions {
+		languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2)
+	}
 }

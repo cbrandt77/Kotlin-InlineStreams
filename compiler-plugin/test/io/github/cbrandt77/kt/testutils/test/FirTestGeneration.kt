@@ -19,8 +19,9 @@
 
 package io.github.cbrandt77.kt.inlinestreams.test
 
-import io.github.cbrandt77.kt.inlinestreams.test.FirUnitTester.TestData.Companion.METHODHANDLE_REGISTEREXTENSION
 import org.intellij.lang.annotations.Language
+import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
+import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
 import org.jetbrains.kotlin.compiler.plugin.template.runners.AbstractJvmDiagnosticTest
 import org.jetbrains.kotlin.config.CompilerConfiguration
@@ -40,6 +41,10 @@ import org.jetbrains.kotlin.fir.extensions.FirAssignExpressionAltererExtension
 import org.jetbrains.kotlin.fir.extensions.FirExtension
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrar
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrarAdapter
+import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
+import org.jetbrains.kotlin.ir.visitors.IrVisitor
+import org.jetbrains.kotlin.ir.visitors.IrVisitorVoid
+import org.jetbrains.kotlin.ir.visitors.acceptChildrenVoid
 import org.jetbrains.kotlin.test.builders.TestConfigurationBuilder
 import org.jetbrains.kotlin.test.directives.FirDiagnosticsDirectives
 import org.jetbrains.kotlin.test.model.TestModule
@@ -51,10 +56,7 @@ import org.jetbrains.kotlin.utils.addToStdlib.cast
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import java.io.File
-import java.lang.invoke.MethodHandles
-import java.lang.invoke.MethodType
 import java.lang.reflect.Method
-import java.nio.file.Path
 import java.util.Arrays
 import java.util.stream.Stream
 import kotlin.io.path.createFile
@@ -133,9 +135,10 @@ abstract class FirUnitTester {
 			super.initTestInfo(KotlinTestInfo(testData.owningClass.name, testData.methodName, emptySet()))
 		}
 		
-		private class UnitTestEnvConfigurator(testServices: TestServices, val extension: FirExtensionRegistrar) : EnvironmentConfigurator(testServices) {
+		private class UnitTestEnvConfigurator(testServices: TestServices, val firExtension: FirExtensionRegistrar, val irExtension: IrGenerationExtension) : EnvironmentConfigurator(testServices) {
 			override fun CompilerPluginRegistrar.ExtensionStorage.registerCompilerExtensions(module: TestModule, configuration: CompilerConfiguration) {
-				FirExtensionRegistrarAdapter.registerExtension(extension)
+				FirExtensionRegistrarAdapter.registerExtension(firExtension)
+				IrGenerationExtension.registerExtension(irExtension)
 			}
 		}
 		
@@ -161,7 +164,8 @@ abstract class FirUnitTester {
 			builder.defaultDirectives {
 				-FirDiagnosticsDirectives.FIR_DUMP
 			}
-			builder.useConfigurators({ services -> UnitTestEnvConfigurator(services, testData.build()) })
+			val (fir, ir) = testData.build()
+			builder.useConfigurators({ services -> UnitTestEnvConfigurator(services, fir, ir) })
 		}
 	}
 	
@@ -334,6 +338,8 @@ abstract class FirUnitTester {
 		 */
 		val otherExtensions: MutableList<Pair<KClass<out FirExtension>, FirExtension.Factory<*>>> = mutableListOf()
 		
+		val irVisitors: MutableList<IrVisitor<Unit, IrPluginContext>> = mutableListOf()
+		
 		inline operator fun <reified T : FirExtension> MutableList<Pair<KClass<out FirExtension>, FirExtension.Factory<*>>>.plusAssign(factory: FirExtension.Factory<T>) {
 			otherExtensions.add(T::class to factory)
 		}
@@ -363,12 +369,18 @@ abstract class FirUnitTester {
 			}
 		}
 		
-		fun build(): FirExtensionRegistrar {
+		fun build(): Pair<FirExtensionRegistrar, IrGenerationExtension> {
 			return object : FirExtensionRegistrar() {
 				override fun ExtensionRegistrarContext.configurePlugin() {
 					+buildCheckerExtension()
 					otherExtensions.forEach { (type, factory) ->
 						_registerExtension(type, factory)
+					}
+				}
+			} to object : IrGenerationExtension {
+				override fun generate(moduleFragment: IrModuleFragment, pluginContext: IrPluginContext) {
+					irVisitors.forEach {
+						moduleFragment.acceptChildren(it, pluginContext)
 					}
 				}
 			}

@@ -19,6 +19,8 @@
 
 package io.github.cbrandt77.kt.inlinestreams
 
+import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
+import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
@@ -33,4 +35,19 @@ object NamesAndIds {
 	
 	@JvmField val intermediateOperation: CallableId = CallableId(inlineStreamKt, Name.identifier("intermediateOperation"))
 	@JvmField val terminalOperation: CallableId = CallableId(inlineStreamKt, Name.identifier("terminalOperation"))
+	@JvmField val entranceFunction: CallableId = CallableId(inlineStreamKt, Name.identifier("inlineStream"))
+	
+	@JvmField val streamOperationsKt = ClassId(STREAM_PACKAGE, Name.identifier("StreamOperationsKt"))
+	
+	@JvmStatic fun IrPluginContext.referenceStdStreamOperationFunction(name: String): IrSimpleFunctionSymbol {
+		return referenceFunctions(CallableId(STREAM_PACKAGE, Name.identifier(name)))
+			.ifEmpty { referenceFunctions(CallableId(streamOperationsKt, Name.identifier(name))) }
+			.first()
+	}
+	
+	object IntermediateOperations {
+		@JvmField val NAME_element = Name.identifier("element")
+		@JvmField val NAME_breakLoop = Name.identifier("breakLoop")
+		@JvmField val NAME_downstreamAction = Name.identifier("downstreamAction")
+	}
 }

@@ -94,7 +94,7 @@ tasks.shadowJar {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
     mergeServiceFiles()
     
-    relocate("dev.zacsweers.metro", "${project.group}.shaded.dev.zacsweers.metro")
+//    relocate("dev.zacsweers.metro", "${project.group}.shaded.dev.zacsweers.metro")
 }
 
 tasks.build {
@@ -102,6 +102,7 @@ tasks.build {
 }
 
 tasks.test {
+    notCompatibleWithConfigurationCache("")
     dependsOn(annotationsRuntimeClasspath)
 
     useJUnitPlatform()
@@ -116,20 +117,6 @@ tasks.test {
     setLibraryProperty("org.jetbrains.kotlin.test.kotlin-test", "kotlin-test")
     setLibraryProperty("org.jetbrains.kotlin.test.kotlin-script-runtime", "kotlin-script-runtime")
     setLibraryProperty("org.jetbrains.kotlin.test.kotlin-annotations-jvm", "kotlin-annotations-jvm")
-    with (TestCompilePaths) {
-		listOf(
-            KOTLIN_FULL_STDLIB_PATH to "stdlib",
-            KOTLIN_MINIMAL_STDLIB_PATH to "stdlib",
-            KOTLIN_TEST_JAR_PATH to "test",
-            KOTLIN_REFLECT_JAR_PATH to "reflect",
-            KOTLIN_SCRIPT_RUNTIME_PATH to "script-runtime",
-            KOTLIN_ANNOTATIONS_PATH to "annotations-jvm",
-            KOTLIN_COMMON_STDLIB_PATH to "stdlib"
-        ).forEach { (x, y) ->
-            setLibraryProperty(x, "kotlin-$y")
-        }
-        
-    }
     
     systemProperty("idea.ignore.disabled.plugins", "true")
     systemProperty("idea.home.path", rootDir)

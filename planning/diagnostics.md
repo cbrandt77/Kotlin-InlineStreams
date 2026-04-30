@@ -27,3 +27,4 @@ Errors:
 - Attempts to assign an InlineStream object to a variable (again, not a real object)
     - Note: we need a way to let a user choose what's done on the loop fluidly, maybe an API function like "if else" that lets users create a condition and conditionally execute one downstream path or another downstream path?
 - Uses it as a context parameter
+- Doesn't have a terminal operation
