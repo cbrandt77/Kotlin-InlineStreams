@@ -1,6 +1,7 @@
 package io.github.cbrandt77.kt.inlinestreams.ir
 
 import io.github.cbrandt77.kt.inlinestreams.NamesAndIds
+import io.github.cbrandt77.kt.inlinestreams.NamesAndIds.isEntranceFunction
 import io.github.cbrandt77.kt.inlinestreams.ir.types.calls.StreamOperationCall
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.ir.declarations.IrFunction
@@ -36,7 +37,7 @@ class StreamOpContext(val context: IrPluginContext) {
 		get() = this.symbol.owner.actsOnInlineStream
 	
 	val IrCall.isInlineStreamEntranceFunction: Boolean // TODO allow custom entrance functions
-		get() = this.symbol.owner.callableId == NamesAndIds.entranceFunction
+		get() = this.symbol.owner.callableId.isEntranceFunction
 	
 	
 	fun getInlineStreamTypeParameterT(type: IrType): IrType? {

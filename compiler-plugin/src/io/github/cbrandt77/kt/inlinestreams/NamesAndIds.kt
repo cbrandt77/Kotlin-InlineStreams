@@ -33,9 +33,25 @@ object NamesAndIds {
 	@JvmField val STREAM_PACKAGE = FqName("io.github.cbrandt77.kt.inlinestreams")
 	@JvmField val inlineStreamKt = ClassId(STREAM_PACKAGE, Name.identifier("InlineStreamKt"))
 	
-	@JvmField val intermediateOperation: CallableId = CallableId(inlineStreamKt, Name.identifier("intermediateOperation"))
-	@JvmField val terminalOperation: CallableId = CallableId(inlineStreamKt, Name.identifier("terminalOperation"))
-	@JvmField val entranceFunction: CallableId = CallableId(inlineStreamKt, Name.identifier("inlineStream"))
+	val CallableId.isIntermediateOperation
+		get() = this == intermediateOperation1 || this == intermediateOperation2
+	
+	val CallableId.isTerminalOperation
+		get() = this == terminalOperation1 || this == terminalOperation2
+	
+	val CallableId.isEntranceFunction
+		get() = this == entranceFunction1 || this == entranceFunction2
+	
+	
+	
+	private val intermediateOperation1: CallableId = CallableId(inlineStreamKt, Name.identifier("intermediateOperation"))
+	private val intermediateOperation2: CallableId = CallableId(STREAM_PACKAGE, Name.identifier("intermediateOperation"))
+	
+	private val terminalOperation1: CallableId = CallableId(inlineStreamKt, Name.identifier("terminalOperation"))
+	private val terminalOperation2: CallableId = CallableId(STREAM_PACKAGE, Name.identifier("terminalOperation"))
+	
+	private val entranceFunction1: CallableId = CallableId(inlineStreamKt, Name.identifier("inlineStream"))
+	private val entranceFunction2: CallableId = CallableId(STREAM_PACKAGE, Name.identifier("inlineStream"))
 	
 	@JvmField val streamOperationsKt = ClassId(STREAM_PACKAGE, Name.identifier("StreamOperationsKt"))
 	

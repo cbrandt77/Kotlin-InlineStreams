@@ -1,6 +1,8 @@
 package io.github.cbrandt77.kt.inlinestreams.ir.visitors
 
 import io.github.cbrandt77.kt.inlinestreams.NamesAndIds
+import io.github.cbrandt77.kt.inlinestreams.NamesAndIds.isIntermediateOperation
+import io.github.cbrandt77.kt.inlinestreams.NamesAndIds.isTerminalOperation
 import io.github.cbrandt77.kt.inlinestreams.ir.StreamOpContext
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 import org.jetbrains.kotlin.GeneratedDeclarationKey
@@ -324,7 +326,7 @@ class Map_ComputeInsteadOfGet<K, V>(val wrapped: MutableMap<K, V>, val computeFu
 }
 
 private val IrCall.isIntermediateOpBlock: Boolean
-	get() = this.symbol.owner.callableId == NamesAndIds.intermediateOperation
+	get() = this.symbol.owner.callableId.isIntermediateOperation
 
 private val IrCall.isTerminalOpBlock: Boolean
-	get() = this.symbol.owner.callableId == NamesAndIds.terminalOperation
+	get() = this.symbol.owner.callableId.isTerminalOperation

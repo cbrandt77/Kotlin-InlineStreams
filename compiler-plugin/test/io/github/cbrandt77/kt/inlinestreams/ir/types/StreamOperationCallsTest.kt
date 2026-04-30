@@ -9,13 +9,11 @@ import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.fir.backend.utils.defaultTypeWithoutArguments
 import org.jetbrains.kotlin.ir.IrElement
 import org.jetbrains.kotlin.ir.expressions.IrCall
-import org.jetbrains.kotlin.ir.types.defaultType
 import org.jetbrains.kotlin.ir.types.makeNullable
-import org.jetbrains.kotlin.ir.types.typeWith
 import org.jetbrains.kotlin.ir.visitors.IrVisitor
 import org.junit.jupiter.api.Assertions.*
 
-class IntermediateOperationCallTest : FirUnitTester() {
+class StreamOperationCallsTest : FirUnitTester() {
 	@FirTest
 	fun TestData.check1() {
 		code = """
