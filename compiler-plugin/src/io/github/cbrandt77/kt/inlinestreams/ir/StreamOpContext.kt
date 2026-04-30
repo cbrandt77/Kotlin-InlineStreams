@@ -71,27 +71,47 @@ class StreamOpContext(val context: IrPluginContext) {
 	}
 	
 	fun getLoopOpFunctionName(chainFunc: IrFunction): Name {
-		return Name.identifier(chainFunc.name.asStringStripSpecialMarkers() + "_loopAction")
+		return Name.identifier("loopAction-" + chainFunc.name.asString())
 	}
+	
+	
 	
 	/**
 	 * Make the version of a dslFunction parameter that is used in a loopFunction
 	 */
 	fun getDslFunParameterName(originalName: Name): Name {
-		return Name.identifier("inlineStream\$arg-" + originalName.asStringStripSpecialMarkers())
+		return Name.special("<arg-" + originalName.asStringStripSpecialMarkers() + ">")
 	}
 	
 	val IrValueParameter.isDslFunParameter: Boolean
-		get() = name.asString().startsWith("inlineStream\$arg-")
+		get() = name.isSpecial && name.asString().startsWith("<arg-")
 	
+	
+	
+	
+	private val getterRegex = Regex("^<get-(.*)>$")
 	
 	fun makeGetterNameForState(originalName: Name): Name {
-		return Name.identifier("get-" + originalName.asString())
+		return Name.special("<get-" + originalName.asStringStripSpecialMarkers() + ">")
 	}
+	
+	val IrValueParameter.getterForVariable: Name?
+		get() = this.name.takeIf { it.isSpecial }
+			?.asString()
+			?.let { getterRegex.find(it, 5)?.groupValues?.firstOrNull() }
+			?.let { Name.identifier(it) }
+	
+	
+	
+	private val setterRegex = Regex("<set-(.*)>")
 	
 	fun makeSetterNameForState(originalName: Name): Name {
-		return Name.identifier("set-" + originalName.asString())
+		return Name.special("<set-" + originalName.asStringStripSpecialMarkers() + ">")
 	}
 	
-	
+	val IrValueParameter.setterForVariable: Name?
+		get() = this.name.takeIf { it.isSpecial }
+			?.asString()
+			?.let { setterRegex.find(it, 5)?.groupValues?.firstOrNull() }
+			?.let { Name.identifier(it) }
 }

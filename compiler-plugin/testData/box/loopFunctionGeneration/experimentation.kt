@@ -1,7 +1,3 @@
-// RUN_PIPELINE_TILL: BACKEND
-// MODULE: main
-// FILE: Main.kt
-
 import io.github.cbrandt77.kt.inlinestreams.*
 
 fun <T> InlineStream<T>.testOperation(): InlineStream<T> {
