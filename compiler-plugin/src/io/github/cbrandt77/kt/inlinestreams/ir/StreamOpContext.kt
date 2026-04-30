@@ -6,6 +6,7 @@ import io.github.cbrandt77.kt.inlinestreams.ir.types.calls.StreamOperationCall
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrParameterKind
+import org.jetbrains.kotlin.ir.declarations.IrValueParameter
 import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.types.IrSimpleType
@@ -50,7 +51,7 @@ class StreamOpContext(val context: IrPluginContext) {
 		get() = symbol.owner.parameters.firstOrNull { it.kind == IrParameterKind.ExtensionReceiver }?.let { arguments[it] }
 	
 	fun getLoopOpFunction(chainFunc: StreamOperationCall): IrSimpleFunctionSymbol {
-		return context.referenceFunctions(getLoopOpFunctionName(chainFunc.ir.symbol)).disambiguate(chainFunc) // TODO disambiguate
+		return context.referenceFunctions(getLoopOpFunctionId(chainFunc.ir.symbol.owner)).disambiguate(chainFunc)
 	}
 	
 	/**
@@ -63,25 +64,34 @@ class StreamOpContext(val context: IrPluginContext) {
 		TODO()
 	}
 	
-	fun getLoopOpFunctionName(chainFunc: IrSimpleFunctionSymbol): CallableId {
-		return chainFunc.owner.callableId.let {
-			it.copy(Name.identifier(it.callableName.asStringStripSpecialMarkers() + "_loopAction"))
+	fun getLoopOpFunctionId(chainFunc: IrFunction): CallableId {
+		return chainFunc.callableId.let {
+			it.copy(getLoopOpFunctionName(chainFunc))
 		}
+	}
+	
+	fun getLoopOpFunctionName(chainFunc: IrFunction): Name {
+		return Name.identifier(chainFunc.name.asStringStripSpecialMarkers() + "_loopAction")
 	}
 	
 	/**
 	 * Make the version of a dslFunction parameter that is used in a loopFunction
 	 */
-	fun getLoopOpParameterName(originalName: Name): Name {
-		return Name.identifier(originalName.asStringStripSpecialMarkers() + "_inLoop")
+	fun getDslFunParameterName(originalName: Name): Name {
+		return Name.identifier("inlineStream\$arg-" + originalName.asStringStripSpecialMarkers())
 	}
 	
-	val loopOpParameterNameRegex = Regex(".*?_inLoop")
+	val IrValueParameter.isDslFunParameter: Boolean
+		get() = name.asString().startsWith("inlineStream\$arg-")
 	
 	
 	fun makeGetterNameForState(originalName: Name): Name {
 		return Name.identifier("get-" + originalName.asString())
 	}
 	
-	val regexGetterName = Regex("^get-")
+	fun makeSetterNameForState(originalName: Name): Name {
+		return Name.identifier("set-" + originalName.asString())
+	}
+	
+	
 }

@@ -1,6 +1,5 @@
 package io.github.cbrandt77.kt.inlinestreams.ir.visitors
 
-import io.github.cbrandt77.kt.inlinestreams.NamesAndIds
 import io.github.cbrandt77.kt.inlinestreams.NamesAndIds.isIntermediateOperation
 import io.github.cbrandt77.kt.inlinestreams.NamesAndIds.isTerminalOperation
 import io.github.cbrandt77.kt.inlinestreams.ir.StreamOpContext
@@ -46,7 +45,6 @@ import org.jetbrains.kotlin.ir.visitors.IrTypeTransformerVoid
 import org.jetbrains.kotlin.ir.visitors.IrVisitorVoid
 import org.jetbrains.kotlin.ir.visitors.acceptVoid
 import org.jetbrains.kotlin.ir.visitors.transformChildrenVoid
-import org.jetbrains.kotlin.name.Name
 
 object StreamOpGeneratedLoopActionDeclarationKey : GeneratedDeclarationKey() {
 	val origin = IrDeclarationOrigin.GeneratedByPlugin(this)
@@ -95,7 +93,7 @@ class StreamOpRuntimeVariantGenerator(
 	                    ?: continue;
 				
 				if (callsFunction.isIntermediateOpBlock || callsFunction.isTerminalOpBlock) {
-					LoopFunctionGenerator(context, data, declaration, Call_intermediateOperation(callsFunction)).buildLoopActionFun()
+					LoopFunctionGenerator(context, data, declaration, IntermediateOperationDefFuncInvocation(callsFunction)).buildLoopActionFun()
 					break;
 				}
 			}
@@ -112,13 +110,13 @@ class StreamOpRuntimeVariantGenerator(
  * - Replace SET_VAR variableDeclaredOutsideBlock with call to setter from parameters
  *   - Add setter to parameters also
  */
-class LoopFunctionGenerator(val context: IrPluginContext, val data: StreamOpContext, val dslFunction: IrFunction, call: Call_intermediateOperation) {
-	val loopAction = call.action.ir
+class LoopFunctionGenerator(val context: IrPluginContext, val data: StreamOpContext, val dslFunction: IrFunction, call: IntermediateOperationDefFuncInvocation) {
+	val loopAction: IrFunction = call.action.ir
 	
 	private val newFun = context.irFactory.buildFun {
 		startOffset = loopAction.startOffset
 		endOffset = loopAction.endOffset
-		name = Name.identifier("${dslFunction.name.identifier}_loopOperation") // TODO generate proper name
+		name = data.getLoopOpFunctionName(dslFunction)
 		returnType = context.irBuiltIns.unitType
 		isInline = true
 //			originalDeclaration = dslFunction
@@ -128,7 +126,7 @@ class LoopFunctionGenerator(val context: IrPluginContext, val data: StreamOpCont
 	}
 	
 	private val IrVariable.isDeclaredOutsideLoopAction: Boolean
-		get() = newFun !in this.parents // TODO figure out how we do this, I think we might need to do a custom copier
+		get() = newFun !in this.parents
 	
 	private val IrValueAccessExpression.takeTargetIfNeedsRemapping: IrVariable?
 		get() = (symbol as? IrVariableSymbol)
@@ -148,10 +146,10 @@ class LoopFunctionGenerator(val context: IrPluginContext, val data: StreamOpCont
 		}
 		
 		private fun getOrCreateGetterParameter(variable: IrVariable): IrValueParameter {
-			return functions.computeIfAbsent(variable) {
+			return functions.computeIfAbsent(variable) { it: IrVariable ->
 				newFun.addValueParameter {
-					name = Name.identifier("get-${variable.name.identifier}")
-					type = getterType.typeWith(variable.type)
+					name = data.makeGetterNameForState(it.name)
+					type = getterType.typeWith(it.type)
 					origin = StreamOpGeneratedLoopActionDeclarationKey.origin
 				}
 			}
@@ -180,7 +178,7 @@ class LoopFunctionGenerator(val context: IrPluginContext, val data: StreamOpCont
 		private fun getOrCreateParameter(variable: IrVariable): IrValueParameter {
 			return functions.computeIfAbsent(variable) { it: IrVariable ->
 				newFun.addValueParameter {
-					name = Name.identifier("set-${it.name.identifier}")
+					name = data.makeSetterNameForState(it.name)
 					type = setterType.typeWith(it.type, context.irBuiltIns.unitType)
 					origin = StreamOpGeneratedLoopActionDeclarationKey.origin
 				}
@@ -207,7 +205,7 @@ class LoopFunctionGenerator(val context: IrPluginContext, val data: StreamOpCont
 			                                                                                       .associateWith {
 				                                                                                       newFun.addValueParameter {
 					                                                                                       updateFrom(it.owner)
-					                                                                                       name = data.getLoopOpParameterName(it.owner.name)
+					                                                                                       name = data.getDslFunParameterName(it.owner.name)
 				                                                                                       }.symbol
 			                                                                                       } +
 		                                                                                       loopAction.parameters
@@ -293,7 +291,7 @@ class Map_ComputeInsteadOfGet<K, V>(val wrapped: MutableMap<K, V>, val computeFu
 	}
 }
 
-@JvmInline value class Call_intermediateOperation(val call: IrCall) {
+@JvmInline value class IntermediateOperationDefFuncInvocation(val call: IrCall) {
 //	/** The type of the stream it acts on. `InlineStream<T>.doAction` */
 //	val inputType: IrType
 //		get() = call.typeArguments[0]!! // TODO this is wrong

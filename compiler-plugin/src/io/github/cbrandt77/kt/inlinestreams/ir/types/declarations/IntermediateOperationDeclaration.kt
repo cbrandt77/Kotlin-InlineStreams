@@ -47,9 +47,9 @@ class IntermediateOperationLoopFunction(private val internal: StreamOperationLoo
 	 * arguments passed to the original dsl function, e.g. `map({ it -> it.foo })`
 	 */
 	context(data: StreamOpContext)
-	val chainFunctionArgs get() = ir.parameters.asSequence()
+	val chainFunctionArgs get() = with (data) { ir.parameters.asSequence()
 		.filter { it.kind == IrParameterKind.Regular }
-		.takeWhile { it.name != NamesAndIds.IntermediateOperations.NAME_element && it.name.asString().matches(data.loopOpParameterNameRegex) }
+		.takeWhile { it.isDslFunParameter } }
 	
 	
 	
