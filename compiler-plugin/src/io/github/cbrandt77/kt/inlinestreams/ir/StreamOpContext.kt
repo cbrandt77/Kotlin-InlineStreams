@@ -34,10 +34,10 @@ class StreamOpContext(val context: IrPluginContext) {
 	val IrFunction.actsOnInlineStream: Boolean
 		get() = parameters.firstOrNull { it.kind == IrParameterKind.ExtensionReceiver }?.type?.classOrNull == inlineStreamClassSymbol
 	
-	val IrCall.isInlineStreamFunction: Boolean
+	val IrCall.callsInlineStreamFunction: Boolean
 		get() = this.symbol.owner.actsOnInlineStream
 	
-	val IrCall.isInlineStreamEntranceFunction: Boolean // TODO allow custom entrance functions
+	val IrCall.callsInlineStreamEntranceFunction: Boolean // TODO allow custom entrance functions
 		get() = this.symbol.owner.callableId.isEntranceFunction
 	
 	
@@ -91,8 +91,8 @@ class StreamOpContext(val context: IrPluginContext) {
 		return Name.special("<get-" + originalName.asStringStripSpecialMarkers() + ">")
 	}
 	
-	val IrValueParameter.getterForVariable: Name?
-		get() = this.name.takeIf { it.isSpecial }
+	val Name.nameThisIsGetterFor: Name?
+		get() = this.takeIf { it.isSpecial }
 			?.asString()
 			?.let { getterRegex.find(it, 5)?.groupValues?.firstOrNull() }
 			?.let { Name.identifier(it) }
@@ -105,8 +105,8 @@ class StreamOpContext(val context: IrPluginContext) {
 		return Name.special("<set-" + originalName.asStringStripSpecialMarkers() + ">")
 	}
 	
-	val IrValueParameter.setterForVariable: Name?
-		get() = this.name.takeIf { it.isSpecial }
+	val Name.nameThisIsSetterFor: Name?
+		get() = this.takeIf { it.isSpecial }
 			?.asString()
 			?.let { setterRegex.find(it, 5)?.groupValues?.firstOrNull() }
 			?.let { Name.identifier(it) }

@@ -22,12 +22,6 @@ public class JvmBoxTestGenerated extends AbstractJvmBoxTest {
     KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler-plugin/testData/box"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), TargetBackend.JVM_IR, true);
   }
 
-  @Test
-  @TestMetadata("experimentation.kt")
-  public void testExperimentation() {
-    runTest("compiler-plugin/testData/box/experimentation.kt");
-  }
-
   @Nested
   @TestMetadata("compiler-plugin/testData/box/loopCreation")
   @TestDataPath("$PROJECT_ROOT")

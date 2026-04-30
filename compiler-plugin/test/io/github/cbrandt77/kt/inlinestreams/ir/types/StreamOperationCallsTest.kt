@@ -5,6 +5,7 @@ import io.github.cbrandt77.kt.inlinestreams.ir.StreamOpContext
 import io.github.cbrandt77.kt.inlinestreams.ir.types.calls.IntermediateOperationChainCall
 import io.github.cbrandt77.kt.inlinestreams.ir.types.calls.TerminalOperationChainCall
 import io.github.cbrandt77.kt.inlinestreams.test.FirUnitTester
+import io.github.cbrandt77.kt.inlinestreams.test.IrTestVisitor
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.fir.backend.utils.defaultTypeWithoutArguments
 import org.jetbrains.kotlin.ir.IrElement
@@ -34,8 +35,7 @@ fun dsl(): Int? {
 }
 		""".trimIndent()
 		
-		
-		irVisitors += object : IrVisitor<Unit, IrPluginContext>() {
+		irVisitors += object : IrTestVisitor() {
 			override fun visitElement(element: IrElement, data: IrPluginContext) {
 				element.acceptChildren(this, data)
 			}

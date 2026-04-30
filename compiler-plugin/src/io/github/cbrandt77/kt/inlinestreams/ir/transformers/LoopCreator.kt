@@ -25,7 +25,7 @@ class InlineStreamLoopCreationException(cause: Throwable) : RuntimeException("Fa
  */
 class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrElementTransformerVoid() {
 	override fun visitCall(expression: IrCall): IrExpression = with (data) {
-		if (expression.isInlineStreamFunction) {
+		if (expression.callsInlineStreamFunction) {
 			return remappedInlineStream(expression)
 		}
 		
@@ -39,7 +39,7 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 		}
 		
 		val intermediatesLastToFirst = generateSequence(terminalOperation.previousOperation) { it.previousOperation }.toList()
-		val entranceFunction = (intermediatesLastToFirst.last().receiver as? IrCall)?.takeIf { it.isInlineStreamEntranceFunction } ?: error("Intermediate operations not preceded by entrance function")
+		val entranceFunction = (intermediatesLastToFirst.last().receiver as? IrCall)?.takeIf { it.callsInlineStreamEntranceFunction } ?: error("Intermediate operations not preceded by entrance function")
 		
 		val originalInputType = entranceFunction.typeArguments.first()!!
 		val finalOutputType = terminalOperation.outputType

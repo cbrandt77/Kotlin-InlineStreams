@@ -41,11 +41,11 @@ import org.jetbrains.kotlin.fir.extensions.FirAssignExpressionAltererExtension
 import org.jetbrains.kotlin.fir.extensions.FirExtension
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrar
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrarAdapter
+import org.jetbrains.kotlin.ir.IrElement
 import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
 import org.jetbrains.kotlin.ir.visitors.IrVisitor
-import org.jetbrains.kotlin.ir.visitors.IrVisitorVoid
-import org.jetbrains.kotlin.ir.visitors.acceptChildrenVoid
 import org.jetbrains.kotlin.test.builders.TestConfigurationBuilder
+import org.jetbrains.kotlin.test.directives.CodegenTestDirectives
 import org.jetbrains.kotlin.test.directives.FirDiagnosticsDirectives
 import org.jetbrains.kotlin.test.model.TestModule
 import org.jetbrains.kotlin.test.services.EnvironmentConfigurator
@@ -119,11 +119,22 @@ fun newAssignmentAlterer(action: (assignment: FirVariableAssignment, session: Fi
 	}
 }
 
+open class IrTestVisitor : IrVisitor<Unit, IrPluginContext>() {
+	override fun visitElement(element: IrElement, data: IrPluginContext) {
+		element.acceptChildren(this, data)
+	}
+}
+
 /**
  * Executes all tests that take a single [TestData] parameter (usually a receiver)
  */
 abstract class FirUnitTester {
-	private class JvmUnitTest(val testData: TestData) : AbstractJvmDiagnosticTest() {
+	/**
+	 * Additional configuration for the test environment, including adding features, etc
+	 */
+	open fun configureEnv(builder: TestConfigurationBuilder) {}
+	
+	private class JvmUnitTest(val testData: TestData, val additionalEnvConfiguration: (TestConfigurationBuilder) -> Unit) : AbstractJvmDiagnosticTest() {
 		companion object {
 			const val BASE_RESOLVE = $$"$PROJECT_ROOT"
 			
@@ -163,7 +174,13 @@ abstract class FirUnitTester {
 			super.configure(builder)
 			builder.defaultDirectives {
 				-FirDiagnosticsDirectives.FIR_DUMP
+				
+				if (testData.disableFirDiagnostics) {
+					+CodegenTestDirectives.IGNORE_FIR_DIAGNOSTICS
+				}
 			}
+			
+			additionalEnvConfiguration(builder)
 			val (fir, ir) = testData.build()
 			builder.useConfigurators({ services -> UnitTestEnvConfigurator(services, fir, ir) })
 		}
@@ -333,12 +350,15 @@ abstract class FirUnitTester {
 		
 		val exprCheckers = MutableExpressionCheckers()
 		
+		var disableFirDiagnostics = false
+		
+		
 		/**
 		 * Other extensions, so we can make sure methods also work in the context of, for example, a transformer, or an analyzer
 		 */
 		val otherExtensions: MutableList<Pair<KClass<out FirExtension>, FirExtension.Factory<*>>> = mutableListOf()
 		
-		val irVisitors: MutableList<IrVisitor<Unit, IrPluginContext>> = mutableListOf()
+		val irVisitors: MutableList<IrTestVisitor> = mutableListOf()
 		
 		inline operator fun <reified T : FirExtension> MutableList<Pair<KClass<out FirExtension>, FirExtension.Factory<*>>>.plusAssign(factory: FirExtension.Factory<T>) {
 			otherExtensions.add(T::class to factory)
@@ -389,13 +409,17 @@ abstract class FirUnitTester {
 	
 	@TestFactory
 	fun generateFirTests(): Stream<DynamicTest> {
+		val ourInstance = this
+		
 		val subclass = this::class.java
 		if (subclass == FirUnitTester::class.java)
 			error("Class wasn't extended.")
 		
 		val ctor = subclass.getConstructor()
 		
-		return Arrays.stream(this::class.java.declaredMethods)
+		val configureEnv = FirUnitTester::configureEnv
+		
+		return Arrays.stream(subclass.declaredMethods)
 			.filter { it.isAnnotationPresent(FirTest::class.java) }
 			.map { firTestMethod ->
 				require(firTestMethod.parameterTypes.singleOrNull() == TestData::class.java) { "FirTest methods must take a single TestData parameter (usually a receiver)." }
@@ -404,7 +428,9 @@ abstract class FirUnitTester {
 						firTestMethod.invoke(ctor.newInstance(), it)
 					}
 					
-					val jvmUnitTestRunner = JvmUnitTest(testData)
+					val jvmUnitTestRunner = JvmUnitTest(testData) {
+						configureEnv.invoke(ourInstance, it)
+					}
 					jvmUnitTestRunner.genKtFile()
 					jvmUnitTestRunner.runTest()
 				}
