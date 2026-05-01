@@ -61,6 +61,12 @@ object NamesAndIds {
 			.first()
 	}
 	
+	/**
+	 * Annotation that links together a user-defined chainable function and its generated in-loop function
+	 */
+	@JvmField val linkingAnnotationClassId: ClassId = ClassId.fromString("io/github/cbrandt77/kt/inlinestreams/annotations/internal/InlineStreamFunctionReference")
+	@JvmField val linkingAnnotationFqn: FqName = linkingAnnotationClassId.asSingleFqName()
+	
 	object IntermediateOperations {
 		@JvmField val NAME_element = Name.identifier("element")
 		@JvmField val NAME_breakLoop = Name.identifier("breakLoop")

@@ -4,6 +4,8 @@ FILE fqName:<root> fileName:/flattenExperiment.kt
     VALUE_PARAMETER kind:Regular name:el index:0 type:kotlin.collections.Iterable<T of <root>.loopAction-flatten>
     VALUE_PARAMETER kind:Regular name:breakLoop index:1 type:kotlin.Function0<kotlin.Unit>
     VALUE_PARAMETER kind:Regular name:downstreamAction index:2 type:kotlin.Function1<T of <root>.loopAction-flatten, kotlin.Unit>
+    annotations:
+      InlineStreamFunctionReference(id = 0)
     BLOCK_BODY
       BLOCK type=kotlin.Unit origin=FOR_LOOP
         VAR FOR_LOOP_ITERATOR name:tmp_0 type:kotlin.collections.Iterator<T of <root>.loopAction-flatten> [val]
@@ -27,6 +29,8 @@ FILE fqName:<root> fileName:/flattenExperiment.kt
   FUN name:flatten visibility:public modality:FINAL returnType:io.github.cbrandt77.kt.inlinestreams.InlineStream<T of <root>.flatten>
     TYPE_PARAMETER name:T index:0 variance: superTypes:[kotlin.Any?] reified:false
     VALUE_PARAMETER kind:ExtensionReceiver name:<this> index:0 type:io.github.cbrandt77.kt.inlinestreams.InlineStream<kotlin.collections.Iterable<T of <root>.flatten>>
+    annotations:
+      InlineStreamFunctionReference(id = 0)
     BLOCK_BODY
       VAR name:state type:kotlin.Int [var]
         CONST Int type=kotlin.Int value=4

@@ -6,6 +6,8 @@ FILE fqName:<root> fileName:/experimentation.kt
     VALUE_PARAMETER kind:Regular name:downstreamAction index:2 type:kotlin.Function1<T of <root>.loopAction-testOperation, kotlin.Unit>
     VALUE_PARAMETER GENERATED[io.github.cbrandt77.kt.inlinestreams.ir.visitors.StreamOpGeneratedLoopActionDeclarationKey] kind:Regular name:<get-state> index:3 type:kotlin.Function0<kotlin.Int>
     VALUE_PARAMETER GENERATED[io.github.cbrandt77.kt.inlinestreams.ir.visitors.StreamOpGeneratedLoopActionDeclarationKey] kind:Regular name:<set-state> index:4 type:kotlin.Function1<kotlin.Int, kotlin.Unit>
+    annotations:
+      InlineStreamFunctionReference(id = 0)
     BLOCK_BODY
       TYPE_OP type=kotlin.Unit origin=IMPLICIT_COERCION_TO_UNIT typeOperand=kotlin.Unit
         BLOCK type=kotlin.Int origin=POSTFIX_INCR
@@ -29,6 +31,8 @@ FILE fqName:<root> fileName:/experimentation.kt
   FUN name:testOperation visibility:public modality:FINAL returnType:io.github.cbrandt77.kt.inlinestreams.InlineStream<T of <root>.testOperation>
     TYPE_PARAMETER name:T index:0 variance: superTypes:[kotlin.Any?] reified:false
     VALUE_PARAMETER kind:ExtensionReceiver name:<this> index:0 type:io.github.cbrandt77.kt.inlinestreams.InlineStream<T of <root>.testOperation>
+    annotations:
+      InlineStreamFunctionReference(id = 0)
     BLOCK_BODY
       VAR name:state type:kotlin.Int [var]
         CONST Int type=kotlin.Int value=4

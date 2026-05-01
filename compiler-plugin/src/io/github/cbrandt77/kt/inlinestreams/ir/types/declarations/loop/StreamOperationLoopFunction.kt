@@ -2,11 +2,13 @@ package io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.loop
 
 import io.github.cbrandt77.kt.inlinestreams.NamesAndIds
 import io.github.cbrandt77.kt.inlinestreams.ir.StreamOpContext
+import io.github.cbrandt77.kt.inlinestreams.ir.types.annotations.InlineStreamFunctionReferenceAnnotation
 import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.MalformedInlineStreamGeneratedFunction
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrParameterKind
 import org.jetbrains.kotlin.ir.declarations.IrValueParameter
 import org.jetbrains.kotlin.ir.types.IrType
+import org.jetbrains.kotlin.ir.util.getAnnotation
 import org.jetbrains.kotlin.ir.util.isTopLevel
 
 /**
@@ -29,7 +31,6 @@ import org.jetbrains.kotlin.ir.util.isTopLevel
 	/**
 	 * This will be the type of the element parameter
 	 */
-	context(data: StreamOpContext)
 	val inputElementType: IrType
 		get() = parameters.first { it.name == NamesAndIds.IntermediateOperations.NAME_element }.type
 	
@@ -56,4 +57,8 @@ import org.jetbrains.kotlin.ir.util.isTopLevel
 	context(data: StreamOpContext)
 	val settersByStateName
 		get() = with (data) { parameters.mapNotNull { item -> item.name.nameThisIsSetterFor?.let { it to item } } }
+	
+	context(_: StreamOpContext)
+	val identifier
+		get() = (InlineStreamFunctionReferenceAnnotation(ir) ?: error("No function identifier on generated loop function!")).identifier
 }

@@ -3,6 +3,8 @@ package io.github.cbrandt77.kt.inlinestreams.ir.visitors
 import io.github.cbrandt77.kt.inlinestreams.NamesAndIds.isIntermediateOperation
 import io.github.cbrandt77.kt.inlinestreams.NamesAndIds.isTerminalOperation
 import io.github.cbrandt77.kt.inlinestreams.ir.StreamOpContext
+import io.github.cbrandt77.kt.inlinestreams.ir.types.annotations.InlineStreamFunctionReferenceAnnotation
+import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.chain.StreamOperationChainFunction
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 import org.jetbrains.kotlin.GeneratedDeclarationKey
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
@@ -93,7 +95,7 @@ class StreamOpRuntimeVariantGenerator(
 	                    ?: continue;
 				
 				if (callsFunction.isIntermediateOpBlock || callsFunction.isTerminalOpBlock) {
-					LoopFunctionGenerator(context, data, declaration, IntermediateOperationDefFuncInvocation(callsFunction)).buildLoopActionFun()
+					LoopFunctionGenerator(context, data, context (data) { StreamOperationChainFunction(declaration).getOrThrow() }, IntermediateOperationDefFuncInvocation(callsFunction)).buildLoopActionFun()
 					break;
 				}
 			}
@@ -110,13 +112,13 @@ class StreamOpRuntimeVariantGenerator(
  * - Replace SET_VAR variableDeclaredOutsideBlock with call to setter from parameters
  *   - Add setter to parameters also
  */
-class LoopFunctionGenerator(val context: IrPluginContext, val data: StreamOpContext, val dslFunction: IrFunction, call: IntermediateOperationDefFuncInvocation) {
+class LoopFunctionGenerator(val context: IrPluginContext, val data: StreamOpContext, val dslFunction: StreamOperationChainFunction, call: IntermediateOperationDefFuncInvocation) {
 	val loopAction: IrFunction = call.action.ir
 	
 	private val newFun = context.irFactory.buildFun {
 		startOffset = loopAction.startOffset
 		endOffset = loopAction.endOffset
-		name = data.getLoopOpFunctionName(dslFunction)
+		name = data.getLoopOpFunctionName(dslFunction.ir.name)
 		returnType = context.irBuiltIns.unitType
 		isInline = true
 //			originalDeclaration = dslFunction
@@ -198,14 +200,11 @@ class LoopFunctionGenerator(val context: IrPluginContext, val data: StreamOpCont
 	
 	@OptIn(DelicateIrParameterIndexSetter::class)
 	private val parameters = object {
-		private val oldFuncToNewFuncMap: Map<IrValueParameterSymbol, IrValueParameterSymbol> = dslFunction.parameters
-			                                                                                       .asSequence()
-			                                                                                       .filter { it.kind != IrParameterKind.ExtensionReceiver }
-			                                                                                       .map { it.symbol }
-			                                                                                       .associateWith {
-				                                                                                       newFun.addValueParameter {
-					                                                                                       updateFrom(it.owner)
-					                                                                                       name = data.getDslFunParameterName(it.owner.name)
+		private val oldFuncToNewFuncMap: Map<IrValueParameterSymbol, IrValueParameterSymbol> = dslFunction.arguments
+			                                                                                       .associate {
+				                                                                                       it.symbol to newFun.addValueParameter {
+					                                                                                       updateFrom(it)
+					                                                                                       name = data.getDslFunParameterName(it.name)
 				                                                                                       }.symbol
 			                                                                                       } +
 		                                                                                       loopAction.parameters
@@ -246,7 +245,7 @@ class LoopFunctionGenerator(val context: IrPluginContext, val data: StreamOpCont
 			
 			@Suppress("UNCHECKED_CAST")
 			return type.remapTypeParameters(
-				dslFunction, newFun,
+				dslFunction.ir, newFun,
 				Map_ComputeInsteadOfGet(added, ::getOrCreateTypeParam)
 			) as Type
 		}
@@ -268,8 +267,8 @@ class LoopFunctionGenerator(val context: IrPluginContext, val data: StreamOpCont
 		}
 	}
 	
-	fun buildLoopActionFun(): IrSimpleFunction {
-		(dslFunction.parent as IrDeclarationContainer).also {
+	fun buildLoopActionFun() {
+		(dslFunction.ir.parent as IrDeclarationContainer).also {
 			it.declarations += newFun
 			newFun.parent = it
 		}
@@ -277,7 +276,9 @@ class LoopFunctionGenerator(val context: IrPluginContext, val data: StreamOpCont
 		newFun.body?.transformChildrenVoid(ElementTransformer())
 		newFun.acceptVoid(typeParameters)
 		
-		return newFun;
+		with (data) {
+			newFun.annotations += InlineStreamFunctionReferenceAnnotation(dslFunction.identifier).ir
+		}
 	}
 }
 

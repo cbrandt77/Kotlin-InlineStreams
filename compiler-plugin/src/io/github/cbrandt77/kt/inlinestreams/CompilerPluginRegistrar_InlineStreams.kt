@@ -21,18 +21,14 @@ package io.github.cbrandt77.kt.inlinestreams
 
 import io.github.cbrandt77.kt.inlinestreams.fir.diagnostics.FirErrorTypes_InlineStreams
 import io.github.cbrandt77.kt.inlinestreams.ir.StreamOpContext
-import io.github.cbrandt77.kt.inlinestreams.ir.transformers.LoopCreator
 import io.github.cbrandt77.kt.inlinestreams.ir.visitors.StreamOpRuntimeVariantGenerator
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrar
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrarAdapter
-import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
-import org.jetbrains.kotlin.ir.visitors.acceptChildrenVoid
 import org.jetbrains.kotlin.ir.visitors.transformChildrenVoid
 
 class CompilerPluginRegistrar_InlineStreams : CompilerPluginRegistrar() {

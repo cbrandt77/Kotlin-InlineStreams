@@ -57,7 +57,7 @@ inline fun <T : Iterable<U>, U : java.io.Serializable> InlineStream<T>.inIterabl
 			override fun visitFunction(declaration: IrFunction, data: IrPluginContext) {
 				init(data)
 				with (context) {
-					val wrapped = IntermediateOperationChainFunction(StreamOperationChainFunction(declaration))
+					val wrapped = IntermediateOperationChainFunction(declaration).getOrThrow()
 					when (declaration.name.asString()) {
 						"inString_outInt" -> {
 							assertEquals(data.irBuiltIns.stringType, wrapped.inputElementType) { declaration.render() }
@@ -110,7 +110,7 @@ inline fun InlineStream<String>.foo(): InlineStream<Unit> {
 				init(data)
 				if (declaration.name.asString() == "foo") {
 					with(context) {
-						val preamble = StreamOperationChainFunction(declaration).preamble.toList()
+						val preamble = StreamOperationChainFunction(declaration).getOrThrow().preamble.toList()
 						assertEquals(3, preamble.size) { preamble.joinToString("\n") { it.render() } }
 						assertNotEquals(true, (preamble.last() as? IrCall)?.symbol?.owner?.callableId?.isIntermediateOperation) {
 							preamble.last()

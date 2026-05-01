@@ -2,18 +2,17 @@ package io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.loop
 
 import io.github.cbrandt77.kt.inlinestreams.NamesAndIds
 import io.github.cbrandt77.kt.inlinestreams.ir.StreamOpContext
-import io.github.cbrandt77.kt.inlinestreams.util.filter
+import io.github.cbrandt77.kt.inlinestreams.util.flatMap
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.types.IrSimpleType
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.typeOrFail
-import org.jetbrains.kotlin.types.model.getArgument
 
 @JvmInline value class IntermediateOperationLoopFunction private constructor(val internal: StreamOperationLoopFunction) {
 	companion object {
 		context(data: StreamOpContext)
 	    operator fun invoke(func: IrFunction): Result<IntermediateOperationLoopFunction> = with (data) {
-	        return StreamOperationLoopFunction(func).filter {
+	        return StreamOperationLoopFunction(func).flatMap {
 				// TODO verify has downstream action
 				Result.success(IntermediateOperationLoopFunction(it))
 	        }
@@ -21,7 +20,7 @@ import org.jetbrains.kotlin.types.model.getArgument
 		
 		context(data: StreamOpContext)
 		operator fun invoke(func: StreamOperationLoopFunction): Result<IntermediateOperationLoopFunction> = with (data) {
-			return Result.success(func).filter {
+			return Result.success(func).flatMap {
 				// TODO verify has downstream action
 				Result.success(IntermediateOperationLoopFunction(it))
 			}

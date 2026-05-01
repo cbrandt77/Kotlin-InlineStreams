@@ -7,6 +7,8 @@ FILE fqName:pkg fileName:/flatMapExperiment.kt
     VALUE_PARAMETER kind:Regular name:breakLoop index:2 type:kotlin.Function0<kotlin.Unit>
     VALUE_PARAMETER kind:Regular name:downstreamAction index:3 type:kotlin.Function1<U of pkg.loopAction-flatMap, kotlin.Unit>
     VALUE_PARAMETER GENERATED[io.github.cbrandt77.kt.inlinestreams.ir.visitors.StreamOpGeneratedLoopActionDeclarationKey] kind:Regular name:<set-state> index:4 type:kotlin.Function1<kotlin.Int, kotlin.Unit>
+    annotations:
+      InlineStreamFunctionReference(id = -1404696948)
     BLOCK_BODY
       BLOCK type=kotlin.Unit origin=FOR_LOOP
         VAR FOR_LOOP_ITERATOR name:tmp_0 type:kotlin.collections.Iterator<T of pkg.loopAction-flatMap> [val]
@@ -37,6 +39,8 @@ FILE fqName:pkg fileName:/flatMapExperiment.kt
     TYPE_PARAMETER name:U index:1 variance: superTypes:[kotlin.Any?] reified:false
     VALUE_PARAMETER kind:ExtensionReceiver name:<this> index:0 type:io.github.cbrandt77.kt.inlinestreams.InlineStream<kotlin.collections.Iterable<T of pkg.flatMap>>
     VALUE_PARAMETER kind:Regular name:mapper index:1 type:kotlin.Function1<T of pkg.flatMap, U of pkg.flatMap>
+    annotations:
+      InlineStreamFunctionReference(id = -1404696948)
     BLOCK_BODY
       VAR name:state type:kotlin.Int [var]
         CONST Int type=kotlin.Int value=4

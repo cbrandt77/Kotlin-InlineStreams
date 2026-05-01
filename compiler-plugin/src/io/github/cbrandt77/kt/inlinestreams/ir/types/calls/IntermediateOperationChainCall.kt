@@ -2,6 +2,7 @@ package io.github.cbrandt77.kt.inlinestreams.ir.types.calls
 
 import io.github.cbrandt77.kt.inlinestreams.ir.StreamOpContext
 import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.chain.IntermediateOperationChainFunction
+import io.github.cbrandt77.kt.inlinestreams.util.flatMap
 import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.types.IrType
@@ -12,12 +13,12 @@ import org.jetbrains.kotlin.ir.util.substitute
 	companion object {
 		context(data: StreamOpContext)
 		operator fun invoke(call: IrCall): Result<IntermediateOperationChainCall> = with (data) {
-			return StreamOperationChainCall.invoke(call).mapCatching {
+			return StreamOperationChainCall.invoke(call).flatMap {
 				if (it.ir.type.classOrNull != inlineStreamClassSymbol) {
-					throw IllegalArgumentException("Intermediate operation does not return an InlineStream.")
+					Result.failure(IllegalArgumentException("Intermediate operation does not return an InlineStream."))
+				} else {
+					Result.success(IntermediateOperationChainCall(it))
 				}
-				
-				IntermediateOperationChainCall(it)
 			}
 		}
 	}

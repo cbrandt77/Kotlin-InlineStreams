@@ -40,3 +40,19 @@ inline fun <T> List<T>.zipAllMatch(otherList: List<T>, predicate: (T, T) -> Bool
 	
 	return true;
 }
+
+/**
+ * I thought List#hashCode was stable between runs, but apparently not in every implementation.
+ *
+ * This makes a hashcode that's sensitive to the order of the list with a function I know is independent of each implementation.
+ */
+fun <T> List<T>.stableHashCode(): Int {
+	if (this.isEmpty())
+		return 0; // TODO is this ok?
+	
+	var hash = 0
+	for (el in this) {
+		hash = 31 * hash + el.hashCode()
+	}
+	return hash;
+}

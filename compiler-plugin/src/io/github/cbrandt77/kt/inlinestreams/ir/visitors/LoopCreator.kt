@@ -1,4 +1,4 @@
-package io.github.cbrandt77.kt.inlinestreams.ir.transformers
+package io.github.cbrandt77.kt.inlinestreams.ir.visitors
 
 import io.github.cbrandt77.kt.inlinestreams.ir.StreamOpContext
 import io.github.cbrandt77.kt.inlinestreams.ir.types.calls.TerminalOperationChainCall

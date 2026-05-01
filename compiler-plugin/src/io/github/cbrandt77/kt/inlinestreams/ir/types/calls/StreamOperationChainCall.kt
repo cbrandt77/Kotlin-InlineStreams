@@ -44,5 +44,5 @@ import org.jetbrains.kotlin.ir.util.substitute
 	
 	context(_: StreamOpContext)
 	val target: StreamOperationChainFunction
-		get() = StreamOperationChainFunction(ir.symbol.owner)
+		get() = StreamOperationChainFunction(ir.symbol.owner).getOrThrow()
 }
