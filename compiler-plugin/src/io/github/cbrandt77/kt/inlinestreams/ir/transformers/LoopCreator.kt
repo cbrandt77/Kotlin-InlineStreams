@@ -44,6 +44,7 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 		val originalInputType = entranceFunction.typeArguments.first()!!
 		val finalOutputType = terminalOperation.outputType
 		
+		// TODO maybe we just use our own custom block and return in that?
 		val rootCall = IrCallImpl(-1, -1, finalOutputType, kotlinRunFunction, 1).apply {
 			typeArguments += finalOutputType
 		}

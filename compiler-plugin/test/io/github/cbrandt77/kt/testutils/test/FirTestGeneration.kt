@@ -53,6 +53,7 @@ import org.jetbrains.kotlin.test.services.KotlinTestInfo
 import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.utils.addToStdlib.UnsafeCastFunction
 import org.jetbrains.kotlin.utils.addToStdlib.cast
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import java.io.File
@@ -146,10 +147,12 @@ abstract class FirUnitTester {
 			super.initTestInfo(KotlinTestInfo(testData.owningClass.name, testData.methodName, emptySet()))
 		}
 		
-		private class UnitTestEnvConfigurator(testServices: TestServices, val firExtension: FirExtensionRegistrar, val irExtension: IrGenerationExtension) : EnvironmentConfigurator(testServices) {
+		private class UnitTestEnvConfigurator(testServices: TestServices, val testData: TestData) : EnvironmentConfigurator(testServices) {
 			override fun CompilerPluginRegistrar.ExtensionStorage.registerCompilerExtensions(module: TestModule, configuration: CompilerConfiguration) {
-				FirExtensionRegistrarAdapter.registerExtension(firExtension)
-				IrGenerationExtension.registerExtension(irExtension)
+				val (fir, ir) = testData.build()
+				FirExtensionRegistrarAdapter.registerExtension(fir)
+				testData.irExtension?.let { IrGenerationExtension.registerExtension(it) }
+				IrGenerationExtension.registerExtension(ir)
 			}
 		}
 		
@@ -174,15 +177,10 @@ abstract class FirUnitTester {
 			super.configure(builder)
 			builder.defaultDirectives {
 				-FirDiagnosticsDirectives.FIR_DUMP
-				
-				if (testData.disableFirDiagnostics) {
-					+CodegenTestDirectives.IGNORE_FIR_DIAGNOSTICS
-				}
 			}
 			
 			additionalEnvConfiguration(builder)
-			val (fir, ir) = testData.build()
-			builder.useConfigurators({ services -> UnitTestEnvConfigurator(services, fir, ir) })
+			builder.useConfigurators({ services -> UnitTestEnvConfigurator(services, testData) })
 		}
 	}
 	
@@ -350,15 +348,13 @@ abstract class FirUnitTester {
 		
 		val exprCheckers = MutableExpressionCheckers()
 		
-		var disableFirDiagnostics = false
-		
-		
 		/**
 		 * Other extensions, so we can make sure methods also work in the context of, for example, a transformer, or an analyzer
 		 */
 		val otherExtensions: MutableList<Pair<KClass<out FirExtension>, FirExtension.Factory<*>>> = mutableListOf()
 		
 		val irVisitors: MutableList<IrTestVisitor> = mutableListOf()
+		var irExtension: IrGenerationExtension? = null
 		
 		inline operator fun <reified T : FirExtension> MutableList<Pair<KClass<out FirExtension>, FirExtension.Factory<*>>>.plusAssign(factory: FirExtension.Factory<T>) {
 			otherExtensions.add(T::class to factory)

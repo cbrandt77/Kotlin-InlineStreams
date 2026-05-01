@@ -2,7 +2,10 @@ package io.github.cbrandt77.kt.inlinestreams.ir
 
 import io.github.cbrandt77.kt.inlinestreams.NamesAndIds
 import io.github.cbrandt77.kt.inlinestreams.NamesAndIds.isEntranceFunction
+import io.github.cbrandt77.kt.inlinestreams.ir.types.calls.IntermediateOperationChainCall
 import io.github.cbrandt77.kt.inlinestreams.ir.types.calls.StreamOperationChainCall
+import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.IntermediateOperationLoopFunction
+import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.StreamOperationLoopFunction
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrParameterKind
@@ -13,7 +16,9 @@ import org.jetbrains.kotlin.ir.types.IrSimpleType
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.classOrNull
 import org.jetbrains.kotlin.ir.types.typeOrNull
+import org.jetbrains.kotlin.ir.util.IrExceptionBuilder
 import org.jetbrains.kotlin.ir.util.callableId
+import org.jetbrains.kotlin.ir.util.irError
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.StandardClassIds
@@ -50,25 +55,54 @@ class StreamOpContext(val context: IrPluginContext) {
 	val IrCall.extensionReceiver_
 		get() = symbol.owner.parameters.firstOrNull { it.kind == IrParameterKind.ExtensionReceiver }?.let { arguments[it] }
 	
-	fun getLoopOpFunction(chainFunc: StreamOperationChainCall): IrSimpleFunctionSymbol {
-		return context.referenceFunctions(chainFunc.ir.symbol.owner.callableId.let {
-			it.copy(getLoopOpFunctionName(chainFunc.ir.symbol.owner))
-		}).disambiguate(chainFunc)
+	private inline fun getAllLoopOpFunctions(chainFunc: StreamOperationChainCall, disambiguate: (Collection<IrSimpleFunctionSymbol>) -> StreamOperationLoopFunction): StreamOperationLoopFunction {
+		val allFunctions = chainFunc.ir.symbol.owner.let { calledFunc ->
+			context.referenceFunctions(calledFunc.callableId.let {
+				it.copy(getLoopOpFunctionName(calledFunc))
+			})
+		}
+		
+		when (allFunctions.size) {
+			0 -> irError("No 'action' function found for chainable operation.") {
+				withIrEntry("stream operation", chainFunc.ir)
+			}
+			1 -> return StreamOperationLoopFunction(allFunctions.first().owner).getOrThrow()
+			else -> return disambiguate(allFunctions)
+		}
 	}
 	
-	/**
-	 * How do we disambiguate:
-	 * - Check the function's own parameters
-	 * - Check the input type
-	 * - Check the output type
-	 */
-	private fun Iterable<IrSimpleFunctionSymbol>.disambiguate(chainFunc: StreamOperationChainCall): IrSimpleFunctionSymbol {
-		TODO()
+	fun IntermediateOperationChainCall.getLoopOpFunction(): StreamOperationLoopFunction {
+		// TODO we need IntermediateOperationChainFunctionDefinition too
+		/**
+		 * How do we disambiguate:
+		 * - Check the function's own parameters
+		 * - Check the input type
+		 * - Check the output type
+		 */
+		return getAllLoopOpFunctions(internal) { items ->
+			val allValidIntermediateOperations = items.mapNotNull { IntermediateOperationLoopFunction(it.owner).getOrNull() }.ifEmpty {
+				TODO("throw error explaining what makes each item not qualify as an intermediate operation")
+			}
+			allValidIntermediateOperations.singleOrNull()?.let {
+				return@getAllLoopOpFunctions it.internal;
+			}
+			
+//
+//			val withSameInputType = allValidIntermediateOperations.filter {
+//
+//			}
+			TODO()
+		}
 	}
+	
+	
 	
 	fun getLoopOpFunctionName(chainFunc: IrFunction): Name {
 		return Name.identifier("loopAction-" + chainFunc.name.asString())
-	}
+	} // TODO make this actually robust
+	
+	val IrFunction.isLoopOperation
+		get() = this.name.asString().startsWith("loopAction-")
 	
 	
 	

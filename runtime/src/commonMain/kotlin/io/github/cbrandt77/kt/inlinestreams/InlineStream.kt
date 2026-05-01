@@ -5,10 +5,11 @@ package io.github.cbrandt77.kt.inlinestreams
 import kotlin.jvm.JvmInline
 
 @JvmInline @Suppress("UNUSED")
-public value class InlineStream<out T> // TODO figure out type variance
+public value class InlineStream<out T>
 internal constructor(private val dummy: Nothing?) // TODO should this hold the iterable itself?
 
 private val instance: InlineStream<Any> = InlineStream(null)
+
 @Suppress("UNCHECKED_CAST")
 internal fun <T> instance(): InlineStream<T> = instance as InlineStream<T>
 
@@ -18,6 +19,10 @@ public fun <T> Iterable<T>.inlineStream(): InlineStream<T> {
 }
 
 public fun <T> Iterator<T>.inlineStream(): InlineStream<T> {
+	return instance()
+}
+
+public fun <T> Array<T>.inlineStream(): InlineStream<T> {
 	return instance()
 }
 
