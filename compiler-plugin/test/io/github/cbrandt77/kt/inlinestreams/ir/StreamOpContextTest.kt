@@ -77,7 +77,7 @@ fun <T : InlineStream<*>> T.doesNot5() { TODO() }
 				with (context) {
 					val name = declaration.name.identifierOrNullIfSpecial ?: return;
 					if (name.startsWith("does")) {
-						assertEquals(!name.startsWith("doesNot"), declaration.actsOnInlineStream) { declaration.render() }
+						assertEquals(!name.startsWith("doesNot"), declaration.hasInlineStreamReceiver) { declaration.render() }
 					}
 				}
 			}

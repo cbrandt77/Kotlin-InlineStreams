@@ -1,0 +1,59 @@
+package io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.loop
+
+import io.github.cbrandt77.kt.inlinestreams.NamesAndIds
+import io.github.cbrandt77.kt.inlinestreams.ir.StreamOpContext
+import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.MalformedInlineStreamGeneratedFunction
+import org.jetbrains.kotlin.ir.declarations.IrFunction
+import org.jetbrains.kotlin.ir.declarations.IrParameterKind
+import org.jetbrains.kotlin.ir.declarations.IrValueParameter
+import org.jetbrains.kotlin.ir.types.IrType
+import org.jetbrains.kotlin.ir.util.isTopLevel
+
+/**
+ * The inline function actually executed inside the loop, e.g. `map(el) { flatMap(el) { forEach(el) } }
+ */
+@JvmInline value class StreamOperationLoopFunction private constructor(val ir: IrFunction) {
+	companion object {
+		context(data: StreamOpContext)
+	    operator fun invoke(func: IrFunction): Result<StreamOperationLoopFunction> = with (data) {
+			return when {
+				!func.isLoopOperation -> Result.failure(IllegalArgumentException("Item is not a loop operation function."))
+				!func.isInline -> Result.failure(MalformedInlineStreamGeneratedFunction("Loop operation function must be inline."))
+				!func.isTopLevel -> Result.failure(MalformedInlineStreamGeneratedFunction("Loop operation function must be top level.")) // TODO remove this when we allow nested inlinestream functions
+				func.parameters.any { it.kind == IrParameterKind.ExtensionReceiver } -> Result.failure(MalformedInlineStreamGeneratedFunction("Loop operation function must not have receiver."))
+				else -> Result.success(StreamOperationLoopFunction(func))
+			}
+		}
+	}
+	
+	/**
+	 * This will be the type of the element parameter
+	 */
+	context(data: StreamOpContext)
+	val inputElementType: IrType
+		get() = parameters.first { it.name == NamesAndIds.IntermediateOperations.NAME_element }.type
+	
+	val parameters: Sequence<IrValueParameter>
+		get() = ir.parameters.asSequence().filter { it.kind != IrParameterKind.ExtensionReceiver }
+	
+	/**
+	 * arguments passed to the original dsl function, e.g. `map({ it -> it.foo })`
+	 *
+	 * These will always be the first parameters in the sequence.
+	 */
+	context(data: StreamOpContext)
+	val dslFunArgs
+		get() = with (data) { parameters.takeWhile { it.isDslFunParameter } }
+	
+	/** `el`, `breakLoop`, `downstreamAction`. These are actually the only parameters that don't have special names. */
+	val standardArgs: Sequence<IrValueParameter>
+		get() = parameters.dropWhile { it.name.isSpecial }.takeWhile { !it.name.isSpecial }
+	
+	context(data: StreamOpContext)
+	val gettersByStateName
+		get() = with (data) { parameters.mapNotNull { item -> item.name.nameThisIsGetterFor?.let { it to item } } }
+	
+	context(data: StreamOpContext)
+	val settersByStateName
+		get() = with (data) { parameters.mapNotNull { item -> item.name.nameThisIsSetterFor?.let { it to item } } }
+}

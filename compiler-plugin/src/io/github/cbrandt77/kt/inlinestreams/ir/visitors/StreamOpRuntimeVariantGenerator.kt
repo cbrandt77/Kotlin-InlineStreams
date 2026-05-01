@@ -67,7 +67,7 @@ class StreamOpRuntimeVariantGenerator(
 	}
 	
 	override fun visitFunction(declaration: IrFunction): IrStatement = with (data) {
-		if (declaration.actsOnInlineStream)
+		if (declaration.hasInlineStreamReceiver)
 			FunctionVisitor().visitFunction(declaration)
 		
 		return super.visitFunction(declaration)

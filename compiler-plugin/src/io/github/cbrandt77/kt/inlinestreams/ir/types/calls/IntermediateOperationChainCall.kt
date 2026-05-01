@@ -1,6 +1,7 @@
 package io.github.cbrandt77.kt.inlinestreams.ir.types.calls
 
 import io.github.cbrandt77.kt.inlinestreams.ir.StreamOpContext
+import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.chain.IntermediateOperationChainFunction
 import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.types.IrType
@@ -35,4 +36,7 @@ import org.jetbrains.kotlin.ir.util.substitute
 	context(data: StreamOpContext)
 	val outputElementType: IrType
 		get() = with (data) { ir.type.substitute(ir.symbol.owner.typeParameters, ir.typeArguments.filterNotNull()).let { getInlineStreamTypeParameterT(it) } ?: error("Intermediate operation does not return InlineStream<>") }
+	
+	context(_: StreamOpContext)
+	val target get() = IntermediateOperationChainFunction(internal.target)
 }
