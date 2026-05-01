@@ -6,3 +6,4 @@
 build/
 out/
 compiler-plugin/test-gen/
+compiler-plugin/testData/generated/
