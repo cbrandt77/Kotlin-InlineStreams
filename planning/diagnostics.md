@@ -5,7 +5,7 @@ Errors:
 - Calls `streamOperation` and doesn't return it
 - Calls both `streamOperation` and `terminalOperation`
 - References InlineStream inside of `streamOperation`
-- ~~Returns `terminalOperation`~~ (actually nevermind, this is fine. `terminalOperation` returns `Unit`, so it's a shorthand for doing something and returning `Unit`)
+- Calls `streamOperation` or `terminalOperation` outside the top level of the function
 
 Questioning:
 - InlineStream operation function is not top-level?
