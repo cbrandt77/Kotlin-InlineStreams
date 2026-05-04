@@ -13,7 +13,7 @@ allprojects {
 }
 
 tasks.register("publishToMavenLocal") {
-    arrayOf(project(":compiler-plugin"), project(":gradle-plugin"), project(":runtime")).forEach {
+    arrayOf(project(":compiler-plugin"), project(":gradle-plugin"), project(":runtime-core"), project(":runtime-library"), ).forEach {
         dependsOn(it.tasks["publishToMavenLocal"])
     }
     group = "custom"

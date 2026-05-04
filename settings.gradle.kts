@@ -2,6 +2,7 @@ pluginManagement {
     repositories {
         mavenCentral()
         gradlePluginPortal()
+        mavenLocal()
     }
     
 }
@@ -11,6 +12,7 @@ dependencyResolutionManagement {
     repositories {
         mavenCentral()
         google()
+        mavenLocal()
         maven("https://redirector.kotlinlang.org/maven/bootstrap")
         maven("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev/")
         maven("https://packages.jetbrains.team/maven/p/kt/dev/")
@@ -28,7 +30,8 @@ rootProject.name = "InlineStreams"
 
 include("compiler-plugin")
 include("gradle-plugin")
-include("runtime")
+include("runtime-core")
+include("runtime-library")
 
 
 fun addCompilerCompatModule() {

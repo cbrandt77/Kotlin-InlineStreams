@@ -44,7 +44,7 @@ dependencies {
     testFixturesApi(kotlin("compiler-internal-test-framework"))
     testFixturesApi(kotlin("compiler"))
 
-    annotationsRuntimeClasspath(project(":runtime"))
+    annotationsRuntimeClasspath(project(":runtime-core"))
 
     // Dependencies required to run the internal test framework.
     testRuntimeOnly(libs.junit)
@@ -162,9 +162,6 @@ buildConfig {
     className = "InlineStreamsBuildConfig"
     
     buildConfigField("String", "KOTLIN_PLUGIN_ID", "\"${rootProject.group}\"")
-    
-    buildConfigField("String", "OPT_USECAMELCASE_CLINAME", "\"camelcase\"")
-    buildConfigField("String", "OPT_SETTERPATTERN_CLINAME", "\"setter-pattern\"")
 }
 
 plugins.withId("org.gradle.java-test-fixtures") {
