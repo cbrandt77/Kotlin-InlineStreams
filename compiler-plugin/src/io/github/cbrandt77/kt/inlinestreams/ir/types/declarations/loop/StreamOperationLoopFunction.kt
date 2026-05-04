@@ -6,6 +6,7 @@ import io.github.cbrandt77.kt.inlinestreams.ir.types.annotations.InlineStreamFun
 import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.MalformedInlineStreamGeneratedFunction
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrParameterKind
+import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
 import org.jetbrains.kotlin.ir.declarations.IrValueParameter
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.util.getAnnotation
@@ -14,10 +15,10 @@ import org.jetbrains.kotlin.ir.util.isTopLevel
 /**
  * The inline function actually executed inside the loop, e.g. `map(el) { flatMap(el) { forEach(el) } }
  */
-@JvmInline value class StreamOperationLoopFunction private constructor(val ir: IrFunction) {
+@JvmInline value class StreamOperationLoopFunction private constructor(val ir: IrSimpleFunction) {
 	companion object {
 		context(data: StreamOpContext)
-	    operator fun invoke(func: IrFunction): Result<StreamOperationLoopFunction> = with (data) {
+	    operator fun invoke(func: IrSimpleFunction): Result<StreamOperationLoopFunction> = with (data) {
 			return when {
 				!func.isLoopOperation -> Result.failure(IllegalArgumentException("Item is not a loop operation function."))
 				!func.isInline -> Result.failure(MalformedInlineStreamGeneratedFunction("Loop operation function must be inline."))

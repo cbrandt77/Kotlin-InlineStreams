@@ -2,21 +2,30 @@ package io.github.cbrandt77.kt.inlinestreams.ir
 
 import io.github.cbrandt77.kt.inlinestreams.NamesAndIds
 import io.github.cbrandt77.kt.inlinestreams.NamesAndIds.isEntranceFunction
+import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.chain.IntermediateOperationChainFunction
 import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.chain.StreamOperationChainFunction
 import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.loop.IntermediateOperationLoopFunction
 import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.loop.StreamOperationLoopFunction
+import io.github.cbrandt77.kt.inlinestreams.util.flatMap
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrParameterKind
 import org.jetbrains.kotlin.ir.declarations.IrValueParameter
+import org.jetbrains.kotlin.ir.declarations.IrVariable
 import org.jetbrains.kotlin.ir.expressions.IrCall
+import org.jetbrains.kotlin.ir.expressions.IrConstructorCall
+import org.jetbrains.kotlin.ir.expressions.IrGetValue
+import org.jetbrains.kotlin.ir.expressions.IrReturn
+import org.jetbrains.kotlin.ir.expressions.impl.IrReturnImpl
 import org.jetbrains.kotlin.ir.symbols.IrFunctionSymbol
+import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.types.IrSimpleType
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.classOrNull
 import org.jetbrains.kotlin.ir.types.typeOrNull
 import org.jetbrains.kotlin.ir.util.callableId
 import org.jetbrains.kotlin.ir.util.render
+import org.jetbrains.kotlin.ir.util.statements
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.StandardClassIds
@@ -45,7 +54,7 @@ class StreamOpContext(val context: IrPluginContext) {
 	val IrCall.callsInlineStreamFunction: Boolean
 		get() = this.symbol.owner.hasInlineStreamReceiver
 	
-	val IrCall.callsInlineStreamEntranceFunction: Boolean // TODO allow custom entrance functions
+	val IrCall.callsInlineStreamEntranceFunction: Boolean // TODO inputs X returns InlineStream<Y>
 		get() = this.symbol.owner.callableId.isEntranceFunction
 	
 	
@@ -90,6 +99,10 @@ class StreamOpContext(val context: IrPluginContext) {
 		       ?: Result.failure(InlineStreamFunctionResolutionException(ourCallableId, disambiguatedByIdentifier.map { it.ir.symbol }, "Expected 1 function with matching identifier, found ${disambiguatedByIdentifier.size}."))
 	}
 	
+	fun IntermediateOperationChainFunction.getLoopFunction(): Result<IntermediateOperationLoopFunction> {
+		return internal.getLoopFunction().flatMap { IntermediateOperationLoopFunction(it) }
+	}
+	
 	
 	
 	fun getLoopOpFunctionName(chainFunc: Name): Name {
@@ -120,11 +133,10 @@ class StreamOpContext(val context: IrPluginContext) {
 		return Name.special("<get-" + originalName.asStringStripSpecialMarkers() + ">")
 	}
 	
-	val Name.nameThisIsGetterFor: Name?
+	val Name.nameThisIsGetterFor: String?
 		get() = this.takeIf { it.isSpecial }
 			?.asString()
 			?.let { getterRegex.find(it, 5)?.groupValues?.firstOrNull() }
-			?.let { Name.identifier(it) }
 	
 	
 	
@@ -134,11 +146,30 @@ class StreamOpContext(val context: IrPluginContext) {
 		return Name.special("<set-" + originalName.asStringStripSpecialMarkers() + ">")
 	}
 	
-	val Name.nameThisIsSetterFor: Name?
+	val Name.nameThisIsSetterFor: String?
 		get() = this.takeIf { it.isSpecial }
 			?.asString()
 			?.let { setterRegex.find(it, 5)?.groupValues?.firstOrNull() }
-			?.let { Name.identifier(it) }
+	
+	
+//	/**
+//	 * For a function `X.inlineStream(): InlineStream<Y>`, get the function to create an iterator from X.
+//	 *
+//	 * It has to return `InlineStream(someIterator)`, so we just grab the
+//	 */
+//	fun getIteratorFunctionForEntranceFunction(entranceFunction: IrFunction): IrSimpleFunctionSymbol? {
+//		val body = entranceFunction.body ?: error("Entrance function doesn't have a body.")
+//		val returnStatement = body.statements.firstOrNull { it is IrReturn } as? IrReturn ?: error("Entrance function doesn't return.")
+//
+//		val ctorCall = (returnStatement.value as? IrConstructorCall)?.takeIf { it.type.classOrNull == inlineStreamClassSymbol }
+//		               ?: error("entrance function doesn't return InlineStream")
+//
+//		val x = ctorCall.arguments[0]
+//		when (x) {
+//			is IrCall -> return x.symbol
+//			is IrGetValue -> // I might need to have the InlineStream functions generate a function themselves to get the iterator
+//		}
+//	}
 }
 
 open class InlineStreamTranslationException(message: String? = null, cause: Throwable? = null) : RuntimeException(message, cause)

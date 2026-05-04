@@ -6,7 +6,7 @@ import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.classOrNull
 
-@JvmInline value class TerminalOperationChainCall private constructor(private val internal: StreamOperationChainCall) {
+@JvmInline value class TerminalOperationChainCall private constructor(val internal: StreamOperationChainCall) {
 	companion object {
 		context(data: StreamOpContext)
 		operator fun invoke(call: IrCall): Result<TerminalOperationChainCall> {

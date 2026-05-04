@@ -21,6 +21,7 @@ package io.github.cbrandt77.kt.inlinestreams
 
 import io.github.cbrandt77.kt.inlinestreams.fir.diagnostics.FirErrorTypes_InlineStreams
 import io.github.cbrandt77.kt.inlinestreams.ir.StreamOpContext
+import io.github.cbrandt77.kt.inlinestreams.ir.visitors.LoopCreator
 import io.github.cbrandt77.kt.inlinestreams.ir.visitors.StreamOpRuntimeVariantGenerator
 import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
@@ -52,7 +53,7 @@ class CompilerPluginRegistrar_InlineStreams : CompilerPluginRegistrar() {
 		override fun generate(moduleFragment: IrModuleFragment, pluginContext: IrPluginContext) {
 			val data = StreamOpContext(pluginContext)
 			moduleFragment.transformChildrenVoid(StreamOpRuntimeVariantGenerator(pluginContext, data))
-//			moduleFragment.transformChildrenVoid(LoopCreator(pluginContext, data))
+			moduleFragment.transformChildrenVoid(LoopCreator(pluginContext, data))
 		}
 	}
 }
