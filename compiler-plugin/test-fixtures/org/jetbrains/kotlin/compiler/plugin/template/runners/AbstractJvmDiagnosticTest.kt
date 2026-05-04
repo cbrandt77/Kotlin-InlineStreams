@@ -1,5 +1,6 @@
 package org.jetbrains.kotlin.compiler.plugin.template.runners
 
+import org.jetbrains.kotlin.compiler.plugin.template.services.configureAnnotations
 import org.jetbrains.kotlin.compiler.plugin.template.services.configurePlugin
 import org.jetbrains.kotlin.test.FirParser
 import org.jetbrains.kotlin.test.builders.TestConfigurationBuilder
@@ -10,7 +11,7 @@ import org.jetbrains.kotlin.test.runners.AbstractFirPhasedDiagnosticTest
 import org.jetbrains.kotlin.test.services.EnvironmentBasedStandardLibrariesPathProvider
 import org.jetbrains.kotlin.test.services.KotlinStandardLibrariesPathProvider
 
-open class AbstractJvmDiagnosticTest : AbstractFirPhasedDiagnosticTest(FirParser.LightTree) {
+open class AbstractJvmDiagnosticTest() : AbstractFirPhasedDiagnosticTest(FirParser.LightTree) {
     override fun createKotlinStandardLibrariesPathProvider(): KotlinStandardLibrariesPathProvider {
         return EnvironmentBasedStandardLibrariesPathProvider
     }
@@ -33,7 +34,6 @@ open class AbstractJvmDiagnosticTest : AbstractFirPhasedDiagnosticTest(FirParser
 
             +CodegenTestDirectives.IGNORE_DEXING // Avoids loading R8 from the classpath.
         }
-
-        configurePlugin()
+        configureAnnotations()
     }
 }

@@ -23,6 +23,7 @@ import org.intellij.lang.annotations.Language
 import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
+import org.jetbrains.kotlin.compiler.plugin.template.runners.AbstractCompilerUnitTest
 import org.jetbrains.kotlin.compiler.plugin.template.runners.AbstractJvmDiagnosticTest
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
@@ -58,6 +59,7 @@ import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import java.io.File
 import java.lang.reflect.Method
+import java.net.URI
 import java.util.Arrays
 import java.util.stream.Stream
 import kotlin.io.path.createFile
@@ -135,7 +137,7 @@ abstract class FirUnitTester {
 	 */
 	open fun configureEnv(builder: TestConfigurationBuilder) {}
 	
-	private class JvmUnitTest(val testData: TestData, val additionalEnvConfiguration: (TestConfigurationBuilder) -> Unit) : AbstractJvmDiagnosticTest() {
+	private class JvmUnitTest(val testData: TestData, val additionalEnvConfiguration: (TestConfigurationBuilder) -> Unit) : AbstractCompilerUnitTest() {
 		companion object {
 			const val BASE_RESOLVE = $$"$PROJECT_ROOT"
 			
@@ -419,7 +421,7 @@ abstract class FirUnitTester {
 			.filter { it.isAnnotationPresent(FirTest::class.java) }
 			.map { firTestMethod ->
 				require(firTestMethod.parameterTypes.singleOrNull() == TestData::class.java) { "FirTest methods must take a single TestData parameter (usually a receiver)." }
-				DynamicTest.dynamicTest(firTestMethod.name) {
+				DynamicTest.dynamicTest(firTestMethod.name, URI(subclass.name.replace('.', '/') + ".kt")) {
 					val testData = TestData(subclass, firTestMethod.name).also {
 						firTestMethod.invoke(ctor.newInstance(), it)
 					}
