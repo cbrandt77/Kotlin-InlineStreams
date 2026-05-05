@@ -57,6 +57,13 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 		val INLINE_STREAM by IrStatementOriginImpl
 	}
 	
+	override fun visitFunction(declaration: IrFunction): IrStatement = with (data) {
+		if (declaration.hasInlineStreamReceiver)
+			return declaration;
+		
+		return super.visitFunction(declaration)
+	}
+	
 	override fun visitCall(expression: IrCall): IrExpression = with (data) {
 		if (expression.callsInlineStreamFunction) {
 			return remappedInlineStream(expression)
@@ -103,7 +110,7 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 			
 			val unitType = context.irBuiltIns.unitType
 			val theLoop = IrWhileLoopImpl(-1, -1, unitType, FOR_LOOP_INNER_WHILE).apply {
-				condition = IrCallImpl(-1, -1, context.irBuiltIns.booleanType, context.symbols.iterable.functionByName("hasNext"), origin = IrStatementOrigin.FOR_LOOP_HAS_NEXT).withReceiver(IrGetValueImpl(-1, -1, iterVar.symbol))
+				condition = IrCallImpl(-1, -1, context.irBuiltIns.booleanType, context.symbols.iterator.functionByName("hasNext"), origin = IrStatementOrigin.FOR_LOOP_HAS_NEXT).withReceiver(IrGetValueImpl(-1, -1, iterVar.symbol))
 			}.also {
 				loopBlock.statements += it
 			}
