@@ -8,6 +8,7 @@ plugins {
     kotlin("multiplatform")
     id("org.jetbrains.kotlinx.binary-compatibility-validator")
     id("module.publication")
+    id(MyPublishingInfo.plugin_id) version PROJ_VERSION
 }
 
 

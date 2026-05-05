@@ -4,7 +4,6 @@ pluginManagement {
         gradlePluginPortal()
         mavenLocal()
     }
-    
 }
 
 dependencyResolutionManagement {
@@ -27,6 +26,7 @@ plugins {
 }
 
 rootProject.name = "InlineStreams"
+
 
 include("compiler-plugin")
 include("gradle-plugin")

@@ -7,13 +7,13 @@ import java.util.Base64
 
 plugins {
 	id("com.vanniktech.maven.publish")
-	signing
+//	signing
 }
 
 mavenPublishing {
 	publishToMavenCentral()
 	
-	signAllPublications()
+//	signAllPublications()
 	
 	coordinates(PROJ_GROUP, project.name, PROJ_VERSION)
 	
@@ -74,10 +74,11 @@ mavenPublishing {
 //	}
 //}
 
+/*
 signing {
 //	val signingKey = findProperty("signingKey") as String
 //	val signingPassword = findProperty("signingPassword") as String
 //	useInMemoryPgpKeys(signingKey, signingPassword)
 //	useGpgCmd()
 	sign(publishing.publications)
-}
+}*/

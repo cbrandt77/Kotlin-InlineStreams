@@ -28,9 +28,6 @@ buildConfig {
     className = "InlineStreamsBuildConfig"
     
     buildConfigField("String", "KOTLIN_PLUGIN_ID", "\"${rootProject.group}\"")
-    
-    buildConfigField("String", "OPT_USECAMELCASE_CLINAME", "\"camelcase\"")
-    buildConfigField("String", "OPT_SETTERPATTERN_CLINAME", "\"setter-pattern\"")
 }
 
 buildConfig {
