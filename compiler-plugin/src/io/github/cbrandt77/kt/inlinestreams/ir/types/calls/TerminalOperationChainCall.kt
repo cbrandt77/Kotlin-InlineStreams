@@ -1,6 +1,7 @@
 package io.github.cbrandt77.kt.inlinestreams.ir.types.calls
 
 import io.github.cbrandt77.kt.inlinestreams.ir.StreamOpContext
+import io.github.cbrandt77.kt.inlinestreams.util.flatMap
 import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.types.IrType
@@ -10,11 +11,11 @@ import org.jetbrains.kotlin.ir.types.classOrNull
 	companion object {
 		context(data: StreamOpContext)
 		operator fun invoke(call: IrCall): Result<TerminalOperationChainCall> {
-			return StreamOperationChainCall.invoke(call).mapCatching {
+			return StreamOperationChainCall.invoke(call).flatMap {
 				if (it.ir.type.classOrNull == data.inlineStreamClassSymbol)
-					throw IllegalArgumentException("Terminal operation returns InlineStream.")
-				
-				TerminalOperationChainCall(it)
+					Result.failure(IllegalArgumentException("Terminal operation returns InlineStream."))
+				else
+					Result.success(TerminalOperationChainCall(it))
 			}
 		}
 	}
