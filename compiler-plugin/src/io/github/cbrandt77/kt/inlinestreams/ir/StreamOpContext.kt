@@ -8,28 +8,22 @@ import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.loop.Intermedi
 import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.loop.StreamOperationLoopFunction
 import io.github.cbrandt77.kt.inlinestreams.util.flatMap
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
+import org.jetbrains.kotlin.ir.declarations.IrDeclarationContainer
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrParameterKind
+import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
 import org.jetbrains.kotlin.ir.declarations.IrValueParameter
-import org.jetbrains.kotlin.ir.declarations.IrVariable
 import org.jetbrains.kotlin.ir.expressions.IrCall
-import org.jetbrains.kotlin.ir.expressions.IrConstructorCall
-import org.jetbrains.kotlin.ir.expressions.IrGetValue
-import org.jetbrains.kotlin.ir.expressions.IrReturn
-import org.jetbrains.kotlin.ir.expressions.impl.IrReturnImpl
 import org.jetbrains.kotlin.ir.symbols.IrFunctionSymbol
-import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.types.IrSimpleType
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.classOrNull
 import org.jetbrains.kotlin.ir.types.typeOrNull
 import org.jetbrains.kotlin.ir.util.callableId
 import org.jetbrains.kotlin.ir.util.render
-import org.jetbrains.kotlin.ir.util.statements
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.StandardClassIds
-import kotlin.error
 
 class StreamOpContext(val context: IrPluginContext) {
 	val inlineStreamClassSymbol by lazy {
@@ -69,10 +63,14 @@ class StreamOpContext(val context: IrPluginContext) {
 	
 	fun StreamOperationChainFunction.getLoopFunction(): Result<StreamOperationLoopFunction> {
 		val ourCallableId = this.ir.callableId
-		val allWithName = context.referenceFunctions(ourCallableId.copy(getLoopOpFunctionName(this.ir.name)))
+		val loopFuncName = getLoopOpFunctionName(ourCallableId.callableName)
+		val allWithName = ((this.ir.parent as IrDeclarationContainer) ?: error("Function is not top-level."))
+			.declarations
+			.mapNotNull { (it as? IrSimpleFunction)?.takeIf { it.name == loopFuncName }?.symbol }
 			.ifEmpty {
 				return Result.failure(InlineStreamFunctionResolutionException(ourCallableId, listOf(), "No functions found for that name."));
-			}.toList()
+			}
+			
 		
 		val allAsStreamOperations = allWithName.map {
 			StreamOperationLoopFunction.invoke(it.owner)
