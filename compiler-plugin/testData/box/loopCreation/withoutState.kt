@@ -5,6 +5,31 @@ package pkg
 
 import io.github.cbrandt77.kt.inlinestreams.*
 
+inline fun <T, U> InlineStream<T>.map(mapper: (T) -> U): InlineStream<U> {
+	return intermediateOperation { el, _, downstreamAction ->
+		downstreamAction(mapper(el))
+	}
+}
+
+inline fun <T, U> InlineStream<T>.flatMap(mapper: (T) -> Iterable<U>): InlineStream<U> {
+	return intermediateOperation { el, _, downstreamAction ->
+		for (it in mapper(el)) {
+			downstreamAction(it)
+		}
+	}
+}
+
+fun <T> InlineStream<T>.firstOrNull(): T? {
+	var out: T? = null;
+	
+	terminalOperation { el, breakLoop ->
+		out = el
+		breakLoop()
+	}
+	
+	return out;
+}
+
 public fun dsl(): Int? {
 	return listOf("hi", "there", "gamer")
 		.inlineStream()
