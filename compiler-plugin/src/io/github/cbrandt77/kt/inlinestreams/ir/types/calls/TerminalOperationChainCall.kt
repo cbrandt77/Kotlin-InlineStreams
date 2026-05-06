@@ -1,6 +1,7 @@
 package io.github.cbrandt77.kt.inlinestreams.ir.types.calls
 
 import io.github.cbrandt77.kt.inlinestreams.ir.StreamOpContext
+import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.chain.TerminalOperationChainFunction
 import io.github.cbrandt77.kt.inlinestreams.util.flatMap
 import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.expressions.IrExpression
@@ -34,4 +35,7 @@ import org.jetbrains.kotlin.ir.types.classOrNull
 	
 	val outputType: IrType
 		get() = ir.type
+	
+	context(_: StreamOpContext)
+	val target get() = TerminalOperationChainFunction(internal._targetFunc)
 }

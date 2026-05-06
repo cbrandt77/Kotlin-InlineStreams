@@ -4,6 +4,7 @@ import io.github.cbrandt77.kt.inlinestreams.NamesAndIds.isIntermediateOperation
 import io.github.cbrandt77.kt.inlinestreams.ir.StreamOpContext
 import io.github.cbrandt77.kt.inlinestreams.util.flatMap
 import org.jetbrains.kotlin.ir.declarations.IrFunction
+import org.jetbrains.kotlin.ir.declarations.IrVariable
 import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.expressions.IrReturn
 import org.jetbrains.kotlin.ir.expressions.impl.IrReturnImpl
@@ -38,6 +39,8 @@ import org.jetbrains.kotlin.ir.util.statements
 	
 	val preamble get() = ir.body!!.statements.asSequence()
 		.takeWhile { !(it is IrReturn && it.value.let { it is IrCall && it.symbol.owner.callableId.isIntermediateOperation }) }
+	
+	val stateVariables get() = preamble.filter { it is IrVariable }
 	
 	val arguments get() = internal.arguments
 	

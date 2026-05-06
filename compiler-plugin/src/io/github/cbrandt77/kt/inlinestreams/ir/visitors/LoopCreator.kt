@@ -1,6 +1,7 @@
 package io.github.cbrandt77.kt.inlinestreams.ir.visitors
 
 import io.github.cbrandt77.kt.inlinestreams.NamesAndIds
+import io.github.cbrandt77.kt.inlinestreams.NamesAndIds.IntermediateOperations
 import io.github.cbrandt77.kt.inlinestreams.ir.StreamOpContext
 import io.github.cbrandt77.kt.inlinestreams.ir.types.calls.IntermediateOperationChainCall
 import io.github.cbrandt77.kt.inlinestreams.ir.types.calls.StreamOperationChainCall
@@ -21,6 +22,7 @@ import org.jetbrains.kotlin.ir.declarations.IrVariable
 import org.jetbrains.kotlin.ir.declarations.impl.IrVariableImpl
 import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.expressions.IrExpression
+import org.jetbrains.kotlin.ir.expressions.IrFunctionExpression
 import org.jetbrains.kotlin.ir.expressions.IrStatementOrigin
 import org.jetbrains.kotlin.ir.expressions.IrStatementOrigin.Companion.FOR_LOOP_INNER_WHILE
 import org.jetbrains.kotlin.ir.expressions.IrStatementOrigin.Companion.FOR_LOOP_NEXT
@@ -42,7 +44,6 @@ import org.jetbrains.kotlin.ir.types.classOrNull
 import org.jetbrains.kotlin.ir.types.typeWith
 import org.jetbrains.kotlin.ir.util.erasedUpperBound
 import org.jetbrains.kotlin.ir.util.isSubtypeOfClass
-import org.jetbrains.kotlin.ir.util.statements
 import org.jetbrains.kotlin.ir.visitors.IrElementTransformerVoid
 import org.jetbrains.kotlin.name.Name
 import kotlin.to
@@ -64,16 +65,19 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 		return super.visitFunction(declaration)
 	}
 	
-	override fun visitCall(expression: IrCall): IrExpression = with (data) {
-		if (expression.callsInlineStreamFunction) {
-			return remappedInlineStream(expression)
+	
+	
+	inner class FunctionChecker(val currentFunction: IrFunction) : IrElementTransformerVoid() {
+		override fun visitCall(expression: IrCall): IrExpression = with (data) {
+			if (expression.callsInlineStreamFunction) {
+				return remappedInlineStream(expression, currentFunction)
+			}
+			
+			return super.visitCall(expression)
 		}
-		
-		return super.visitCall(expression)
 	}
 	
-	
-	private fun StreamOpContext.remappedInlineStream(expression: IrCall): IrExpression {
+	private fun StreamOpContext.remappedInlineStream(expression: IrCall, currentFunction: IrFunction): IrExpression {
 		val terminalOperation = TerminalOperationChainCall(expression).getOrElse {
 			throw InlineStreamLoopCreationException(it)
 		}
@@ -104,18 +108,21 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 					type.classOrNull == context.irBuiltIns.arrayClass -> IrCallImpl(-1, -1, iteratorType, context.irBuiltIns.arrayClass.functionByName("iterator")).withReceiver(inputCollection)
 					else -> error("Attempted to initialize with ${inputCollection.type.erasedUpperBound}")
 				}
+				
+				parent = currentFunction
 			}
 			
 			loopBlock.statements.add(iterVar)
 			
 			val unitType = context.irBuiltIns.unitType
+			
 			val theLoop = IrWhileLoopImpl(-1, -1, unitType, FOR_LOOP_INNER_WHILE).apply {
 				condition = IrCallImpl(-1, -1, context.irBuiltIns.booleanType, context.symbols.iterator.functionByName("hasNext"), origin = IrStatementOrigin.FOR_LOOP_HAS_NEXT).withReceiver(IrGetValueImpl(-1, -1, iterVar.symbol))
 			}.also {
 				loopBlock.statements += it
 			}
 			
-			val var_currentElementFromIterator = IrVariableImpl(-1, -1, IrDeclarationOrigin.FOR_LOOP_VARIABLE, IrVariableSymbolImpl(), NamesAndIds.IntermediateOperations.NAME_element, originalInputElementType, isVar = false, isConst = false, isLateinit = false)
+			val var_currentElementFromIterator = IrVariableImpl(-1, -1, IrDeclarationOrigin.FOR_LOOP_VARIABLE, IrVariableSymbolImpl(), IntermediateOperations.NAME_element, originalInputElementType, isVar = false, isConst = false, isLateinit = false)
 				.withInitializer(
 					IrCallImpl(-1, -1, originalInputElementType, context.symbols.iterator.functionByName("next"), origin = FOR_LOOP_NEXT)
 						.withReceiver(IrGetValueImpl(-1, -1, iterVar.symbol)))
@@ -126,8 +133,8 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 				theLoop.body = it
 			}
 			
-			fun IrCall.setBreakLoopArg() {
-				setArgumentNamed(NamesAndIds.IntermediateOperations.NAME_breakLoop) { IrFunctionExpressionImpl(-1, -1, function0Unit, makeLambdaFunction {
+			fun IrCall.addBreakLoopArg() {
+				setArgumentNamed(IntermediateOperations.NAME_breakLoop) { IrFunctionExpressionImpl(-1, -1, function0Unit, makeLambdaFunction {
 					body = context.irFactory.createBlockBody(-1, -1)
 						.apply {
 							statements += IrReturnImpl(-1, -1, context.irBuiltIns.nothingType, loopBody.symbol, IrGetObjectValueImpl(-1, -1, unitType, context.symbols.unit))
@@ -135,28 +142,44 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 				}, LAMBDA) }
 			}
 			
+			fun IrCall.addDownstreamActionArg(chainCall: IntermediateOperationChainCall, nextOperation: IrCall) {
+				val typeU = chainCall.outputElementType
+				val runner = makeLambdaFunction {
+					val element = addValueParameter(name = IntermediateOperations.NAME_element, type = typeU)
+					nextOperation.setArgumentNamed(IntermediateOperations.NAME_element) { IrGetValueImpl(-1, -1, element.symbol) }
+					nextOperation.setDownstreamActionFunctionParent(this)
+					body = context.irFactory.createExpressionBody(-1, -1, nextOperation)
+					
+				}
+				
+				this.setArgumentNamed(IntermediateOperations.NAME_downstreamAction) { IrFunctionExpressionImpl(-1, -1, context.irBuiltIns.functionN(1).typeWith(typeU, context.irBuiltIns.unitType), runner, LAMBDA) }
+			}
+			
 			// first do terminal operation // TODO
-			var step: IrCall = terminalOperation.ir.apply {
-				setDslFunArguments(terminalOperation.internal)
+			var previousStep: IrCall = terminalOperation.ir.apply {
+				addDslFunArguments(terminalOperation.internal)
 				// TODO wire state
-				setBreakLoopArg()
+				addBreakLoopArg()
 			}
 			
 			for ((chainCall, loopFun) in intermediatesLastToFirst) {
 				// wrap each one in the next operation successively
-				step = IrCallImpl(-1, -1, unitType, loopFun.ir.symbol).apply {
-					typeArguments += chainCall.ir.typeArguments // TODO make sure this works
+				previousStep = IrCallImpl(-1, -1, unitType, loopFun.ir.symbol).apply {
+					chainCall.ir.typeArguments.forEachIndexed { index, type ->
+						typeArguments[index] = type
+					} // TODO make sure this works
 					
-					setDslFunArguments(chainCall.internal)
-					setBreakLoopArg()
-					setDownstreamActionArg(chainCall, step) // also wires the "element" parameter for the previous (next) step
+					addDslFunArguments(chainCall.internal)
+					addBreakLoopArg()
+					addDownstreamActionArg(chainCall, previousStep) // also wires the "element" parameter for the previous (next) step
+					// TODO figure out how anonymous function parenting works................
 					// TODO wire state
 				}
 			}
 			
-			step.setArgumentNamed(NamesAndIds.IntermediateOperations.NAME_element) { IrGetValueImpl(-1, -1, var_currentElementFromIterator.symbol) }
+			previousStep.setArgumentNamed(IntermediateOperations.NAME_element) { IrGetValueImpl(-1, -1, var_currentElementFromIterator.symbol) }
 			
-			loopBlock.statements += step
+			loopBlock.statements += previousStep
 		}
 		
 		// TODO add epilogue from terminal operation
@@ -193,6 +216,12 @@ inline fun IrCall.setArgumentNamed(name: Name, value: () -> IrExpression) {
 	}
 }
 
+fun IrCall.getArgumentNamed(name: Name): IrExpression? {
+	return symbol.owner.parameters.firstOrNull { it.name == name }?.let {
+		arguments[it]
+	}
+}
+
 context(ctx: StreamOpContext)
 inline fun makeLambdaFunction(rType: IrType = ctx.context.irBuiltIns.unitType, onNewlyCreatedFunction: IrFunction.() -> Unit = {}): IrSimpleFunction {
 	return ctx.context.irFactory.buildFun {
@@ -219,21 +248,16 @@ fun makeSetterLambda(varType: IrType, targetVariable: IrVariable): IrExpression 
 	}, LAMBDA)
 }
 
-context(ctx: StreamOpContext)
-fun IrCall.setDownstreamActionArg(chainCall: IntermediateOperationChainCall, nextOperation: IrCall) {
-	val typeU = chainCall.outputElementType
-	val runner = makeLambdaFunction {
-		val element = addValueParameter(name = NamesAndIds.IntermediateOperations.NAME_element, type = typeU)
-		body = ctx.context.irFactory.createExpressionBody(-1, -1, nextOperation.apply {
-			setArgumentNamed(NamesAndIds.IntermediateOperations.NAME_element) { IrGetValueImpl(-1, -1, element.symbol) }
-		})
-	}
+fun IrCall.setDownstreamActionFunctionParent(parentFun: IrFunction) {
+	val funcExpr = (this.getArgumentNamed(IntermediateOperations.NAME_downstreamAction) as IrFunctionExpression?) ?: return;
 	
-	setArgumentNamed(NamesAndIds.IntermediateOperations.NAME_downstreamAction) { IrFunctionExpressionImpl(-1, -1, ctx.context.irBuiltIns.functionN(1).typeWith(typeU, ctx.context.irBuiltIns.unitType), runner, LAMBDA) }
+	funcExpr.function.parent = parentFun
 }
 
+
+
 context(ctx: StreamOpContext)
-fun IrCall.setDslFunArguments(chainCall: StreamOperationChainCall) {
+fun IrCall.addDslFunArguments(chainCall: StreamOperationChainCall) {
 	chainCall.ir.arguments.forEachIndexed { i, it ->
 		val chainFunParameter = chainCall.ir.symbol.owner.parameters[i]
 		setArgumentNamed(ctx.getDslFunParameterName(chainFunParameter.name)) { it ?: chainFunParameter.defaultValue?.expression ?: error("Null argument with no default value on the base function") }
@@ -248,3 +272,4 @@ fun IrCall.setStateGettersAndSetters(originalStateVariableName: Name, stateVaria
 	
 	setArgumentNamed(makeSetterNameForState(originalStateVariableName)) { makeSetterLambda(varType, stateVariableOutsideLoop) }
 }
+

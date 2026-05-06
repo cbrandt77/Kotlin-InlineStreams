@@ -42,6 +42,8 @@ import org.jetbrains.kotlin.ir.util.substitute
 			return (receiver as? IrCall)?.type?.substitute(ir.symbol.owner.typeParameters, ir.typeArguments.filterNotNull())?.let { getInlineStreamTypeParameterT(it) } ?: error("Stream operation receiver does not have type argument.")
 		}
 	
+	val _targetFunc get() = ir.symbol.owner
+	
 	context(_: StreamOpContext)
 	val target: StreamOperationChainFunction
 		get() = StreamOperationChainFunction(ir.symbol.owner).getOrThrow()

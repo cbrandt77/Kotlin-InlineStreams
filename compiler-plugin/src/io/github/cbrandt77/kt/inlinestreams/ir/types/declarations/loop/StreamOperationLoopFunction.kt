@@ -19,9 +19,9 @@ import org.jetbrains.kotlin.ir.util.isTopLevel
 	    operator fun invoke(func: IrSimpleFunction): Result<StreamOperationLoopFunction> = with (data) {
 			return when {
 				!func.isLoopOperation -> Result.failure(IllegalArgumentException("Item is not a loop operation function."))
-				!func.isInline -> Result.failure(MalformedInlineStreamGeneratedFunction("Loop operation function must be inline."))
-				!func.isTopLevel -> Result.failure(MalformedInlineStreamGeneratedFunction("Loop operation function must be top level.")) // TODO remove this when we allow nested inlinestream functions
-				func.parameters.any { it.kind == IrParameterKind.ExtensionReceiver } -> Result.failure(MalformedInlineStreamGeneratedFunction("Loop operation function must not have receiver."))
+				!func.isInline -> Result.failure(MalformedInlineStreamGeneratedFunctionException("Loop operation function must be inline."))
+				!func.isTopLevel -> Result.failure(MalformedInlineStreamGeneratedFunctionException("Loop operation function must be top level.")) // TODO remove this when we allow nested inlinestream functions
+				func.parameters.any { it.kind == IrParameterKind.ExtensionReceiver } -> Result.failure(MalformedInlineStreamGeneratedFunctionException("Loop operation function must not have receiver."))
 				else -> Result.success(StreamOperationLoopFunction(func))
 			}
 		}
