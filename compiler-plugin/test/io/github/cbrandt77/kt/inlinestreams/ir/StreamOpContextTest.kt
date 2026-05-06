@@ -145,11 +145,11 @@ fun foo() {
 		}
 	}
 
-	@FirTest
-	fun TestData.getLoopOpFunction() {
-		
-		// TODO
-	}
+//	@FirTest
+//	fun TestData.getLoopOpFunction() {
+//
+//		// TODO
+//	}
 	
 //	@Test @Ignore("Tested by XOperationChainCall inputType")
 //	fun IrType_getInlineStreamTypeParameterT() {}
