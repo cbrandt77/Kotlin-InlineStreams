@@ -10,6 +10,7 @@ import org.jetbrains.kotlin.GeneratedDeclarationKey
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.ir.IrElement
 import org.jetbrains.kotlin.ir.IrStatement
+import org.jetbrains.kotlin.ir.builders.declarations.UNDEFINED_PARAMETER_INDEX
 import org.jetbrains.kotlin.ir.builders.declarations.addTypeParameter
 import org.jetbrains.kotlin.ir.builders.declarations.addValueParameter
 import org.jetbrains.kotlin.ir.builders.declarations.buildFun
@@ -39,6 +40,7 @@ import org.jetbrains.kotlin.ir.types.typeWith
 import org.jetbrains.kotlin.ir.util.callableId
 import org.jetbrains.kotlin.ir.util.deepCopyWithSymbols
 import org.jetbrains.kotlin.ir.util.invokeFun
+import org.jetbrains.kotlin.ir.util.irError
 import org.jetbrains.kotlin.ir.util.isFunction
 import org.jetbrains.kotlin.ir.util.parents
 import org.jetbrains.kotlin.ir.util.remapTypeParameters
@@ -46,6 +48,7 @@ import org.jetbrains.kotlin.ir.util.statements
 import org.jetbrains.kotlin.ir.visitors.IrElementTransformerVoid
 import org.jetbrains.kotlin.ir.visitors.IrTypeTransformerVoid
 import org.jetbrains.kotlin.ir.visitors.IrVisitorVoid
+import org.jetbrains.kotlin.ir.visitors.acceptChildrenVoid
 import org.jetbrains.kotlin.ir.visitors.acceptVoid
 import org.jetbrains.kotlin.ir.visitors.transformChildrenVoid
 
@@ -148,6 +151,10 @@ class LoopFunctionGenerator(val context: IrPluginContext, val data: StreamOpCont
 			getterType.invokeFun!!.symbol
 		}
 		
+		operator fun contains(param: IrValueParameter): Boolean {
+			return param in functions.values
+		}
+		
 		private fun getOrCreateGetterParameter(variable: IrVariable): IrValueParameter {
 			return functions.computeIfAbsent(variable) { it: IrVariable ->
 				newFun.addValueParameter {
@@ -176,6 +183,10 @@ class LoopFunctionGenerator(val context: IrPluginContext, val data: StreamOpCont
 		}
 		private val setterInvokeFun by lazy {
 			setterType.invokeFun!!.symbol
+		}
+		
+		operator fun contains(param: IrValueParameter): Boolean {
+			return param in functions.values
 		}
 		
 		private fun getOrCreateParameter(variable: IrVariable): IrValueParameter {
@@ -225,7 +236,9 @@ class LoopFunctionGenerator(val context: IrPluginContext, val data: StreamOpCont
 		
 		fun remap(parameter: IrValueParameterSymbol): IrValueParameterSymbol {
 			return oldFuncToNewFuncMap[parameter]
-			       ?: TODO("functions should never be nested, but people might try to, so I need an FIR error")
+			       ?: irError("No remapped parameter found") {
+					   withIrEntry("requested", parameter.owner)
+			       }
 		}
 	}
 	
@@ -237,8 +250,8 @@ class LoopFunctionGenerator(val context: IrPluginContext, val data: StreamOpCont
 			return added.computeIfAbsent(fromDslFunc) { it: IrTypeParameter ->
 				newFun.addTypeParameter {
 					updateFrom(it)
-					if (superTypes.isEmpty())
-						superTypes.addAll(it.superTypes)
+					index = UNDEFINED_PARAMETER_INDEX
+					superTypes.addAll(it.superTypes)
 					name = it.name
 				}
 			}
@@ -259,7 +272,9 @@ class LoopFunctionGenerator(val context: IrPluginContext, val data: StreamOpCont
 		override fun visitGetValue(expression: IrGetValue): IrExpression {
 			return when (val target = expression.symbol) {
 				is IrValueParameterSymbol -> {
-					expression.symbol = parameters.remap(target)
+					if (!target.owner.let { it in getters || it in setters })
+						expression.symbol = parameters.remap(target)
+					
 					expression
 				}
 				is IrVariableSymbol -> getters.remapToGetterIfNeeded(expression)
@@ -267,7 +282,9 @@ class LoopFunctionGenerator(val context: IrPluginContext, val data: StreamOpCont
 		}
 		
 		override fun visitSetValue(expression: IrSetValue): IrExpression {
-			return setters.remapToSetterIfNeeded(expression)
+			val expr = setters.remapToSetterIfNeeded(expression)
+			expr.transformChildrenVoid()
+			return expr;
 		}
 	}
 	
