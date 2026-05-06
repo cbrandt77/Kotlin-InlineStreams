@@ -6,6 +6,7 @@ import io.github.cbrandt77.kt.inlinestreams.util.flatMap
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.expressions.IrReturn
+import org.jetbrains.kotlin.ir.expressions.impl.IrReturnImpl
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.util.callableId
 import org.jetbrains.kotlin.ir.util.statements
@@ -35,8 +36,8 @@ import org.jetbrains.kotlin.ir.util.statements
 	val outputElementType: IrType
 		get() = data.getInlineStreamTypeParameterT(ir.returnType) ?: error("doesn't return InlineStream!")
 	
-	context(data: StreamOpContext)
-	val preamble get() = internal.preamble
+	val preamble get() = ir.body!!.statements.asSequence()
+		.takeWhile { !(it is IrReturn && it.value.let { it is IrCall && it.symbol.owner.callableId.isIntermediateOperation }) }
 	
 	val arguments get() = internal.arguments
 	

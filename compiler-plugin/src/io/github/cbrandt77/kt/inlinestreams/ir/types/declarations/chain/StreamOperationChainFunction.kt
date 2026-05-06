@@ -55,14 +55,6 @@ import org.jetbrains.kotlin.ir.util.statements
 	val inputElementType: IrType
 		get() = data.getInlineStreamTypeParameterT(receiver.type) ?: error("doesn't act on inline stream!")
 	
-	context(data: StreamOpContext)
-	val preamble: Sequence<IrStatement>
-		get() = with (data) {
-			ir.body?.statements?.asSequence()
-				.orEmpty()
-				.takeWhile { it !is IrReturnImpl && (it as? IrCall)?.callsInlineStreamFunction != true }
-		}
-	
 	val arguments
 		get() = ir.parameters.asSequence().filter { it.kind != IrParameterKind.ExtensionReceiver }
 }

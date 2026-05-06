@@ -1,9 +1,11 @@
 package io.github.cbrandt77.kt.inlinestreams.ir.types.declarations
 
 import io.github.cbrandt77.kt.inlinestreams.NamesAndIds.isIntermediateOperation
+import io.github.cbrandt77.kt.inlinestreams.NamesAndIds.isTerminalOperation
 import io.github.cbrandt77.kt.inlinestreams.ir.StreamOpVisitor
 import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.chain.IntermediateOperationChainFunction
 import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.chain.StreamOperationChainFunction
+import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.chain.TerminalOperationChainFunction
 import io.github.cbrandt77.kt.inlinestreams.test.FirUnitTester
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.ir.declarations.IrFunction
@@ -108,6 +110,31 @@ inline fun InlineStream<String>.foo(): InlineStream<Unit> {
 		println(bbb)
 	}
 }
+
+inline fun <T> InlineStream<T>.first(predicate: (T) -> Boolean): T {
+	val data = 4
+
+	data.let {
+		println(it * 2)
+	}
+	
+	val bbb = "bbb"
+
+	var out: T? = null
+	var hasSet = false
+	
+	terminalOperation { el, breakLoop ->
+		if (predicate(el)) {
+			out = el;
+			hasSet = true;
+			breakLoop()
+		}
+	}
+	if (!hasSet)
+		throw NoSuchElementException("No item found");
+	
+	return out!!;
+}
 		""".trimIndent()
 		
 		
@@ -116,12 +143,21 @@ inline fun InlineStream<String>.foo(): InlineStream<Unit> {
 				init(data)
 				if (declaration.name.asString() == "foo") {
 					with(context) {
-						val preamble = StreamOperationChainFunction(declaration).getOrThrow().preamble.toList()
-						assertEquals(3, preamble.size) { preamble.joinToString("\n") { it.render() } }
-						assertNotEquals(true, (preamble.last() as? IrCall)?.symbol?.owner?.callableId?.isIntermediateOperation) {
-							preamble.last()
-								.render()
-						}
+						val preamble = IntermediateOperationChainFunction(declaration).getOrThrow().preamble.toList()
+						assertEquals(3, preamble.size) { "Preamble incorrect size.\n" + preamble.joinToString("\n") { it.render() } }
+						assertNotEquals(true, (preamble.last() as? IrCall)?.symbol?.owner?.callableId?.isIntermediateOperation) { "Preamble captured DSL call: " + preamble.last().render() }
+					}
+				} else if (declaration.name.asString() == "first") {
+					with (context) {
+						val op = TerminalOperationChainFunction(declaration).getOrThrow()
+						
+						val preamble = op.preamble.toList()
+						assertEquals(5, preamble.size) { "Preamble incorrect size.\n" + preamble.joinToString("\n") { it.render() } }
+						assertNotEquals(true, (preamble.last() as? IrCall)?.symbol?.owner?.callableId?.isTerminalOperation) { "Preamble captured DSL call: " + preamble.last().render() }
+						
+						val epilogue = op.epilogue.toList()
+						assertEquals(2, epilogue.size) { "Epilogue incorrect size.\n" + epilogue.joinToString("\n") { it.render() } }
+						assertNotEquals(true, (epilogue.first() as? IrCall)?.symbol?.owner?.callableId?.isTerminalOperation) { "Epilogue captured DSL call: " + epilogue.first().render() }
 					}
 				}
 			}
