@@ -41,15 +41,21 @@ class StreamOperationChainFunctionTest : FirUnitTester() {
 $HEADER;
 
 inline fun InlineStream<String>.inString_outInt(): InlineStream<Int> {
-	TODO()
+	return intermediateOperation { _, _, _ ->
+	
+	}
 }
 
 inline fun <T, U> InlineStream<T>.inT_outU(): InlineStream<U> {
-	TODO()
+	return intermediateOperation { _, _, _ ->
+	
+	}
 }
 
 inline fun <T : Iterable<U>, U : java.io.Serializable> InlineStream<T>.inIterableT_outSerializableU(): InlineStream<U> {
-	TODO()
+	return intermediateOperation { _, _, _ ->
+	
+	}
 }
 			""".trimIndent()
 		

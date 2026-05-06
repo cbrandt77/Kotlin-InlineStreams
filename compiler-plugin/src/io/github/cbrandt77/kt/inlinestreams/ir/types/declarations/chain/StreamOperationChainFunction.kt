@@ -20,11 +20,12 @@ import org.jetbrains.kotlin.ir.util.statements
 @JvmInline value class StreamOperationChainFunction private constructor(val ir: IrFunction) {
 	companion object {
 		context(data: StreamOpContext)
-	    operator fun invoke(ir: IrFunction): Result<StreamOperationChainFunction> = data.runCatching {
-			require(ir.isTopLevel) { "Expected to be top-level declaration" }
-			require(ir.hasInlineStreamReceiver) { "Must take an InlineStream as a receiver" }
-			
-			StreamOperationChainFunction(ir)
+	    operator fun invoke(ir: IrFunction): Result<StreamOperationChainFunction> = with (data) {
+			when {
+				!ir.isTopLevel -> Result.failure(IllegalArgumentException("Expected to be top-level declaration"))
+				!ir.hasInlineStreamReceiver -> Result.failure(IllegalArgumentException("Must take an InlineStream as a receiver"))
+				else -> Result.success(StreamOperationChainFunction(ir))
+			}
 	    }
 	}
 	
