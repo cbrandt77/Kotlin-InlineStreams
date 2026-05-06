@@ -174,6 +174,6 @@ open class InlineStreamTranslationException(message: String? = null, cause: Thro
 
 class InlineStreamFunctionResolutionException(val callableId: CallableId, val possibleFunctions: List<IrFunctionSymbol>, val reason: String = "", val additionalInfo: List<String> = emptyList()) : RuntimeException() {
 	override val message get() = "Unable to disambiguate between overloads of '${callableId.asFqNameForDebugInfo()}': ${reason}\n" +
-	                             "Possible targets:\n" +
-	                             possibleFunctions.asSequence().let { if (additionalInfo.size == possibleFunctions.size) it.zip(additionalInfo.asSequence()) else it.map { it to "" } }.joinToString("\n- ") { (func, add) -> func.owner.render() + " - " + add }
+	                             if (possibleFunctions.isEmpty()) { "" }
+	                             else "Possible targets:\n" + possibleFunctions.asSequence().let { if (additionalInfo.size == possibleFunctions.size) it.zip(additionalInfo.asSequence()) else it.map { it to "" } }.joinToString("\n- ") { (func, add) -> func.owner.render() + " - " + add }
 }
