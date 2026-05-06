@@ -126,15 +126,13 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 				theLoop.body = it
 			}
 			
-			val breakLoopFun = makeLambdaFunction {
-				body = context.irFactory.createBlockBody(-1, -1)
-					.apply {
-						statements += IrReturnImpl(-1, -1, context.irBuiltIns.nothingType, loopBody.symbol, IrGetObjectValueImpl(-1, -1, unitType, context.symbols.unit))
-					}
-			}
-			
 			fun IrCall.setBreakLoopArg() {
-				setArgumentNamed(NamesAndIds.IntermediateOperations.NAME_breakLoop) { IrFunctionExpressionImpl(-1, -1, function0Unit, breakLoopFun, LAMBDA) }
+				setArgumentNamed(NamesAndIds.IntermediateOperations.NAME_breakLoop) { IrFunctionExpressionImpl(-1, -1, function0Unit, makeLambdaFunction {
+					body = context.irFactory.createBlockBody(-1, -1)
+						.apply {
+							statements += IrReturnImpl(-1, -1, context.irBuiltIns.nothingType, loopBody.symbol, IrGetObjectValueImpl(-1, -1, unitType, context.symbols.unit))
+						}
+				}, LAMBDA) }
 			}
 			
 			// first do terminal operation // TODO
