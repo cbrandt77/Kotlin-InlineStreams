@@ -3,13 +3,11 @@ package io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.loop
 import io.github.cbrandt77.kt.inlinestreams.NamesAndIds
 import io.github.cbrandt77.kt.inlinestreams.ir.StreamOpContext
 import io.github.cbrandt77.kt.inlinestreams.ir.types.annotations.InlineStreamFunctionReferenceAnnotation
-import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.MalformedInlineStreamGeneratedFunction
-import org.jetbrains.kotlin.ir.declarations.IrFunction
+import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.MalformedInlineStreamGeneratedFunctionException
 import org.jetbrains.kotlin.ir.declarations.IrParameterKind
 import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
 import org.jetbrains.kotlin.ir.declarations.IrValueParameter
 import org.jetbrains.kotlin.ir.types.IrType
-import org.jetbrains.kotlin.ir.util.getAnnotation
 import org.jetbrains.kotlin.ir.util.isTopLevel
 
 /**
