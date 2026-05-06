@@ -39,6 +39,7 @@ import org.jetbrains.kotlin.ir.types.typeWith
 import org.jetbrains.kotlin.ir.util.callableId
 import org.jetbrains.kotlin.ir.util.deepCopyWithSymbols
 import org.jetbrains.kotlin.ir.util.invokeFun
+import org.jetbrains.kotlin.ir.util.isFunction
 import org.jetbrains.kotlin.ir.util.parents
 import org.jetbrains.kotlin.ir.util.remapTypeParameters
 import org.jetbrains.kotlin.ir.util.statements
@@ -205,6 +206,9 @@ class LoopFunctionGenerator(val context: IrPluginContext, val data: StreamOpCont
 				                                                                                       it.symbol to newFun.addValueParameter {
 					                                                                                       updateFrom(it)
 					                                                                                       name = data.getDslFunParameterName(it.name)
+					                                                                                       if (it.type.isFunction() && !dslFunction.ir.isInline) {
+																											   isNoinline = true
+					                                                                                       }
 				                                                                                       }.symbol
 			                                                                                       } +
 		                                                                                       loopAction.parameters
