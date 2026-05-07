@@ -49,13 +49,7 @@ import org.jetbrains.kotlin.ir.util.isTopLevel
 	val standardArgs: Sequence<IrValueParameter>
 		get() = parameters.dropWhile { it.name.isSpecial }.takeWhile { !it.name.isSpecial }
 	
-	context(data: StreamOpContext)
-	val gettersByStateName
-		get() = with (data) { parameters.mapNotNull { item -> item.name.nameThisIsGetterFor?.let { it to item } } }
-	
-	context(data: StreamOpContext)
-	val settersByStateName
-		get() = with (data) { parameters.mapNotNull { item -> item.name.nameThisIsSetterFor?.let { it to item } } }
+	val stateGSArgs get() = parameters.dropWhile { it.name.isSpecial }.dropWhile { !it.name.isSpecial }
 	
 	context(_: StreamOpContext)
 	val identifier

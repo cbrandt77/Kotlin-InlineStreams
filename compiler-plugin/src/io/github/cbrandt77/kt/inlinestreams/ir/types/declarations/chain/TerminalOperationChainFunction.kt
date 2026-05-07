@@ -3,6 +3,7 @@ package io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.chain
 import io.github.cbrandt77.kt.inlinestreams.NamesAndIds.isTerminalOperation
 import io.github.cbrandt77.kt.inlinestreams.ir.StreamOpContext
 import io.github.cbrandt77.kt.inlinestreams.util.flatMap
+import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrVariable
 import org.jetbrains.kotlin.ir.expressions.IrCall
@@ -44,7 +45,7 @@ import org.jetbrains.kotlin.ir.util.statements
 	/**
 	 * Statements after the loop operation definition, including the value returned and any postprocessing.
 	 */
-	val epilogue get() = ir.body!!.statements.asSequence()
+	val epilogue: Sequence<IrStatement> get() = ir.body!!.statements.asSequence()
 		.dropWhile { !(it is IrCall && it.symbol.owner.callableId.isTerminalOperation) }
 		.drop(1)
 	

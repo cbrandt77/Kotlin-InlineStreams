@@ -4,8 +4,10 @@ import io.github.cbrandt77.kt.inlinestreams.NamesAndIds
 import io.github.cbrandt77.kt.inlinestreams.NamesAndIds.isEntranceFunction
 import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.chain.IntermediateOperationChainFunction
 import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.chain.StreamOperationChainFunction
+import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.chain.TerminalOperationChainFunction
 import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.loop.IntermediateOperationLoopFunction
 import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.loop.StreamOperationLoopFunction
+import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.loop.TerminalOperationLoopFunction
 import io.github.cbrandt77.kt.inlinestreams.util.flatMap
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationContainer
@@ -99,6 +101,10 @@ class StreamOpContext(val context: IrPluginContext) {
 	
 	fun IntermediateOperationChainFunction.getLoopFunction(): Result<IntermediateOperationLoopFunction> {
 		return internal.getLoopFunction().flatMap { IntermediateOperationLoopFunction(it) }
+	}
+	
+	fun TerminalOperationChainFunction.getLoopFunction(): Result<TerminalOperationLoopFunction> {
+		return internal.getLoopFunction().flatMap { TerminalOperationLoopFunction(it) }
 	}
 	
 	

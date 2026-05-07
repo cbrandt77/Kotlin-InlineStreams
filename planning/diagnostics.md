@@ -1,4 +1,4 @@
-## Operation Definition (Functions with InlineStream as receiver, that call )
+## Operation Definition (Functions with InlineStream as receiver)
 Errors:
 - InlineStream operation function is not `inline`
 - Calls `streamOperation` more than once
@@ -6,6 +6,7 @@ Errors:
 - Calls both `streamOperation` and `terminalOperation`
 - References InlineStream inside of `streamOperation`
 - Calls `streamOperation` or `terminalOperation` outside the top level of the function
+- Has nested functions
 
 Questioning:
 - InlineStream operation function is not top-level?
@@ -18,7 +19,7 @@ Questioning:
 - Error: Uses an InlineStream as a receiver parameter without being annotated with @InlineStreamOperation
 
 
-## Usage within a function
+## Type Usage within a function
 Errors:
 - Lets an InlineStream "object" escape a function
     - Returns it
@@ -27,4 +28,6 @@ Errors:
 - Attempts to assign an InlineStream object to a variable (again, not a real object)
     - Note: we need a way to let a user choose what's done on the loop fluidly, maybe an API function like "if else" that lets users create a condition and conditionally execute one downstream path or another downstream path?
 - Uses it as a context parameter
-- Doesn't have a terminal operation
+
+## InlineStream Usage
+- Chain doesn't have a terminal operation

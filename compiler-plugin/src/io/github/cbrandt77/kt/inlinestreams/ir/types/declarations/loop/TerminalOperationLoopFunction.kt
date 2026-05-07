@@ -42,10 +42,4 @@ import org.jetbrains.kotlin.ir.types.IrType
 	
 	/** `el`, `breakLoop`, `downstreamAction`. These are actually the only parameters that don't have special names. */
 	val standardArgs get() = internal.standardArgs
-	
-	context(_: StreamOpContext)
-	val gettersByStateName get() = internal.gettersByStateName
-	
-	context(data: StreamOpContext)
-	val settersByStateName get() = internal.settersByStateName
 }

@@ -1,5 +1,6 @@
 package io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.chain
 
+import io.github.cbrandt77.kt.inlinestreams.NamesAndIds.isTerminalOperation
 import io.github.cbrandt77.kt.inlinestreams.ir.StreamOpContext
 import io.github.cbrandt77.kt.inlinestreams.ir.types.annotations.InlineStreamFunctionReferenceAnnotation
 import io.github.cbrandt77.kt.inlinestreams.util.stableHashCode
@@ -7,9 +8,11 @@ import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrParameterKind
 import org.jetbrains.kotlin.ir.expressions.IrCall
+import org.jetbrains.kotlin.ir.expressions.IrReturn
 import org.jetbrains.kotlin.ir.expressions.impl.IrReturnImpl
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.classFqName
+import org.jetbrains.kotlin.ir.util.callableId
 import org.jetbrains.kotlin.ir.util.eraseIfTypeParameter
 import org.jetbrains.kotlin.ir.util.isTopLevel
 import org.jetbrains.kotlin.ir.util.statements
@@ -48,6 +51,8 @@ import org.jetbrains.kotlin.ir.util.statements
 		
 		return identifier;
 	}
+	
+	val preamble get() = ir.body!!.statements.asSequence().takeWhile { !(it is IrReturn || (it is IrCall && it.symbol.owner.callableId.isTerminalOperation)) }
 	
 	val receiver get() = ir.parameters.first { it.kind == IrParameterKind.ExtensionReceiver }
 	
