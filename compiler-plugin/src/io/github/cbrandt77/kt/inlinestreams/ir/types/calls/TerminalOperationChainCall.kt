@@ -7,6 +7,7 @@ import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.classOrNull
+import org.jetbrains.kotlin.ir.util.render
 
 @JvmInline value class TerminalOperationChainCall private constructor(val internal: StreamOperationChainCall) {
 	companion object {
@@ -38,4 +39,6 @@ import org.jetbrains.kotlin.ir.types.classOrNull
 	
 	context(_: StreamOpContext)
 	val target get() = TerminalOperationChainFunction(internal._targetFunc)
+	
+	override fun toString() = internal.toString()
 }

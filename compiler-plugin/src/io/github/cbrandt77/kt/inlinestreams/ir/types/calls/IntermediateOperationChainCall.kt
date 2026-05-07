@@ -40,4 +40,7 @@ import org.jetbrains.kotlin.ir.util.substitute
 	
 	context(_: StreamOpContext)
 	val target get() = IntermediateOperationChainFunction(internal.target)
+	
+	
+	override fun toString() = internal.toString()
 }

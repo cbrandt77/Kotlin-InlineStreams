@@ -9,6 +9,7 @@ import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
 import org.jetbrains.kotlin.ir.declarations.IrValueParameter
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.util.isTopLevel
+import org.jetbrains.kotlin.ir.util.render
 
 /**
  * The inline function actually executed inside the loop, e.g. `map(el) { flatMap(el) { forEach(el) } }
@@ -54,4 +55,6 @@ import org.jetbrains.kotlin.ir.util.isTopLevel
 	context(_: StreamOpContext)
 	val identifier
 		get() = (InlineStreamFunctionReferenceAnnotation(ir) ?: error("No function identifier on generated loop function!")).identifier
+	
+	override fun toString() = ir.render()
 }

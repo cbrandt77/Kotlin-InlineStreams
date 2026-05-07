@@ -5,6 +5,7 @@ import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.chain.StreamOp
 import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.types.IrType
+import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.ir.util.substitute
 
 @JvmInline value class StreamOperationChainCall private constructor(val ir: IrCall) {
@@ -47,4 +48,7 @@ import org.jetbrains.kotlin.ir.util.substitute
 	context(_: StreamOpContext)
 	val target: StreamOperationChainFunction
 		get() = StreamOperationChainFunction(ir.symbol.owner).getOrThrow()
+	
+	
+	override fun toString() = ir.render()
 }

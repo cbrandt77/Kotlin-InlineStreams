@@ -15,6 +15,7 @@ import org.jetbrains.kotlin.ir.types.classFqName
 import org.jetbrains.kotlin.ir.util.callableId
 import org.jetbrains.kotlin.ir.util.eraseIfTypeParameter
 import org.jetbrains.kotlin.ir.util.isTopLevel
+import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.ir.util.statements
 
 /**
@@ -62,4 +63,6 @@ import org.jetbrains.kotlin.ir.util.statements
 	
 	val arguments
 		get() = ir.parameters.asSequence().filter { it.kind != IrParameterKind.ExtensionReceiver }
+	
+	override fun toString() = ir.render()
 }

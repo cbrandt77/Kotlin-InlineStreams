@@ -47,4 +47,6 @@ import org.jetbrains.kotlin.ir.util.statements
 	
 	context(_: StreamOpContext)
 	val identifier get() = internal.identifier
+	
+	override fun toString() = internal.toString()
 }
