@@ -2,6 +2,7 @@ package io.github.cbrandt77.kt.inlinestreams.ir.types.calls
 
 import io.github.cbrandt77.kt.inlinestreams.ir.StreamOpContext
 import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.chain.StreamOperationChainFunction
+import org.jetbrains.kotlin.ir.declarations.IrParameterKind
 import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.types.IrType
@@ -42,6 +43,9 @@ import org.jetbrains.kotlin.ir.util.substitute
 		get() = with (data) {
 			return (receiver as? IrCall)?.type?.substitute(ir.symbol.owner.typeParameters, ir.typeArguments.filterNotNull())?.let { getInlineStreamTypeParameterT(it) } ?: error("Stream operation receiver does not have type argument.")
 		}
+	
+	val arguments
+		get() = this.ir.arguments.asSequence().filterIndexed { i, _ -> _targetFunc.parameters[i].kind != IrParameterKind.ExtensionReceiver }
 	
 	val _targetFunc get() = ir.symbol.owner
 	

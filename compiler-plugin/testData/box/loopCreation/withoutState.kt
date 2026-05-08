@@ -61,8 +61,8 @@ public inline fun <T> firstOrNull(el: T, breakLoop: () -> Unit, `set-out`: (T) -
 public fun transformed(): Int? {
 	return run {
 		var out: Int? = null
-		for (el in listOf("hi", "there", "gamer")) {
-			run inlineStream2@ {
+		run inlineStream2@ {
+			for (el in listOf("hi", "there", "gamer")) {
 				map({ it.toCharArray() }, el, { return@inlineStream2 }) {
 					flatMap({ it.toList() }, it, { return@inlineStream2 }, {
 						map({ it.code }, it, { return@inlineStream2 }) {

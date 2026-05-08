@@ -21,6 +21,7 @@ import org.jetbrains.kotlin.ir.types.IrSimpleType
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.classOrNull
 import org.jetbrains.kotlin.ir.types.typeOrNull
+import org.jetbrains.kotlin.ir.types.typeWith
 import org.jetbrains.kotlin.ir.util.callableId
 import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.name.CallableId
@@ -43,6 +44,10 @@ class StreamOpContext(val context: IrPluginContext) {
 	val anonymous by lazy {
 		Name.special("<anonymous>")
 	}
+	
+	val unitType = context.irBuiltIns.unitType
+	
+	val function0Unit = context.irBuiltIns.functionN(0).typeWith(unitType)
 	
 	val IrFunction.hasInlineStreamReceiver: Boolean
 		get() = parameters.firstOrNull { it.kind == IrParameterKind.ExtensionReceiver }?.type?.classOrNull == inlineStreamClassSymbol
