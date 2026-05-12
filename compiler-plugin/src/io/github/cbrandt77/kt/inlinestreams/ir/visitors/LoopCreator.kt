@@ -229,7 +229,7 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 							
 							outerBlock.statements += IrBlockImpl(-1, -1, context.irBuiltIns.unitType, IrStatementOrigin.FOR_LOOP).also { forLoopWrapperBlock ->
 								val iterVar = IrVariableImpl(-1, -1, IrDeclarationOrigin.FOR_LOOP_ITERATOR, IrVariableSymbolImpl(), Name.identifier("tmp_1"), iteratorType, isVar = false, isConst = false, isLateinit = false)
-									.withParent(currentFunction)
+									.withParent(outerReturnTarget)
 									.withInitializer(inputCollection.type.let { type -> when {
 										type.isSubtypeOfClass(context.symbols.iterator) -> inputCollection
 										type.isSubtypeOfClass(context.symbols.iterable) -> IrCallImpl(-1, -1, iteratorType, context.irBuiltIns.iterableClass.functionByName("iterator"), origin=FOR_LOOP_ITERATOR).withReceiver(inputCollection)
@@ -245,6 +245,7 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 										type = function0Unit,
 										origin = LAMBDA,
 										function = makeLambdaFunction(context.irBuiltIns.nothingType).also { breakLoopReturnTarget ->
+											breakLoopReturnTarget.parent = outerReturnTarget
 											fun makeBreakLoopArg(parent: IrDeclarationParent) = IrFunctionExpressionImpl(-1, -1, function0Unit, makeLambdaFunction {
 												body = context.irFactory.createBlockBody(-1, -1)
 													.apply {
@@ -258,7 +259,7 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 													forLoopWhileBody.condition = IrCallImpl(-1, -1, context.irBuiltIns.booleanType, context.symbols.iterator.functionByName("hasNext"), origin = FOR_LOOP_HAS_NEXT).withReceiver(IrGetValueImpl(-1, -1, iterVar.symbol))
 													forLoopWhileBody.body = IrBlockImpl(-1, -1, unitType, FOR_LOOP_INNER_WHILE).also { innermostBlock ->
 														val var_currentElementFromIterator = IrVariableImpl(-1, -1, FOR_LOOP_VARIABLE, IrVariableSymbolImpl(), NAME_element, originalInputElementType, isVar = false, isConst = false, isLateinit = false)
-															.withParent(currentFunction)
+															.withParent(breakLoopReturnTarget)
 															.withInitializer(
 																IrCallImpl(-1, -1, originalInputElementType, context.symbols.iterator.functionByName("next"), origin = FOR_LOOP_NEXT)
 																	.withReceiver(IrGetValueImpl(-1, -1, iterVar.symbol)))
@@ -348,7 +349,7 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 															callLoopOperationRecursive(ourDownstreamActionLambda, ourDownstreamActionLambdaElementSymbol, operations)
 														}
 														
-														callLoopOperationRecursive(currentFunction, var_currentElementFromIterator.symbol, allOperations.iterator())
+														callLoopOperationRecursive(breakLoopReturnTarget, var_currentElementFromIterator.symbol, allOperations.iterator())
 													}
 												}
 											}
