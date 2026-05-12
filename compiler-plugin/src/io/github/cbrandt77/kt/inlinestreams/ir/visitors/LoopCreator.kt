@@ -210,7 +210,7 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 							// create preamble for each operation, give them all their remapped state variables
 							outerBlock.statements += allOperations.flatMapIndexed { operationIndex, operation ->
 								val typeArgRealizer = TypeArgRealizer(operation.chainCall_general.ir)
-								val variableRenamer = StateVariableReferenceRedirector(operation.stateVariablesMap)
+								val stateRedirector = StateVariableReferenceRedirector(operation.stateVariablesMap)
 								operation.preamble
 									.map { preambleStatement ->
 										if (preambleStatement is IrVariable) {
@@ -222,7 +222,7 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 											newStatement
 										} else {
 											preambleStatement.deepCopyWithSymbols(outerReturnTarget) { typeArgRealizer }
-										}.transformStatement(variableRenamer)
+										}.transformStatement(stateRedirector)
 									}
 							}
 							
@@ -363,12 +363,14 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 								val variableRedirector = StateVariableReferenceRedirector(terminalOperation.stateVariablesMap)
 								terminalOperation.chainFunction.epilogue.map {
 									it.deepCopyWithSymbols(currentFunction) { typeArgRealizer }
-										.transformStatement(variableRedirector)
 										.apply {
 											if (this is IrVariable) {
 												this.name = Name.identifier("terminal$" + name.asStringStripSpecialMarkers())
+												terminalOperation.stateVariablesMap[(it as IrVariable).symbol] = this.symbol
 											}
 										}
+										.transformStatement(variableRedirector)
+										
 								}
 							}
 						}
