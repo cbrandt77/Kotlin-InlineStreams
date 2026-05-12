@@ -145,11 +145,11 @@ class StreamOpContext(val context: IrPluginContext) {
 	val Name.nameThisIsGetterFor: String?
 		get() = this.takeIf { it.isSpecial }
 			?.asString()
-			?.let { getterRegex.find(it, 5)?.groupValues?.firstOrNull() }
+			?.let { getterRegex.find(it)?.groupValues?.get(1) }
 	
 	
 	
-	private val setterRegex = Regex("<set-(.*)>")
+	private val setterRegex = Regex("^<set-(.*)>$")
 	
 	fun makeSetterNameForState(originalName: Name): Name {
 		return Name.special("<set-" + originalName.asStringStripSpecialMarkers() + ">")
@@ -158,7 +158,7 @@ class StreamOpContext(val context: IrPluginContext) {
 	val Name.nameThisIsSetterFor: String?
 		get() = this.takeIf { it.isSpecial }
 			?.asString()
-			?.let { setterRegex.find(it, 5)?.groupValues?.firstOrNull() }
+			?.let { setterRegex.find(it)?.groupValues?.get(1) }
 	
 	
 //	/**

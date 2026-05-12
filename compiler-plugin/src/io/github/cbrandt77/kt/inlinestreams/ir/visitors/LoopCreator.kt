@@ -228,13 +228,13 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 									}
 							}
 							
-							outerBlock.statements += IrCallImpl(-1, -1, context.irBuiltIns.nothingType, kotlinRunFunction).also { breakLoopRunBlock ->
-								breakLoopRunBlock.typeArguments[0] = context.irBuiltIns.nothingType
+							outerBlock.statements += IrCallImpl(-1, -1, context.irBuiltIns.unitType, kotlinRunFunction).also { breakLoopRunBlock ->
+								breakLoopRunBlock.typeArguments[0] = context.irBuiltIns.unitType
 								breakLoopRunBlock.arguments[0] = IrFunctionExpressionImpl(
 									startOffset = -1, endOffset = -1,
 									type = function0Unit,
 									origin = LAMBDA,
-									function = makeLambdaFunction(context.irBuiltIns.nothingType).also { breakLoopReturnTarget ->
+									function = makeLambdaFunction(context.irBuiltIns.unitType).also { breakLoopReturnTarget ->
 										breakLoopReturnTarget.parent = outerReturnTarget
 										fun makeBreakLoopArg(parent: IrDeclarationParent) = IrFunctionExpressionImpl(-1, -1, function0Unit, makeLambdaFunction {
 											body = context.irFactory.createBlockBody(-1, -1)
@@ -330,16 +330,20 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 																		}
 																		loopActionCall.arguments[param] = makeGetterLambda(correspondingVar.owner.type, correspondingVar.owner, parentScope)
 																	} ?: param.name.nameThisIsSetterFor?.let {
-																		val correspondingVar = currentVariablesByName[it] ?: irError("No variable found for requested setter.") {
+																		val correspondingVar = currentVariablesByName[it]
+																		                       ?: irError("No variable found for requested setter.") {
 																			withIrEntry("loop_function", loopFunGeneral.ir)
 																			withIrEntry("setter_parameter", param)
 																		}
 																		loopActionCall.arguments[param] = makeSetterLambda(correspondingVar.owner.type, correspondingVar.owner, parentScope)
+																	} ?: irError("Parameter is not a getter nor setter") {
+																		withIrEntry("parameter", param)
+																		withIrEntry("loop_function", loopFunGeneral.ir)
 																	}
 																}
 															}
 															
-															if (parentScope == currentFunction) {
+															if (parentScope == breakLoopReturnTarget) {
 																innermostBlock.statements += loopActionCall
 															} else {
 																parentScope.body = context.irFactory.createBlockBody(-1, -1).also {
