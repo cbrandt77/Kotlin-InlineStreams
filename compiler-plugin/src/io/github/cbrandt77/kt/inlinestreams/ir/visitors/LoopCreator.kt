@@ -58,6 +58,7 @@ import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.classOrNull
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.impl.IrSimpleTypeImpl
+import org.jetbrains.kotlin.ir.types.mergeNullability
 import org.jetbrains.kotlin.ir.types.typeWith
 import org.jetbrains.kotlin.ir.util.AbstractTypeRemapper
 import org.jetbrains.kotlin.ir.util.deepCopyWithSymbols
@@ -66,6 +67,7 @@ import org.jetbrains.kotlin.ir.util.isSubtypeOfClass
 import org.jetbrains.kotlin.ir.visitors.IrElementTransformerVoid
 import org.jetbrains.kotlin.ir.visitors.IrTransformer
 import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.types.model.withNullability
 import kotlin.collections.plus
 
 class InlineStreamLoopCreationException(cause: Throwable) : RuntimeException("Failure creating loop for InlineStream.", cause)
@@ -389,7 +391,7 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 				return null;
 			
 			(type.classifierOrNull as? IrTypeParameterSymbol)?.let {
-				return chainCall.typeArguments[it.owner.index]
+				return chainCall.typeArguments[it.owner.index]?.mergeNullability(type)
 			}
 			
 			val newArgs = remapTypeArguments(type.arguments) ?: type.arguments
