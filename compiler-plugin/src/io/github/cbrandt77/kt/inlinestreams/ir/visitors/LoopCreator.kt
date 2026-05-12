@@ -123,17 +123,17 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 				is IntermediateOperationWithState -> chainFunction.preamble
 			}
 			
-			val chainCall_general: StreamOperationChainCall = when (this) {
+			val chainCall_general: StreamOperationChainCall get() = when (this) {
 				is IntermediateOperationWithState -> chainCall.internal
 				is TerminalOperationWithState -> chainCall.internal
 			}
 			
-			val chainFunc_general: StreamOperationChainFunction = when (this) {
+			val chainFunc_general: StreamOperationChainFunction get() = when (this) {
 				is IntermediateOperationWithState -> chainFunction.internal
 				is TerminalOperationWithState -> chainFunction.internal
 			}
 			
-			val loopFunc_general: StreamOperationLoopFunction = when (this) {
+			val loopFunc_general: StreamOperationLoopFunction get() = when (this) {
 				is IntermediateOperationWithState -> loopFunction.internal
 				is TerminalOperationWithState -> loopFunction.internal
 			}
