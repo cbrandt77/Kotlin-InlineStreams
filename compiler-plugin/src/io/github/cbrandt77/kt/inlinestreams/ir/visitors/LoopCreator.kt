@@ -32,6 +32,7 @@ import org.jetbrains.kotlin.ir.declarations.impl.IrVariableImpl
 import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.expressions.IrGetValue
+import org.jetbrains.kotlin.ir.expressions.IrReturn
 import org.jetbrains.kotlin.ir.expressions.IrSetValue
 import org.jetbrains.kotlin.ir.expressions.IrStatementOrigin
 import org.jetbrains.kotlin.ir.expressions.IrStatementOrigin.Companion.FOR_LOOP_HAS_NEXT
@@ -332,9 +333,9 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 																	} ?: param.name.nameThisIsSetterFor?.let {
 																		val correspondingVar = currentVariablesByName[it]
 																		                       ?: irError("No variable found for requested setter.") {
-																			withIrEntry("loop_function", loopFunGeneral.ir)
-																			withIrEntry("setter_parameter", param)
-																		}
+																			                       withIrEntry("loop_function", loopFunGeneral.ir)
+																			                       withIrEntry("setter_parameter", param)
+																		                       }
 																		loopActionCall.arguments[param] = makeSetterLambda(correspondingVar.owner.type, correspondingVar.owner, parentScope)
 																	} ?: irError("Parameter is not a getter nor setter") {
 																		withIrEntry("parameter", param)
@@ -372,6 +373,8 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 											if (this is IrVariable) {
 												this.name = Name.identifier("terminal$" + name.asStringStripSpecialMarkers())
 												terminalOperation.stateVariablesMap[(it as IrVariable).symbol] = this.symbol
+											} else if (this is IrReturn) {
+												this.returnTargetSymbol = outerReturnTarget.symbol
 											}
 										}
 										.transformStatement(variableRedirector)
@@ -462,16 +465,18 @@ inline fun makeLambdaFunction(rType: IrType = ctx.context.irBuiltIns.unitType, o
 context(ctx: StreamOpContext)
 fun makeGetterLambda(varType: IrType, targetVariable: IrVariable, parent: IrDeclarationParent): IrExpression {
 	return IrFunctionExpressionImpl(-1, -1, ctx.context.irBuiltIns.functionN(0).typeWith(varType), makeLambdaFunction(varType) {
-		body = ctx.context.irFactory.createExpressionBody(-1, -1, IrGetValueImpl(-1, -1, targetVariable.symbol))
+		body = ctx.context.irFactory.createBlockBody(-1, -1).also { it.statements += IrGetValueImpl(-1, -1, targetVariable.symbol) }
 		this.parent = parent
 	}, LAMBDA)
 }
 
 context(ctx: StreamOpContext)
 fun makeSetterLambda(varType: IrType, targetVariable: IrVariable, parent: IrDeclarationParent): IrExpression {
-	return IrFunctionExpressionImpl(-1, -1, ctx.context.irBuiltIns.functionN(1).typeWith(varType), makeLambdaFunction {
+	return IrFunctionExpressionImpl(-1, -1, ctx.context.irBuiltIns.functionN(1).typeWith(varType, ctx.unitType), makeLambdaFunction {
 		val value = addValueParameter(name = StandardNames.IMPLICIT_LAMBDA_PARAMETER_NAME, type = varType)
-		body = ctx.context.irFactory.createExpressionBody(-1, -1, IrSetValueImpl(-1, -1, targetVariable.type, targetVariable.symbol, IrGetValueImpl(-1, -1, value.symbol), null))
+		body = ctx.context.irFactory.createBlockBody(-1, -1).also {
+			it.statements += IrSetValueImpl(-1, -1, ctx.unitType, targetVariable.symbol, IrGetValueImpl(-1, -1, value.symbol), null)
+		}
 		this.parent = parent
 	}, LAMBDA)
 }
