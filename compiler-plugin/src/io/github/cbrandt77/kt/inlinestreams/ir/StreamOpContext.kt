@@ -115,12 +115,13 @@ class StreamOpContext(val context: IrPluginContext) {
 	
 	
 	
+	
 	fun getLoopOpFunctionName(chainFunc: Name): Name {
-		return Name.identifier("loopAction-" + chainFunc.asString())
-	} // TODO make this actually robust
+		return Name.identifier($$"generated$loopAction$" + chainFunc.asString())
+	}
 	
 	val IrFunction.isLoopOperation
-		get() = this.name.asString().startsWith("loopAction-")
+		get() = this.name.asString().startsWith($$"generated$loopAction$")
 	
 	
 	

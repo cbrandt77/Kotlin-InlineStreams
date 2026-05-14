@@ -1,59 +1,59 @@
 FILE fqName:pkg fileName:/Main.kt
-  FUN GENERATED[io.github.cbrandt77.kt.inlinestreams.ir.visitors.StreamOpGeneratedLoopActionDeclarationKey] name:loopAction-firstOrNull visibility:public modality:FINAL returnType:kotlin.Unit [inline]
+  FUN GENERATED[io.github.cbrandt77.kt.inlinestreams.ir.visitors.StreamOpGeneratedLoopActionDeclarationKey] name:generated$loopAction$firstOrNull visibility:public modality:FINAL returnType:kotlin.Unit [inline]
     TYPE_PARAMETER name:T index:0 variance: superTypes:[kotlin.Any?] reified:false
-    VALUE_PARAMETER kind:Regular name:el index:0 type:T of pkg.loopAction-firstOrNull
+    VALUE_PARAMETER kind:Regular name:el index:0 type:T of pkg.generated$loopAction$firstOrNull
     VALUE_PARAMETER kind:Regular name:breakLoop index:1 type:kotlin.Function0<kotlin.Unit>
-    VALUE_PARAMETER GENERATED[io.github.cbrandt77.kt.inlinestreams.ir.visitors.StreamOpGeneratedLoopActionDeclarationKey] kind:Regular name:<set-out> index:2 type:kotlin.Function1<T of pkg.loopAction-firstOrNull?, kotlin.Unit>
+    VALUE_PARAMETER GENERATED[io.github.cbrandt77.kt.inlinestreams.ir.visitors.StreamOpGeneratedLoopActionDeclarationKey] kind:Regular name:<set-out> index:2 type:kotlin.Function1<T of pkg.generated$loopAction$firstOrNull?, kotlin.Unit>
     annotations:
       InlineStreamFunctionReference(id = 0)
     BLOCK_BODY
       CALL 'public abstract fun invoke (p1: P1 of kotlin.Function1): R of kotlin.Function1 declared in kotlin.Function1' type=kotlin.Unit origin=INVOKE
-        ARG <this>: GET_VAR '<set-out>: kotlin.Function1<T of pkg.loopAction-firstOrNull?, kotlin.Unit> declared in pkg.loopAction-firstOrNull' type=kotlin.Function1<T of pkg.loopAction-firstOrNull?, kotlin.Unit> origin=VARIABLE_AS_FUNCTION
-        ARG p1: GET_VAR 'el: T of pkg.loopAction-firstOrNull declared in pkg.loopAction-firstOrNull' type=T of pkg.loopAction-firstOrNull origin=null
+        ARG <this>: GET_VAR '<set-out>: kotlin.Function1<T of pkg.generated$loopAction$firstOrNull?, kotlin.Unit> declared in pkg.generated$loopAction$firstOrNull' type=kotlin.Function1<T of pkg.generated$loopAction$firstOrNull?, kotlin.Unit> origin=VARIABLE_AS_FUNCTION
+        ARG p1: GET_VAR 'el: T of pkg.generated$loopAction$firstOrNull declared in pkg.generated$loopAction$firstOrNull' type=T of pkg.generated$loopAction$firstOrNull origin=null
       CALL 'public abstract fun invoke (): R of kotlin.Function0 declared in kotlin.Function0' type=kotlin.Unit origin=INVOKE
-        ARG <this>: GET_VAR 'breakLoop: kotlin.Function0<kotlin.Unit> declared in pkg.loopAction-firstOrNull' type=kotlin.Function0<kotlin.Unit> origin=VARIABLE_AS_FUNCTION
-  FUN GENERATED[io.github.cbrandt77.kt.inlinestreams.ir.visitors.StreamOpGeneratedLoopActionDeclarationKey] name:loopAction-flatMap visibility:public modality:FINAL returnType:kotlin.Unit [inline]
+        ARG <this>: GET_VAR 'breakLoop: kotlin.Function0<kotlin.Unit> declared in pkg.generated$loopAction$firstOrNull' type=kotlin.Function0<kotlin.Unit> origin=VARIABLE_AS_FUNCTION
+  FUN GENERATED[io.github.cbrandt77.kt.inlinestreams.ir.visitors.StreamOpGeneratedLoopActionDeclarationKey] name:generated$loopAction$flatMap visibility:public modality:FINAL returnType:kotlin.Unit [inline]
     TYPE_PARAMETER name:T index:0 variance: superTypes:[kotlin.Any?] reified:false
     TYPE_PARAMETER name:U index:1 variance: superTypes:[kotlin.Any?] reified:false
-    VALUE_PARAMETER kind:Regular name:<arg-mapper> index:0 type:kotlin.Function1<T of pkg.loopAction-flatMap, kotlin.collections.Iterable<U of pkg.loopAction-flatMap>>
-    VALUE_PARAMETER kind:Regular name:el index:1 type:T of pkg.loopAction-flatMap
+    VALUE_PARAMETER kind:Regular name:<arg-mapper> index:0 type:kotlin.Function1<T of pkg.generated$loopAction$flatMap, kotlin.collections.Iterable<U of pkg.generated$loopAction$flatMap>>
+    VALUE_PARAMETER kind:Regular name:el index:1 type:T of pkg.generated$loopAction$flatMap
     VALUE_PARAMETER UNDERSCORE_PARAMETER kind:Regular name:<unused var> index:2 type:kotlin.Function0<kotlin.Unit>
-    VALUE_PARAMETER kind:Regular name:downstreamAction index:3 type:kotlin.Function1<U of pkg.loopAction-flatMap, kotlin.Unit>
+    VALUE_PARAMETER kind:Regular name:downstreamAction index:3 type:kotlin.Function1<U of pkg.generated$loopAction$flatMap, kotlin.Unit>
     annotations:
       InlineStreamFunctionReference(id = -1404696948)
     BLOCK_BODY
       BLOCK type=kotlin.Unit origin=FOR_LOOP
-        VAR FOR_LOOP_ITERATOR name:tmp_0 type:kotlin.collections.Iterator<U of pkg.loopAction-flatMap> [val]
-          CALL 'public abstract fun iterator (): kotlin.collections.Iterator<T of kotlin.collections.Iterable> declared in kotlin.collections.Iterable' type=kotlin.collections.Iterator<U of pkg.loopAction-flatMap> origin=FOR_LOOP_ITERATOR
-            ARG <this>: CALL 'public abstract fun invoke (p1: P1 of kotlin.Function1): R of kotlin.Function1 declared in kotlin.Function1' type=kotlin.collections.Iterable<U of pkg.loopAction-flatMap> origin=INVOKE
-              ARG <this>: GET_VAR '<arg-mapper>: kotlin.Function1<T of pkg.loopAction-flatMap, kotlin.collections.Iterable<U of pkg.loopAction-flatMap>> declared in pkg.loopAction-flatMap' type=kotlin.Function1<T of pkg.loopAction-flatMap, kotlin.collections.Iterable<U of pkg.loopAction-flatMap>> origin=VARIABLE_AS_FUNCTION
-              ARG p1: GET_VAR 'el: T of pkg.loopAction-flatMap declared in pkg.loopAction-flatMap' type=T of pkg.loopAction-flatMap origin=null
+        VAR FOR_LOOP_ITERATOR name:tmp_0 type:kotlin.collections.Iterator<U of pkg.generated$loopAction$flatMap> [val]
+          CALL 'public abstract fun iterator (): kotlin.collections.Iterator<T of kotlin.collections.Iterable> declared in kotlin.collections.Iterable' type=kotlin.collections.Iterator<U of pkg.generated$loopAction$flatMap> origin=FOR_LOOP_ITERATOR
+            ARG <this>: CALL 'public abstract fun invoke (p1: P1 of kotlin.Function1): R of kotlin.Function1 declared in kotlin.Function1' type=kotlin.collections.Iterable<U of pkg.generated$loopAction$flatMap> origin=INVOKE
+              ARG <this>: GET_VAR '<arg-mapper>: kotlin.Function1<T of pkg.generated$loopAction$flatMap, kotlin.collections.Iterable<U of pkg.generated$loopAction$flatMap>> declared in pkg.generated$loopAction$flatMap' type=kotlin.Function1<T of pkg.generated$loopAction$flatMap, kotlin.collections.Iterable<U of pkg.generated$loopAction$flatMap>> origin=VARIABLE_AS_FUNCTION
+              ARG p1: GET_VAR 'el: T of pkg.generated$loopAction$flatMap declared in pkg.generated$loopAction$flatMap' type=T of pkg.generated$loopAction$flatMap origin=null
         WHILE label=null origin=FOR_LOOP_INNER_WHILE
           condition: CALL 'public abstract fun hasNext (): kotlin.Boolean declared in kotlin.collections.Iterator' type=kotlin.Boolean origin=FOR_LOOP_HAS_NEXT
-            ARG <this>: GET_VAR 'val tmp_0: kotlin.collections.Iterator<U of pkg.loopAction-flatMap> declared in pkg.loopAction-flatMap' type=kotlin.collections.Iterator<U of pkg.loopAction-flatMap> origin=null
+            ARG <this>: GET_VAR 'val tmp_0: kotlin.collections.Iterator<U of pkg.generated$loopAction$flatMap> declared in pkg.generated$loopAction$flatMap' type=kotlin.collections.Iterator<U of pkg.generated$loopAction$flatMap> origin=null
           body: BLOCK type=kotlin.Unit origin=FOR_LOOP_INNER_WHILE
-            VAR FOR_LOOP_VARIABLE name:it type:U of pkg.loopAction-flatMap [val]
-              CALL 'public abstract fun next (): T of kotlin.collections.Iterator declared in kotlin.collections.Iterator' type=U of pkg.loopAction-flatMap origin=FOR_LOOP_NEXT
-                ARG <this>: GET_VAR 'val tmp_0: kotlin.collections.Iterator<U of pkg.loopAction-flatMap> declared in pkg.loopAction-flatMap' type=kotlin.collections.Iterator<U of pkg.loopAction-flatMap> origin=null
+            VAR FOR_LOOP_VARIABLE name:it type:U of pkg.generated$loopAction$flatMap [val]
+              CALL 'public abstract fun next (): T of kotlin.collections.Iterator declared in kotlin.collections.Iterator' type=U of pkg.generated$loopAction$flatMap origin=FOR_LOOP_NEXT
+                ARG <this>: GET_VAR 'val tmp_0: kotlin.collections.Iterator<U of pkg.generated$loopAction$flatMap> declared in pkg.generated$loopAction$flatMap' type=kotlin.collections.Iterator<U of pkg.generated$loopAction$flatMap> origin=null
             BLOCK type=kotlin.Unit origin=null
               CALL 'public abstract fun invoke (p1: P1 of kotlin.Function1): R of kotlin.Function1 declared in kotlin.Function1' type=kotlin.Unit origin=INVOKE
-                ARG <this>: GET_VAR 'downstreamAction: kotlin.Function1<U of pkg.loopAction-flatMap, kotlin.Unit> declared in pkg.loopAction-flatMap' type=kotlin.Function1<U of pkg.loopAction-flatMap, kotlin.Unit> origin=VARIABLE_AS_FUNCTION
-                ARG p1: GET_VAR 'val it: U of pkg.loopAction-flatMap declared in pkg.loopAction-flatMap' type=U of pkg.loopAction-flatMap origin=null
-  FUN GENERATED[io.github.cbrandt77.kt.inlinestreams.ir.visitors.StreamOpGeneratedLoopActionDeclarationKey] name:loopAction-map visibility:public modality:FINAL returnType:kotlin.Unit [inline]
+                ARG <this>: GET_VAR 'downstreamAction: kotlin.Function1<U of pkg.generated$loopAction$flatMap, kotlin.Unit> declared in pkg.generated$loopAction$flatMap' type=kotlin.Function1<U of pkg.generated$loopAction$flatMap, kotlin.Unit> origin=VARIABLE_AS_FUNCTION
+                ARG p1: GET_VAR 'val it: U of pkg.generated$loopAction$flatMap declared in pkg.generated$loopAction$flatMap' type=U of pkg.generated$loopAction$flatMap origin=null
+  FUN GENERATED[io.github.cbrandt77.kt.inlinestreams.ir.visitors.StreamOpGeneratedLoopActionDeclarationKey] name:generated$loopAction$map visibility:public modality:FINAL returnType:kotlin.Unit [inline]
     TYPE_PARAMETER name:T index:0 variance: superTypes:[kotlin.Any?] reified:false
     TYPE_PARAMETER name:U index:1 variance: superTypes:[kotlin.Any?] reified:false
-    VALUE_PARAMETER kind:Regular name:<arg-mapper> index:0 type:kotlin.Function1<T of pkg.loopAction-map, U of pkg.loopAction-map>
-    VALUE_PARAMETER kind:Regular name:el index:1 type:T of pkg.loopAction-map
+    VALUE_PARAMETER kind:Regular name:<arg-mapper> index:0 type:kotlin.Function1<T of pkg.generated$loopAction$map, U of pkg.generated$loopAction$map>
+    VALUE_PARAMETER kind:Regular name:el index:1 type:T of pkg.generated$loopAction$map
     VALUE_PARAMETER UNDERSCORE_PARAMETER kind:Regular name:<unused var> index:2 type:kotlin.Function0<kotlin.Unit>
-    VALUE_PARAMETER kind:Regular name:downstreamAction index:3 type:kotlin.Function1<U of pkg.loopAction-map, kotlin.Unit>
+    VALUE_PARAMETER kind:Regular name:downstreamAction index:3 type:kotlin.Function1<U of pkg.generated$loopAction$map, kotlin.Unit>
     annotations:
       InlineStreamFunctionReference(id = -1404696948)
     BLOCK_BODY
       CALL 'public abstract fun invoke (p1: P1 of kotlin.Function1): R of kotlin.Function1 declared in kotlin.Function1' type=kotlin.Unit origin=INVOKE
-        ARG <this>: GET_VAR 'downstreamAction: kotlin.Function1<U of pkg.loopAction-map, kotlin.Unit> declared in pkg.loopAction-map' type=kotlin.Function1<U of pkg.loopAction-map, kotlin.Unit> origin=VARIABLE_AS_FUNCTION
-        ARG p1: CALL 'public abstract fun invoke (p1: P1 of kotlin.Function1): R of kotlin.Function1 declared in kotlin.Function1' type=U of pkg.loopAction-map origin=INVOKE
-          ARG <this>: GET_VAR '<arg-mapper>: kotlin.Function1<T of pkg.loopAction-map, U of pkg.loopAction-map> declared in pkg.loopAction-map' type=kotlin.Function1<T of pkg.loopAction-map, U of pkg.loopAction-map> origin=VARIABLE_AS_FUNCTION
-          ARG p1: GET_VAR 'el: T of pkg.loopAction-map declared in pkg.loopAction-map' type=T of pkg.loopAction-map origin=null
+        ARG <this>: GET_VAR 'downstreamAction: kotlin.Function1<U of pkg.generated$loopAction$map, kotlin.Unit> declared in pkg.generated$loopAction$map' type=kotlin.Function1<U of pkg.generated$loopAction$map, kotlin.Unit> origin=VARIABLE_AS_FUNCTION
+        ARG p1: CALL 'public abstract fun invoke (p1: P1 of kotlin.Function1): R of kotlin.Function1 declared in kotlin.Function1' type=U of pkg.generated$loopAction$map origin=INVOKE
+          ARG <this>: GET_VAR '<arg-mapper>: kotlin.Function1<T of pkg.generated$loopAction$map, U of pkg.generated$loopAction$map> declared in pkg.generated$loopAction$map' type=kotlin.Function1<T of pkg.generated$loopAction$map, U of pkg.generated$loopAction$map> origin=VARIABLE_AS_FUNCTION
+          ARG p1: GET_VAR 'el: T of pkg.generated$loopAction$map declared in pkg.generated$loopAction$map' type=T of pkg.generated$loopAction$map origin=null
   FUN name:box visibility:public modality:FINAL returnType:kotlin.String
     BLOCK_BODY
       VAR name:fromDsl type:kotlin.Int? [val]
@@ -106,7 +106,7 @@ FILE fqName:pkg fileName:/Main.kt
                               VAR FOR_LOOP_VARIABLE name:element type:kotlin.String [val]
                                 CALL 'public abstract fun next (): T of kotlin.collections.Iterator declared in kotlin.collections.Iterator' type=kotlin.String origin=FOR_LOOP_NEXT
                                   ARG <this>: GET_VAR 'val tmp_1: kotlin.collections.Iterator<kotlin.String> declared in pkg.dsl.<anonymous>.<anonymous>' type=kotlin.collections.Iterator<kotlin.String> origin=null
-                              CALL 'public final fun loopAction-map <T, U> (<arg-mapper>: kotlin.Function1<T of pkg.loopAction-map, U of pkg.loopAction-map>, el: T of pkg.loopAction-map, <unused var>: kotlin.Function0<kotlin.Unit>, downstreamAction: kotlin.Function1<U of pkg.loopAction-map, kotlin.Unit>): kotlin.Unit declared in pkg' type=kotlin.Unit origin=INLINE_STREAM_OPERATION
+                              CALL 'public final fun generated$loopAction$map <T, U> (<arg-mapper>: kotlin.Function1<T of pkg.generated$loopAction$map, U of pkg.generated$loopAction$map>, el: T of pkg.generated$loopAction$map, <unused var>: kotlin.Function0<kotlin.Unit>, downstreamAction: kotlin.Function1<U of pkg.generated$loopAction$map, kotlin.Unit>): kotlin.Unit declared in pkg' type=kotlin.Unit origin=INLINE_STREAM_OPERATION
                                 TYPE_ARG T: kotlin.String
                                 TYPE_ARG U: kotlin.CharArray
                                 ARG <arg-mapper>: FUN_EXPR type=kotlin.Function1<kotlin.String, kotlin.CharArray> origin=LAMBDA
@@ -126,7 +126,7 @@ FILE fqName:pkg fileName:/Main.kt
                                   FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
                                     VALUE_PARAMETER kind:Regular name:element index:0 type:kotlin.CharArray
                                     BLOCK_BODY
-                                      CALL 'public final fun loopAction-flatMap <T, U> (<arg-mapper>: kotlin.Function1<T of pkg.loopAction-flatMap, kotlin.collections.Iterable<U of pkg.loopAction-flatMap>>, el: T of pkg.loopAction-flatMap, <unused var>: kotlin.Function0<kotlin.Unit>, downstreamAction: kotlin.Function1<U of pkg.loopAction-flatMap, kotlin.Unit>): kotlin.Unit declared in pkg' type=kotlin.Unit origin=INLINE_STREAM_OPERATION
+                                      CALL 'public final fun generated$loopAction$flatMap <T, U> (<arg-mapper>: kotlin.Function1<T of pkg.generated$loopAction$flatMap, kotlin.collections.Iterable<U of pkg.generated$loopAction$flatMap>>, el: T of pkg.generated$loopAction$flatMap, <unused var>: kotlin.Function0<kotlin.Unit>, downstreamAction: kotlin.Function1<U of pkg.generated$loopAction$flatMap, kotlin.Unit>): kotlin.Unit declared in pkg' type=kotlin.Unit origin=INLINE_STREAM_OPERATION
                                         TYPE_ARG T: kotlin.CharArray
                                         TYPE_ARG U: kotlin.Char
                                         ARG <arg-mapper>: FUN_EXPR type=kotlin.Function1<kotlin.CharArray, kotlin.collections.Iterable<kotlin.Char>> origin=LAMBDA
@@ -146,7 +146,7 @@ FILE fqName:pkg fileName:/Main.kt
                                           FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
                                             VALUE_PARAMETER kind:Regular name:element index:0 type:kotlin.Char
                                             BLOCK_BODY
-                                              CALL 'public final fun loopAction-map <T, U> (<arg-mapper>: kotlin.Function1<T of pkg.loopAction-map, U of pkg.loopAction-map>, el: T of pkg.loopAction-map, <unused var>: kotlin.Function0<kotlin.Unit>, downstreamAction: kotlin.Function1<U of pkg.loopAction-map, kotlin.Unit>): kotlin.Unit declared in pkg' type=kotlin.Unit origin=INLINE_STREAM_OPERATION
+                                              CALL 'public final fun generated$loopAction$map <T, U> (<arg-mapper>: kotlin.Function1<T of pkg.generated$loopAction$map, U of pkg.generated$loopAction$map>, el: T of pkg.generated$loopAction$map, <unused var>: kotlin.Function0<kotlin.Unit>, downstreamAction: kotlin.Function1<U of pkg.generated$loopAction$map, kotlin.Unit>): kotlin.Unit declared in pkg' type=kotlin.Unit origin=INLINE_STREAM_OPERATION
                                                 TYPE_ARG T: kotlin.Char
                                                 TYPE_ARG U: kotlin.Int
                                                 ARG <arg-mapper>: FUN_EXPR type=kotlin.Function1<kotlin.Char, kotlin.Int> origin=LAMBDA
@@ -166,7 +166,7 @@ FILE fqName:pkg fileName:/Main.kt
                                                   FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
                                                     VALUE_PARAMETER kind:Regular name:element index:0 type:kotlin.Int
                                                     BLOCK_BODY
-                                                      CALL 'public final fun loopAction-firstOrNull <T> (el: T of pkg.loopAction-firstOrNull, breakLoop: kotlin.Function0<kotlin.Unit>, <set-out>: kotlin.Function1<T of pkg.loopAction-firstOrNull?, kotlin.Unit>): kotlin.Unit declared in pkg' type=kotlin.Unit origin=INLINE_STREAM_OPERATION
+                                                      CALL 'public final fun generated$loopAction$firstOrNull <T> (el: T of pkg.generated$loopAction$firstOrNull, breakLoop: kotlin.Function0<kotlin.Unit>, <set-out>: kotlin.Function1<T of pkg.generated$loopAction$firstOrNull?, kotlin.Unit>): kotlin.Unit declared in pkg' type=kotlin.Unit origin=INLINE_STREAM_OPERATION
                                                         TYPE_ARG T: kotlin.Int
                                                         ARG el: GET_VAR 'element: kotlin.Int declared in pkg.dsl.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>' type=kotlin.Int origin=null
                                                         ARG breakLoop: FUN_EXPR type=kotlin.Function0<kotlin.Unit> origin=LAMBDA

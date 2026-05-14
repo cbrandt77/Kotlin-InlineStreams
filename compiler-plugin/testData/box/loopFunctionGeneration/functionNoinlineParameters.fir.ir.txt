@@ -1,20 +1,20 @@
 FILE fqName:pkg fileName:/functionNoinlineParameters.kt
-  FUN GENERATED[io.github.cbrandt77.kt.inlinestreams.ir.visitors.StreamOpGeneratedLoopActionDeclarationKey] name:loopAction-testOperation visibility:public modality:FINAL returnType:kotlin.Unit [inline]
+  FUN GENERATED[io.github.cbrandt77.kt.inlinestreams.ir.visitors.StreamOpGeneratedLoopActionDeclarationKey] name:generated$loopAction$testOperation visibility:public modality:FINAL returnType:kotlin.Unit [inline]
     TYPE_PARAMETER name:T index:0 variance: superTypes:[kotlin.Any?] reified:false
-    VALUE_PARAMETER kind:Regular name:<arg-functor> index:0 type:kotlin.Function1<T of pkg.loopAction-testOperation, T of pkg.loopAction-testOperation> [noinline]
-    VALUE_PARAMETER kind:Regular name:el index:1 type:T of pkg.loopAction-testOperation
+    VALUE_PARAMETER kind:Regular name:<arg-functor> index:0 type:kotlin.Function1<T of pkg.generated$loopAction$testOperation, T of pkg.generated$loopAction$testOperation> [noinline]
+    VALUE_PARAMETER kind:Regular name:el index:1 type:T of pkg.generated$loopAction$testOperation
     VALUE_PARAMETER kind:Regular name:breakLoop index:2 type:kotlin.Function0<kotlin.Unit>
-    VALUE_PARAMETER kind:Regular name:downstreamAction index:3 type:kotlin.Function1<T of pkg.loopAction-testOperation, kotlin.Unit>
+    VALUE_PARAMETER kind:Regular name:downstreamAction index:3 type:kotlin.Function1<T of pkg.generated$loopAction$testOperation, kotlin.Unit>
     annotations:
       InlineStreamFunctionReference(id = -1404696948)
     BLOCK_BODY
       CALL 'public final fun println (message: kotlin.Any?): kotlin.Unit declared in kotlin.io' type=kotlin.Unit origin=null
-        ARG message: GET_VAR '<arg-functor>: kotlin.Function1<T of pkg.loopAction-testOperation, T of pkg.loopAction-testOperation> declared in pkg.loopAction-testOperation' type=kotlin.Function1<T of pkg.loopAction-testOperation, T of pkg.loopAction-testOperation> origin=null
+        ARG message: GET_VAR '<arg-functor>: kotlin.Function1<T of pkg.generated$loopAction$testOperation, T of pkg.generated$loopAction$testOperation> declared in pkg.generated$loopAction$testOperation' type=kotlin.Function1<T of pkg.generated$loopAction$testOperation, T of pkg.generated$loopAction$testOperation> origin=null
       CALL 'public abstract fun invoke (p1: P1 of kotlin.Function1): R of kotlin.Function1 declared in kotlin.Function1' type=kotlin.Unit origin=INVOKE
-        ARG <this>: GET_VAR 'downstreamAction: kotlin.Function1<T of pkg.loopAction-testOperation, kotlin.Unit> declared in pkg.loopAction-testOperation' type=kotlin.Function1<T of pkg.loopAction-testOperation, kotlin.Unit> origin=VARIABLE_AS_FUNCTION
-        ARG p1: GET_VAR 'el: T of pkg.loopAction-testOperation declared in pkg.loopAction-testOperation' type=T of pkg.loopAction-testOperation origin=null
+        ARG <this>: GET_VAR 'downstreamAction: kotlin.Function1<T of pkg.generated$loopAction$testOperation, kotlin.Unit> declared in pkg.generated$loopAction$testOperation' type=kotlin.Function1<T of pkg.generated$loopAction$testOperation, kotlin.Unit> origin=VARIABLE_AS_FUNCTION
+        ARG p1: GET_VAR 'el: T of pkg.generated$loopAction$testOperation declared in pkg.generated$loopAction$testOperation' type=T of pkg.generated$loopAction$testOperation origin=null
       CALL 'public abstract fun invoke (): R of kotlin.Function0 declared in kotlin.Function0' type=kotlin.Unit origin=INVOKE
-        ARG <this>: GET_VAR 'breakLoop: kotlin.Function0<kotlin.Unit> declared in pkg.loopAction-testOperation' type=kotlin.Function0<kotlin.Unit> origin=VARIABLE_AS_FUNCTION
+        ARG <this>: GET_VAR 'breakLoop: kotlin.Function0<kotlin.Unit> declared in pkg.generated$loopAction$testOperation' type=kotlin.Function0<kotlin.Unit> origin=VARIABLE_AS_FUNCTION
   FUN name:box visibility:public modality:FINAL returnType:kotlin.String
     BLOCK_BODY
       RETURN type=kotlin.Nothing from='public final fun box (): kotlin.String declared in pkg'
