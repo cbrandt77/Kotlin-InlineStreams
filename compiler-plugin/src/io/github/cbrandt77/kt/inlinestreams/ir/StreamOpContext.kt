@@ -85,7 +85,7 @@ class StreamOpContext(val context: IrPluginContext) {
 		}
 		
 		if (allAsStreamOperations.all(Result<*>::isFailure)) {
-			return Result.failure(InlineStreamFunctionResolutionException(ourCallableId, allWithName, "No stream operations found.", allAsStreamOperations.map { it.exceptionOrNull()?.stackTraceToString() ?: "" }));
+			return Result.failure(InlineStreamFunctionResolutionException(ourCallableId, allWithName, "No stream operations found.", allAsStreamOperations.asSequence().map { it.exceptionOrNull()?.stackTraceToString() ?: "" }));
 		}
 		
 		
@@ -185,8 +185,8 @@ class StreamOpContext(val context: IrPluginContext) {
 
 open class InlineStreamTranslationException(message: String? = null, cause: Throwable? = null) : RuntimeException(message, cause)
 
-class InlineStreamFunctionResolutionException(val callableId: CallableId, val possibleFunctions: List<IrFunctionSymbol>, val reason: String = "", val additionalInfo: List<String> = emptyList()) : RuntimeException() {
+class InlineStreamFunctionResolutionException(val callableId: CallableId, val possibleFunctions: List<IrFunctionSymbol>, val reason: String = "", val additionalInfo: Sequence<String?> = emptySequence()) : RuntimeException() {
 	override val message get() = "Unable to disambiguate between overloads of '${callableId.asFqNameForDebugInfo()}': ${reason}\n" +
 	                             if (possibleFunctions.isEmpty()) { "" }
-	                             else "Possible targets:\n" + possibleFunctions.asSequence().let { if (additionalInfo.size == possibleFunctions.size) it.zip(additionalInfo.asSequence()) else it.map { it to "" } }.joinToString("\n- ") { (func, add) -> func.owner.render() + " - " + add }
+	                             else "Possible targets:\n" + possibleFunctions.asSequence().zip(additionalInfo).joinToString("\n- ") { (func, add) -> func.owner.render() + " - " + add }
 }
