@@ -8,6 +8,8 @@ import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.chain.StreamOp
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 import org.jetbrains.kotlin.GeneratedDeclarationKey
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
+import org.jetbrains.kotlin.descriptors.DescriptorVisibilities
+import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.ir.IrElement
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.builders.declarations.UNDEFINED_PARAMETER_INDEX
@@ -54,6 +56,7 @@ import org.jetbrains.kotlin.ir.visitors.IrVisitorVoid
 import org.jetbrains.kotlin.ir.visitors.acceptChildrenVoid
 import org.jetbrains.kotlin.ir.visitors.acceptVoid
 import org.jetbrains.kotlin.ir.visitors.transformChildrenVoid
+import org.jetbrains.kotlin.resolve.inline.InlineUtil.isInline
 
 object StreamOpGeneratedLoopActionDeclarationKey : GeneratedDeclarationKey() {
 	val origin = IrDeclarationOrigin.GeneratedByPlugin(this)
@@ -120,15 +123,25 @@ class StreamOpRuntimeVariantGenerator(
 class LoopFunctionGenerator(val context: IrPluginContext, val data: StreamOpContext, val dslFunction: StreamOperationChainFunction, call: IntermediateOperationDefFuncInvocation) {
 	val loopAction: IrFunction = call.action.ir
 	
-	private val newFun = context.irFactory.buildFun {
-		startOffset = loopAction.startOffset
-		endOffset = loopAction.endOffset
-		name = data.getLoopOpFunctionName(dslFunction.ir.name)
-		returnType = context.irBuiltIns.unitType
-		isInline = true
-//			originalDeclaration = dslFunction
-		origin = StreamOpGeneratedLoopActionDeclarationKey.origin
-	}.apply {
+	private val newFun = context.irFactory.createSimpleFunction(
+		symbol = data.getLoopFunctionSymbol(dslFunction),
+		startOffset = loopAction.startOffset,
+		endOffset = loopAction.endOffset,
+		name = data.getLoopOpFunctionName(dslFunction.ir.name),
+		returnType = context.irBuiltIns.unitType,
+		isInline = true,
+//			originalDeclaration = dslFunction,
+		origin = StreamOpGeneratedLoopActionDeclarationKey.origin,
+		visibility = DescriptorVisibilities.PUBLIC,
+		modality = Modality.FINAL,
+		isTailrec = false,
+		isExpect = false,
+		isOperator = false,
+		isSuspend = false,
+		isInfix = false,
+		isExternal = false,
+		isFakeOverride = false
+	).apply {
 		body = loopAction.body?.deepCopyWithSymbols(this)
 	}
 	

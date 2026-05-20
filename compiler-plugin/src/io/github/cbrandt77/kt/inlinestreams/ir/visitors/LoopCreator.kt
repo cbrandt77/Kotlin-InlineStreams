@@ -121,6 +121,7 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 			
 			val isTerminal get() = this is TerminalOperationWithState
 			
+			context(_: StreamOpContext)
 			val preamble get() = when (this) {
 				is TerminalOperationWithState -> chainFunction.preamble
 				is IntermediateOperationWithState -> chainFunction.preamble

@@ -7,7 +7,14 @@ import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrVariable
 import org.jetbrains.kotlin.ir.expressions.IrCall
+import org.jetbrains.kotlin.ir.expressions.IrExpressionBody
+import org.jetbrains.kotlin.ir.expressions.IrReturn
+import org.jetbrains.kotlin.ir.expressions.impl.IrCallImplWithShape
+import org.jetbrains.kotlin.ir.expressions.impl.IrGetObjectValueImpl
+import org.jetbrains.kotlin.ir.expressions.impl.IrReturnImpl
 import org.jetbrains.kotlin.ir.types.IrType
+import org.jetbrains.kotlin.ir.types.classOrFail
+import org.jetbrains.kotlin.ir.types.classOrNull
 import org.jetbrains.kotlin.ir.util.callableId
 import org.jetbrains.kotlin.ir.util.statements
 
@@ -37,22 +44,28 @@ import org.jetbrains.kotlin.ir.util.statements
 	/**
 	 * Statements before the loop operation definition
 	 */
-	val preamble get() = ir.body!!.statements.asSequence()
-		.takeWhile { !(it is IrCall && it.symbol.owner.callableId.isTerminalOperation) }
-	
-	val stateVariables get() = preamble.filter { it is IrVariable }
+	context(_: StreamOpContext)
+	val preamble get() = internal.preamble
 	
 	/**
 	 * Statements after the loop operation definition, including the value returned and any postprocessing.
 	 */
-	val epilogue: Sequence<IrStatement> get() = ir.body!!.statements.asSequence()
-		.dropWhile { !(it is IrCall && it.symbol.owner.callableId.isTerminalOperation) }
-		.drop(1)
+	context(data: StreamOpContext)
+	val epilogue: Sequence<IrStatement> get() {
+		if (body is IrExpressionBody || body.statements.size == 1)
+			return body.statements[0].run { sequenceOf(IrReturnImpl(startOffset, endOffset, data.unitType, internal.ir.symbol, IrGetObjectValueImpl(-1, -1, data.unitType, data.unitType.classOrFail))) }
+		
+		return body.statements.asSequence()
+			.dropWhile { !(it is IrCall && it.symbol.owner.callableId.isTerminalOperation) }
+			.drop(1)
+	}
 	
 	val arguments get() = internal.arguments
 	
 	context(_: StreamOpContext)
 	val identifier get() = internal.identifier
+	
+	val body get() = internal.body
 	
 	override fun toString() = internal.toString()
 }

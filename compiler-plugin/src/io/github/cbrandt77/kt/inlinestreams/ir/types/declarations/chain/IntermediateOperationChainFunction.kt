@@ -4,11 +4,8 @@ import io.github.cbrandt77.kt.inlinestreams.NamesAndIds.isIntermediateOperation
 import io.github.cbrandt77.kt.inlinestreams.ir.StreamOpContext
 import io.github.cbrandt77.kt.inlinestreams.util.flatMap
 import org.jetbrains.kotlin.ir.declarations.IrFunction
-import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
-import org.jetbrains.kotlin.ir.declarations.IrVariable
 import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.expressions.IrReturn
-import org.jetbrains.kotlin.ir.expressions.impl.IrReturnImpl
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.util.callableId
 import org.jetbrains.kotlin.ir.util.statements
@@ -38,10 +35,8 @@ import org.jetbrains.kotlin.ir.util.statements
 	val outputElementType: IrType
 		get() = data.getInlineStreamTypeParameterT(ir.returnType) ?: error("doesn't return InlineStream!")
 	
-	// Intermediate operations must return the intermediateOperation block
-	val preamble get() = ir.body!!.statements.asSequence().takeWhile { it !is IrReturn }
-	
-	val stateVariables get() = preamble.filter { it is IrVariable }
+	context(_: StreamOpContext)
+	val preamble get() = internal.preamble
 	
 	val arguments get() = internal.arguments
 	
@@ -49,4 +44,9 @@ import org.jetbrains.kotlin.ir.util.statements
 	val identifier get() = internal.identifier
 	
 	override fun toString() = internal.toString()
+	
+	val body get() = internal.body
+	
+	context(_: StreamOpContext)
+	val hasGeneratedLoopFunction get() = internal.hasGeneratedLoopFunction
 }

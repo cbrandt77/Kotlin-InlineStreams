@@ -2,6 +2,8 @@ package io.github.cbrandt77.kt.inlinestreams.ir
 
 import io.github.cbrandt77.kt.inlinestreams.NamesAndIds
 import io.github.cbrandt77.kt.inlinestreams.NamesAndIds.isEntranceFunction
+import io.github.cbrandt77.kt.inlinestreams.ir.types.calls.IntermediateOperationChainCall
+import io.github.cbrandt77.kt.inlinestreams.ir.types.calls.StreamOperationChainCall
 import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.chain.IntermediateOperationChainFunction
 import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.chain.StreamOperationChainFunction
 import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.chain.TerminalOperationChainFunction
@@ -9,6 +11,7 @@ import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.loop.Intermedi
 import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.loop.StreamOperationLoopFunction
 import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.loop.TerminalOperationLoopFunction
 import io.github.cbrandt77.kt.inlinestreams.util.flatMap
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationContainer
 import org.jetbrains.kotlin.ir.declarations.IrFunction
@@ -16,7 +19,10 @@ import org.jetbrains.kotlin.ir.declarations.IrParameterKind
 import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
 import org.jetbrains.kotlin.ir.declarations.IrValueParameter
 import org.jetbrains.kotlin.ir.expressions.IrCall
+import org.jetbrains.kotlin.ir.expressions.IrReturn
 import org.jetbrains.kotlin.ir.symbols.IrFunctionSymbol
+import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
+import org.jetbrains.kotlin.ir.symbols.impl.IrSimpleFunctionSymbolImpl
 import org.jetbrains.kotlin.ir.types.IrSimpleType
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.classOrNull
@@ -25,6 +31,7 @@ import org.jetbrains.kotlin.ir.types.typeOrNull
 import org.jetbrains.kotlin.ir.types.typeWith
 import org.jetbrains.kotlin.ir.util.callableId
 import org.jetbrains.kotlin.ir.util.render
+import org.jetbrains.kotlin.ir.util.statements
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.StandardClassIds
@@ -72,13 +79,13 @@ class StreamOpContext(val context: IrPluginContext) {
 	fun StreamOperationChainFunction.getLoopFunction(): Result<StreamOperationLoopFunction> {
 		val ourCallableId = this.ir.callableId
 		val loopFuncName = getLoopOpFunctionName(ourCallableId.callableName)
-		val allWithName = ((this.ir.parent as IrDeclarationContainer) ?: error("Function is not top-level."))
+		val allWithName = ((this.ir.parent as? IrDeclarationContainer) ?: error("Function is not top-level."))
 			.declarations
 			.mapNotNull { (it as? IrSimpleFunction)?.takeIf { it.name == loopFuncName }?.symbol }
 			.ifEmpty {
 				return Result.failure(InlineStreamFunctionResolutionException(ourCallableId, listOf(), "No functions found for that name."));
 			}
-			
+		
 		
 		val allAsStreamOperations = allWithName.map {
 			StreamOperationLoopFunction.invoke(it.owner)
@@ -105,6 +112,8 @@ class StreamOpContext(val context: IrPluginContext) {
 		       ?: Result.failure(InlineStreamFunctionResolutionException(ourCallableId, disambiguatedByIdentifier.map { it.ir.symbol }, "Expected 1 function with matching identifier, found ${disambiguatedByIdentifier.size}."))
 	}
 	
+	
+	
 	fun IntermediateOperationChainFunction.getLoopFunction(): Result<IntermediateOperationLoopFunction> {
 		return internal.getLoopFunction().flatMap { IntermediateOperationLoopFunction(it) }
 	}
@@ -114,6 +123,13 @@ class StreamOpContext(val context: IrPluginContext) {
 	}
 	
 	
+	private val chainSymbolToLoopSymbol = Object2ObjectOpenHashMap<StreamOperationChainFunction, IrSimpleFunctionSymbol>()
+	
+	fun getLoopFunctionSymbol(chainFunc: StreamOperationChainFunction): IrSimpleFunctionSymbol {
+		return chainSymbolToLoopSymbol.computeIfAbsent(chainFunc) { it: StreamOperationChainFunction ->
+			it.getLoopFunction().getOrNull()?.ir?.symbol ?: IrSimpleFunctionSymbolImpl()
+		}
+	}
 	
 	
 	fun getLoopOpFunctionName(chainFunc: Name): Name {
@@ -134,8 +150,6 @@ class StreamOpContext(val context: IrPluginContext) {
 	
 	val IrValueParameter.isDslFunParameter: Boolean
 		get() = name.isSpecial && name.asString().startsWith("<arg-")
-	
-	
 	
 	
 	private val getterRegex = Regex("^<get-(.*)>$")
