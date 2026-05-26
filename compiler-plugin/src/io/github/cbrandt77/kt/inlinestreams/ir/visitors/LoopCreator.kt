@@ -466,7 +466,7 @@ inline fun makeLambdaFunction(rType: IrType = ctx.context.irBuiltIns.unitType, o
 context(ctx: StreamOpContext)
 fun makeGetterLambda(varType: IrType, targetVariable: IrVariable, parent: IrDeclarationParent): IrExpression {
 	return IrFunctionExpressionImpl(-1, -1, ctx.context.irBuiltIns.functionN(0).typeWith(varType), makeLambdaFunction(varType) {
-		body = ctx.context.irFactory.createBlockBody(-1, -1).also { it.statements += IrGetValueImpl(-1, -1, targetVariable.symbol) }
+		body = ctx.context.irFactory.createBlockBody(-1, -1).also { it.statements += IrReturnImpl(-1, -1, ctx.context.irBuiltIns.nothingType, this@makeLambdaFunction.symbol, IrGetValueImpl(-1, -1, targetVariable.symbol)) }
 		this.parent = parent
 	}, LAMBDA)
 }
