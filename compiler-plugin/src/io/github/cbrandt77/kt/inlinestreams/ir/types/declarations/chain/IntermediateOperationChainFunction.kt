@@ -7,6 +7,7 @@ import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.expressions.IrReturn
 import org.jetbrains.kotlin.ir.types.IrType
+import org.jetbrains.kotlin.ir.types.classOrNull
 import org.jetbrains.kotlin.ir.util.callableId
 import org.jetbrains.kotlin.ir.util.statements
 
@@ -15,8 +16,8 @@ import org.jetbrains.kotlin.ir.util.statements
 		context(data: StreamOpContext)
 	    operator fun invoke(ir: IrFunction): Result<IntermediateOperationChainFunction> = with (data) {
 	        return StreamOperationChainFunction.invoke(ir).flatMap {
-				if (it.ir.body!!.statements.none { it is IrReturn && it.value.let { it is IrCall && it.symbol.owner.callableId.isIntermediateOperation } }) {
-					Result.failure(IllegalArgumentException("Does not return `intermediateOperation` DSL function."))
+				if (it.ir.returnType.classOrNull != inlineStreamClassSymbol) {
+					Result.failure(IllegalArgumentException("Intermediate operation must return InlineStream."))
 				} else {
 					Result.success(IntermediateOperationChainFunction(it))
 				}
