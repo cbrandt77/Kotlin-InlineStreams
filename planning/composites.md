@@ -34,10 +34,72 @@ fun <T> InlineStream<T>.customThing(): T {
 So, how do we do this?
 
 
+Intermediate operations:
+
 ```kotlin
-// During the loop function generation phase, 
-// crap wait no but we can't reference loop functions BEFORE we generate them aaaaaaa we have to make sure whatever's being referenced is generated first
 fun <T> InlineStream<T>.composite(arg: String): InlineStream<T> {
 	return this.op1().op2(arg)
+}
+
+// becomes:
+fun <T> InlineStream<T>.composite(arg: String): InlineStream<T> {
+	val op1_state: Int = 4
+    var op2_state: String = "foo"
+	
+	return intermediateOperation { el, breakLoop, downstreamAction ->
+		loopAction-op1(el, breakLoop, downstreamAction = { el2 ->
+			loopAction-op2(
+                arg, 
+                el2, breakLoop, downstreamAction = downstreamAction, 
+                `<get-op2_state>` = { op2_state }, 
+                `<set-op2_state>` = { op2_state = it }
+			)
+        }, `<get-op1_state>` = { op1_state })
+    }
+}
+```
+
+# Terminal operations:
+given:
+```kotlin
+fun <T> InlineStream<T>.firstOrNull(): T? {
+	var out: T? = null
+    
+    terminalOperation { el, breakLoop ->
+		out = el
+        breakLoop()
+    }
+    
+    return out;
+}
+```
+
+We do this:
+```kotlin
+// Source code:
+fun <T> InlineStream<T>.first(): T {
+	return firstOrNull() ?: throw NoSuchElementException()
+}
+// Actual IR:
+fun <T> InlineStream<T>.first(): T {
+	return when (val tmp_0 = firstOrNull()) {
+		null -> throw NoSuchElementException()
+        else -> tmp_0
+	}
+}
+
+// Transformed IR:
+fun <T> InlineStream<T>.first(): T {
+	var `0$firstOrNull$out`: T? = null
+    
+    terminalOperation { el, breakLoop ->
+		loopAction-firstOrNull(el, breakLoop, `<set-out>` = { `0$firstOrNull$out` = it })
+    }
+    
+    return when (val tmp_0 = run { 
+		return@run `0$firstOrNull$out`;
+	}) { // replace firstOrNull call with EPILOGUE of firstOrNull, with variable and return symbols redirected 
+		null -> throw NoSuchElementException()
+	}
 }
 ```
