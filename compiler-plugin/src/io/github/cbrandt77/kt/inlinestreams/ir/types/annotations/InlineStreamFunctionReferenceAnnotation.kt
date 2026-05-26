@@ -37,7 +37,7 @@ import org.jetbrains.kotlin.ir.util.primaryConstructor
 		get() = (ir.arguments[0] as IrConst).value as Int?
 		set(value) {
 			val arg = ir.arguments.getOrNull(0) as IrConst?
-			          ?: IrConstImpl(-1, -1, data.context.irBuiltIns.intType, IrConstKind.Int, value).also {
+			          ?: IrConstImpl(-1, -1, data.irBuiltIns.intType, IrConstKind.Int, value).also {
 				          ir.arguments[0] = it
 			          }
 			arg.value = value

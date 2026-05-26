@@ -36,7 +36,7 @@ import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.StandardClassIds
 
-class StreamOpContext(val context: IrPluginContext) {
+class StreamOpContext(val context: IrPluginContext) : IrPluginContext by context {
 	val inlineStreamClassSymbol by lazy {
 		context.referenceClass(NamesAndIds.InlineStreamClassId) ?: error("Unable to find InlineStream class symbol.")
 	}

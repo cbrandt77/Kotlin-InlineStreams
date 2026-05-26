@@ -52,7 +52,7 @@ class CompilerPluginRegistrar_InlineStreams : CompilerPluginRegistrar() {
 	class IrRegistrar : IrGenerationExtension {
 		override fun generate(moduleFragment: IrModuleFragment, pluginContext: IrPluginContext) {
 			val data = StreamOpContext(pluginContext)
-			moduleFragment.transformChildrenVoid(StreamOpRuntimeVariantGenerator(pluginContext, data))
+			moduleFragment.transformChildrenVoid(StreamOpRuntimeVariantGenerator(data))
 			moduleFragment.transformChildrenVoid(LoopCreator(pluginContext, data))
 		}
 	}

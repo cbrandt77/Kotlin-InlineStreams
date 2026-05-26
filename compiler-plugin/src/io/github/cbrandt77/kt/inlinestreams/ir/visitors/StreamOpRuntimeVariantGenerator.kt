@@ -63,7 +63,6 @@ object StreamOpGeneratedLoopActionDeclarationKey : GeneratedDeclarationKey() {
  * that actually gets called at runtime under the same parent as the `InlineStream.someOperation` function.
  */
 class StreamOpRuntimeVariantGenerator(
-	val context: IrPluginContext,
 	val data: StreamOpContext
 ) : IrElementTransformerVoid() {
 	override fun visitElement(element: IrElement): IrElement {
@@ -98,7 +97,7 @@ class StreamOpRuntimeVariantGenerator(
 	                    ?: continue;
 				
 				if (callsFunction.isIntermediateOpBlock || callsFunction.isTerminalOpBlock) {
-					LoopFunctionGenerator(context, data, context (data) { StreamOperationChainFunction(declaration).getOrThrow() }, IntermediateOperationDefFuncInvocation(callsFunction)).buildLoopActionFun()
+					LoopFunctionGenerator(data, context (data) { StreamOperationChainFunction(declaration).getOrThrow() }, IntermediateOperationDefFuncInvocation(callsFunction)).buildLoopActionFun()
 					break;
 				}
 			}
@@ -113,15 +112,15 @@ class StreamOpRuntimeVariantGenerator(
  * - Replace SET_VAR variableDeclaredOutsideBlock with call to setter from parameters
  *   - Add setter to parameters also
  */
-class LoopFunctionGenerator(val context: IrPluginContext, val data: StreamOpContext, val dslFunction: StreamOperationChainFunction, call: IntermediateOperationDefFuncInvocation) {
+class LoopFunctionGenerator(val data: StreamOpContext, val dslFunction: StreamOperationChainFunction, call: IntermediateOperationDefFuncInvocation) {
 	val loopAction: IrFunction = call.action.ir
 	
-	private val newFun = context.irFactory.createSimpleFunction(
+	private val newFun = data.irFactory.createSimpleFunction(
 		symbol = data.getLoopFunctionSymbol(dslFunction),
 		startOffset = loopAction.startOffset,
 		endOffset = loopAction.endOffset,
 		name = data.getLoopOpFunctionName(dslFunction.ir.name),
-		returnType = context.irBuiltIns.unitType,
+		returnType = data.irBuiltIns.unitType,
 		isInline = true,
 //			originalDeclaration = dslFunction,
 		origin = StreamOpGeneratedLoopActionDeclarationKey.origin,
@@ -152,7 +151,7 @@ class LoopFunctionGenerator(val context: IrPluginContext, val data: StreamOpCont
 		private val functions: Object2ObjectOpenHashMap<IrVariable, IrValueParameter> = Object2ObjectOpenHashMap()
 		
 		private val getterType by lazy {
-			context.irBuiltIns.functionN(0)
+			data.irBuiltIns.functionN(0)
 		}
 		private val getterInvokeFun by lazy {
 			getterType.invokeFun!!.symbol
@@ -186,7 +185,7 @@ class LoopFunctionGenerator(val context: IrPluginContext, val data: StreamOpCont
 		private val functions = Object2ObjectOpenHashMap<IrVariable, IrValueParameter>()
 		
 		private val setterType by lazy {
-			context.irBuiltIns.functionN(1)
+			data.irBuiltIns.functionN(1)
 		}
 		private val setterInvokeFun by lazy {
 			setterType.invokeFun!!.symbol
@@ -200,7 +199,7 @@ class LoopFunctionGenerator(val context: IrPluginContext, val data: StreamOpCont
 			return functions.computeIfAbsent(variable) { it: IrVariable ->
 				newFun.addValueParameter {
 					name = data.makeSetterNameForState(it.name)
-					type = setterType.typeWith(it.type, context.irBuiltIns.unitType)
+					type = setterType.typeWith(it.type, data.irBuiltIns.unitType)
 					origin = StreamOpGeneratedLoopActionDeclarationKey.origin
 				}
 			}
@@ -210,7 +209,7 @@ class LoopFunctionGenerator(val context: IrPluginContext, val data: StreamOpCont
 		fun remapToSetterIfNeeded(setValue: IrSetValue): IrExpression {
 			val variableBeingSet = setValue.takeTargetIfNeedsRemapping ?: return setValue;
 			
-			return IrCallImpl(setValue.startOffset, setValue.endOffset, context.irBuiltIns.unitType, setterInvokeFun, origin = IrStatementOrigin.INVOKE).also {
+			return IrCallImpl(setValue.startOffset, setValue.endOffset, data.irBuiltIns.unitType, setterInvokeFun, origin = IrStatementOrigin.INVOKE).also {
 				it.dispatchReceiver = IrGetValueImpl(setValue.startOffset, setValue.endOffset, getOrCreateParameter(variableBeingSet).symbol, origin = IrStatementOrigin.VARIABLE_AS_FUNCTION) // TODO replace with arguments.add
 				it.arguments[1] = setValue.value
 			};

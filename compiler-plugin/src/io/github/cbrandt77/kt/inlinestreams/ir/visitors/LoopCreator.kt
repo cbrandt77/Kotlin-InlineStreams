@@ -191,7 +191,7 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 			val originalInputElementType = entranceFunction.typeArguments.first()!!
 			val finalOutputType = terminalOperationChainCall.outputType
 			
-			val iteratorType = context.irBuiltIns.iteratorClass.typeWith(originalInputElementType)
+			val iteratorType = irBuiltIns.iteratorClass.typeWith(originalInputElementType)
 			
 			
 			val allOperations: List<OperationWithState> = intermediatesLastToFirst.asReversed() + terminalOperation
@@ -206,11 +206,11 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 				outermostRunCall.typeArguments[0] = finalOutputType
 				outermostRunCall.arguments[0] = IrFunctionExpressionImpl(
 					startOffset = -1, endOffset = -1,
-					type = context.symbols.functionN(0).typeWith(finalOutputType),
+					type = symbols.functionN(0).typeWith(finalOutputType),
 					origin = LAMBDA,
 					function = makeLambdaFunction(finalOutputType).also { outerReturnTarget ->
 						outerReturnTarget.parent = currentFunction
-						outerReturnTarget.body = context.irFactory.createBlockBody(-1, -1).also { outerBlock ->
+						outerReturnTarget.body = irFactory.createBlockBody(-1, -1).also { outerBlock ->
 							// create preamble for each operation, give them all their remapped state variables
 							outerBlock.statements += allOperations.flatMapIndexed { operationIndex, operation ->
 								val typeArgRealizer = TypeArgRealizer(operation.chainCall_general.ir)
@@ -252,46 +252,46 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 									};
 							}
 							
-							outerBlock.statements += IrCallImpl(-1, -1, context.irBuiltIns.unitType, kotlinRunFunction).also { breakLoopRunBlock ->
-								breakLoopRunBlock.typeArguments[0] = context.irBuiltIns.unitType
+							outerBlock.statements += IrCallImpl(-1, -1, irBuiltIns.unitType, kotlinRunFunction).also { breakLoopRunBlock ->
+								breakLoopRunBlock.typeArguments[0] = irBuiltIns.unitType
 								breakLoopRunBlock.arguments[0] = IrFunctionExpressionImpl(
 									startOffset = -1, endOffset = -1,
 									type = function0Unit,
 									origin = LAMBDA,
-									function = makeLambdaFunction(context.irBuiltIns.unitType).also { breakLoopReturnTarget ->
+									function = makeLambdaFunction(irBuiltIns.unitType).also { breakLoopReturnTarget ->
 										breakLoopReturnTarget.parent = outerReturnTarget
 										fun makeBreakLoopArg(parent: IrDeclarationParent) = IrFunctionExpressionImpl(-1, -1, function0Unit, makeLambdaFunction {
-											body = context.irFactory.createBlockBody(-1, -1)
+											body = irFactory.createBlockBody(-1, -1)
 												.apply {
-													statements += IrReturnImpl(-1, -1, context.irBuiltIns.nothingType, breakLoopReturnTarget.symbol, IrGetObjectValueImpl(-1, -1, unitType, context.symbols.unit)) // TODO figure out how to make it not return the literal Unit
+													statements += IrReturnImpl(-1, -1, irBuiltIns.nothingType, breakLoopReturnTarget.symbol, IrGetObjectValueImpl(-1, -1, unitType, symbols.unit)) // TODO figure out how to make it not return the literal Unit
 												}
 											this.parent = parent
 										}, LAMBDA)
 										
-										breakLoopReturnTarget.body = context.irFactory.createBlockBody(-1, -1).apply {
-											statements += IrBlockImpl(-1, -1, context.irBuiltIns.unitType, IrStatementOrigin.FOR_LOOP).also { forLoopWrapperBlock ->
+										breakLoopReturnTarget.body = irFactory.createBlockBody(-1, -1).apply {
+											statements += IrBlockImpl(-1, -1, irBuiltIns.unitType, IrStatementOrigin.FOR_LOOP).also { forLoopWrapperBlock ->
 												val iterVar = IrVariableImpl(-1, -1, IrDeclarationOrigin.FOR_LOOP_ITERATOR, IrVariableSymbolImpl(), Name.identifier("tmp_1"), iteratorType, isVar = false, isConst = false, isLateinit = false)
 													.withParent(breakLoopReturnTarget)
 													.withInitializer(inputCollection.type.let { type -> when {
-														type.isSubtypeOfClass(context.symbols.iterator) -> inputCollection
-														type.isSubtypeOfClass(context.symbols.iterable) -> IrCallImpl(-1, -1, iteratorType, context.irBuiltIns.iterableClass.functionByName("iterator"), origin=FOR_LOOP_ITERATOR).withReceiver(inputCollection)
-														type.classOrNull == context.irBuiltIns.arrayClass -> IrCallImpl(-1, -1, iteratorType, context.irBuiltIns.arrayClass.functionByName("iterator"), origin=FOR_LOOP_ITERATOR).withReceiver(inputCollection)
+														type.isSubtypeOfClass(symbols.iterator) -> inputCollection
+														type.isSubtypeOfClass(symbols.iterable) -> IrCallImpl(-1, -1, iteratorType, irBuiltIns.iterableClass.functionByName("iterator"), origin=FOR_LOOP_ITERATOR).withReceiver(inputCollection)
+														type.classOrNull == irBuiltIns.arrayClass -> IrCallImpl(-1, -1, iteratorType, irBuiltIns.arrayClass.functionByName("iterator"), origin=FOR_LOOP_ITERATOR).withReceiver(inputCollection)
 														else -> error("Attempted to initialize with $type")
 													}})
 												forLoopWrapperBlock.statements += iterVar
 												
 												forLoopWrapperBlock.statements += IrWhileLoopImpl(-1, -1, unitType, FOR_LOOP_INNER_WHILE).also { forLoopWhileBody ->
-													forLoopWhileBody.condition = IrCallImpl(-1, -1, context.irBuiltIns.booleanType, context.symbols.iterator.functionByName("hasNext"), origin = FOR_LOOP_HAS_NEXT).withReceiver(IrGetValueImpl(-1, -1, iterVar.symbol))
+													forLoopWhileBody.condition = IrCallImpl(-1, -1, irBuiltIns.booleanType, symbols.iterator.functionByName("hasNext"), origin = FOR_LOOP_HAS_NEXT).withReceiver(IrGetValueImpl(-1, -1, iterVar.symbol))
 													forLoopWhileBody.body = IrBlockImpl(-1, -1, unitType, FOR_LOOP_INNER_WHILE).also { whileBlock ->
 														val var_currentElementFromIterator = IrVariableImpl(-1, -1, FOR_LOOP_VARIABLE, IrVariableSymbolImpl(), NAME_element, originalInputElementType, isVar = false, isConst = false, isLateinit = false)
 															.withParent(breakLoopReturnTarget)
 															.withInitializer(
-																IrCallImpl(-1, -1, originalInputElementType, context.symbols.iterator.functionByName("next"), origin = FOR_LOOP_NEXT)
+																IrCallImpl(-1, -1, originalInputElementType, symbols.iterator.functionByName("next"), origin = FOR_LOOP_NEXT)
 																	.withReceiver(IrGetValueImpl(-1, -1, iterVar.symbol)))
 														
 														whileBlock.statements += var_currentElementFromIterator
 														
-														whileBlock.statements += IrBlockImpl(-1, -1, context.irBuiltIns.nothingType).also { innermostBlock ->
+														whileBlock.statements += IrBlockImpl(-1, -1, irBuiltIns.nothingType).also { innermostBlock ->
 															tailrec fun callLoopOperationRecursive(parentScope: IrFunction?, parentElSymbol: IrValueSymbol?, operations: Iterator<OperationWithState>) {
 																if (parentScope == null || parentElSymbol == null || !operations.hasNext())
 																	return;
@@ -321,7 +321,7 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 																			ourDownstreamActionLambdaElementSymbol = addValueParameter(NAME_element, uType).symbol
 																		}
 																		ourDownstreamActionLambda = downstreamActionLambda
-																		sequenceOf(IrFunctionExpressionImpl(-1, -1, context.irBuiltIns.functionN(1).typeWith(uType, unitType), downstreamActionLambda, LAMBDA))
+																		sequenceOf(IrFunctionExpressionImpl(-1, -1, irBuiltIns.functionN(1).typeWith(uType, unitType), downstreamActionLambda, LAMBDA))
 																	}
 																	else -> emptySequence()
 																}
@@ -374,7 +374,7 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 																if (parentScope == breakLoopReturnTarget) {
 																	innermostBlock.statements += loopActionCall
 																} else {
-																	parentScope.body = context.irFactory.createBlockBody(-1, -1).also {
+																	parentScope.body = irFactory.createBlockBody(-1, -1).also {
 																		it.statements += loopActionCall
 																	}
 																}
@@ -483,8 +483,8 @@ fun IrCall.withReceiver(receiver: IrExpression) = also {
 
 
 context(ctx: StreamOpContext)
-inline fun makeLambdaFunction(rType: IrType = ctx.context.irBuiltIns.unitType, onNewlyCreatedFunction: IrFunction.() -> Unit = {}): IrSimpleFunction {
-	return ctx.context.irFactory.buildFun {
+inline fun makeLambdaFunction(rType: IrType = ctx.irBuiltIns.unitType, onNewlyCreatedFunction: IrFunction.() -> Unit = {}): IrSimpleFunction {
+	return ctx.irFactory.buildFun {
 		returnType = rType
 		name = ctx.anonymous
 		visibility = DescriptorVisibilities.LOCAL
@@ -495,17 +495,17 @@ inline fun makeLambdaFunction(rType: IrType = ctx.context.irBuiltIns.unitType, o
 
 context(ctx: StreamOpContext)
 fun makeGetterLambda(varType: IrType, targetVariable: IrVariable, parent: IrDeclarationParent): IrExpression {
-	return IrFunctionExpressionImpl(-1, -1, ctx.context.irBuiltIns.functionN(0).typeWith(varType), makeLambdaFunction(varType) {
-		body = ctx.context.irFactory.createBlockBody(-1, -1).also { it.statements += IrReturnImpl(-1, -1, ctx.context.irBuiltIns.nothingType, this@makeLambdaFunction.symbol, IrGetValueImpl(-1, -1, targetVariable.symbol)) }
+	return IrFunctionExpressionImpl(-1, -1, ctx.irBuiltIns.functionN(0).typeWith(varType), makeLambdaFunction(varType) {
+		body = ctx.irFactory.createBlockBody(-1, -1).also { it.statements += IrReturnImpl(-1, -1, ctx.irBuiltIns.nothingType, this@makeLambdaFunction.symbol, IrGetValueImpl(-1, -1, targetVariable.symbol)) }
 		this.parent = parent
 	}, LAMBDA)
 }
 
 context(ctx: StreamOpContext)
 fun makeSetterLambda(varType: IrType, targetVariable: IrVariable, parent: IrDeclarationParent): IrExpression {
-	return IrFunctionExpressionImpl(-1, -1, ctx.context.irBuiltIns.functionN(1).typeWith(varType, ctx.unitType), makeLambdaFunction {
+	return IrFunctionExpressionImpl(-1, -1, ctx.irBuiltIns.functionN(1).typeWith(varType, ctx.unitType), makeLambdaFunction {
 		val value = addValueParameter(name = StandardNames.IMPLICIT_LAMBDA_PARAMETER_NAME, type = varType)
-		body = ctx.context.irFactory.createBlockBody(-1, -1).also {
+		body = ctx.irFactory.createBlockBody(-1, -1).also {
 			it.statements += IrSetValueImpl(-1, -1, ctx.unitType, targetVariable.symbol, IrGetValueImpl(-1, -1, value.symbol), null)
 		}
 		this.parent = parent
