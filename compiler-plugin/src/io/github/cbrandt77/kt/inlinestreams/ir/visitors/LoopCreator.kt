@@ -216,18 +216,19 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 								val typeArgRealizer = TypeArgRealizer(operation.chainCall_general.ir)
 								val stateRedirector = StateVariableReferenceRedirector(operation.stateVariablesMap)
 								
-								if (operation.chainFunc_general.ir.isInline) {
-									operation.chainFunc_general.parameters.filterNot { it.type.isFunctionOrKFunction() && !it.isNoinline && !it.isCrossinline }
-								} else {
-									operation.chainFunc_general.parameters
-								}
-								.map { param ->
+								
+								operation.chainFunc_general.run {
+									if (ir.isInline)
+										parameters.filterNot { it.type.isFunctionOrKFunction() && !it.isNoinline && !it.isCrossinline }
+									else
+										parameters
+								}.map { param ->
 									IrVariableImpl(
-										-1, -1,
-										DEFINED,
-										IrVariableSymbolImpl(),
-										makeParameterName(operationIndex, operation.chainFunc_general.ir.name, param.name),
-										param.type.let(typeArgRealizer::remapType),
+										startOffset = -1, endOffset = -1,
+										origin = DEFINED,
+										symbol = IrVariableSymbolImpl(),
+										name = makeParameterName(operationIndex, operation.chainFunc_general.ir.name, param.name),
+										type = param.type.let(typeArgRealizer::remapType),
 										isVar = false,
 										isConst = false,
 										isLateinit = false

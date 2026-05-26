@@ -2,8 +2,6 @@
 
 package io.github.cbrandt77.kt.inlinestreams
 
-import io.github.cbrandt77.kt.inlinestreams.intermediateOperation
-
 public inline fun <T, U> InlineStream<T>.map(transformation: (T) -> U): InlineStream<U> {
 	return intermediateOperation { element, _, downstreamAction ->
 		downstreamAction(transformation(element))

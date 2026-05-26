@@ -66,7 +66,7 @@ public inline fun <T> flatten(el: Iterable<T>, breakLoop: () -> Unit, downstream
 	flatMap({ it }, el, breakLoop, downstreamAction)
 }
 
-public inline fun <T> firstOrNull(el: T, breakLoop: () -> Unit, `set-out`: (T) -> Unit) {
+public inline fun <T> firstOrNull(el: T, breakLoop: () -> Unit, `set-out`: (T?) -> Unit) {
 	`set-out`(el)
 	breakLoop()
 }
