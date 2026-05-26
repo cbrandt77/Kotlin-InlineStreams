@@ -5,7 +5,9 @@ import io.github.cbrandt77.kt.inlinestreams.ir.types.annotations.InlineStreamFun
 import io.github.cbrandt77.kt.inlinestreams.util.stableHashCode
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrParameterKind
+import org.jetbrains.kotlin.ir.declarations.IrValueParameter
 import org.jetbrains.kotlin.ir.expressions.IrCall
+import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.expressions.IrReturn
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.classFqName
@@ -45,7 +47,7 @@ import org.jetbrains.kotlin.ir.util.statements
 	 */
 	context(data: StreamOpContext)
 	private fun createIdentifier(): Int {
-		val identifier: Int = arguments.map { it.type.eraseIfTypeParameter().classFqName }.toList().stableHashCode()
+		val identifier: Int = parameters.map { it.type.eraseIfTypeParameter().classFqName }.toList().stableHashCode()
 		
 		ir.annotations += InlineStreamFunctionReferenceAnnotation(identifier).ir
 		
@@ -61,7 +63,7 @@ import org.jetbrains.kotlin.ir.util.statements
 	val inputElementType: IrType
 		get() = data.getInlineStreamTypeParameterT(receiver.type) ?: error("doesn't act on inline stream!")
 	
-	val arguments
+	val parameters
 		get() = ir.parameters.asSequence().filter { it.kind != IrParameterKind.ExtensionReceiver }
 	
 	
@@ -72,4 +74,13 @@ import org.jetbrains.kotlin.ir.util.statements
 	context(_: StreamOpContext)
 	val hasGeneratedLoopFunction: Boolean
 		get() = _identifier != null
+}
+
+/**
+ * Get the actual value that will be given to the function for this parameter slot.
+ *
+ * If it's defined in [call]'s arguments, it'll be that value.  Otherwise it'll be [this] parameter's default value.
+ */
+fun IrValueParameter.evaluateValue(call: IrCall): IrExpression {
+	return call.arguments[this] ?: defaultValue!!.expression;
 }

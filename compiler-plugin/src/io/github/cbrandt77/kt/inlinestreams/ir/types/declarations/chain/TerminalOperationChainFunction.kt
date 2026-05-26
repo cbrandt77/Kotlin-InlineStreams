@@ -5,16 +5,12 @@ import io.github.cbrandt77.kt.inlinestreams.ir.StreamOpContext
 import io.github.cbrandt77.kt.inlinestreams.util.flatMap
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.declarations.IrFunction
-import org.jetbrains.kotlin.ir.declarations.IrVariable
 import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.expressions.IrExpressionBody
-import org.jetbrains.kotlin.ir.expressions.IrReturn
-import org.jetbrains.kotlin.ir.expressions.impl.IrCallImplWithShape
 import org.jetbrains.kotlin.ir.expressions.impl.IrGetObjectValueImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrReturnImpl
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.classOrFail
-import org.jetbrains.kotlin.ir.types.classOrNull
 import org.jetbrains.kotlin.ir.util.callableId
 import org.jetbrains.kotlin.ir.util.statements
 
@@ -60,7 +56,7 @@ import org.jetbrains.kotlin.ir.util.statements
 			.drop(1)
 	}
 	
-	val arguments get() = internal.arguments
+	val parameters get() = internal.parameters
 	
 	context(_: StreamOpContext)
 	val identifier get() = internal.identifier

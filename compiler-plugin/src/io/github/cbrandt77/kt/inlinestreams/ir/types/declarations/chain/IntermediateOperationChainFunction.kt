@@ -38,7 +38,7 @@ import org.jetbrains.kotlin.ir.util.statements
 	context(_: StreamOpContext)
 	val preamble get() = internal.preamble
 	
-	val arguments get() = internal.arguments
+	val parameters get() = internal.parameters
 	
 	context(_: StreamOpContext)
 	val identifier get() = internal.identifier

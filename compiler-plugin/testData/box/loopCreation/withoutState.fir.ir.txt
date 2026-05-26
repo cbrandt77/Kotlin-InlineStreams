@@ -1,4 +1,36 @@
 FILE fqName:pkg fileName:/Main.kt
+  FUN GENERATED[io.github.cbrandt77.kt.inlinestreams.ir.visitors.StreamOpGeneratedLoopActionDeclarationKey] name:generated$loopAction$drop visibility:public modality:FINAL returnType:kotlin.Unit [inline]
+    TYPE_PARAMETER name:T index:0 variance: superTypes:[kotlin.Any?] reified:false
+    VALUE_PARAMETER kind:Regular name:<arg-n> index:0 type:kotlin.Int
+    VALUE_PARAMETER kind:Regular name:el index:1 type:T of pkg.generated$loopAction$drop
+    VALUE_PARAMETER UNDERSCORE_PARAMETER kind:Regular name:<unused var> index:2 type:kotlin.Function0<kotlin.Unit>
+    VALUE_PARAMETER kind:Regular name:downstreamAction index:3 type:kotlin.Function1<T of pkg.generated$loopAction$drop, kotlin.Unit>
+    VALUE_PARAMETER GENERATED[io.github.cbrandt77.kt.inlinestreams.ir.visitors.StreamOpGeneratedLoopActionDeclarationKey] kind:Regular name:<get-numDropped> index:4 type:kotlin.Function0<kotlin.Int>
+    VALUE_PARAMETER GENERATED[io.github.cbrandt77.kt.inlinestreams.ir.visitors.StreamOpGeneratedLoopActionDeclarationKey] kind:Regular name:<set-numDropped> index:5 type:kotlin.Function1<kotlin.Int, kotlin.Unit>
+    annotations:
+      InlineStreamFunctionReference(id = -2133280414)
+    BLOCK_BODY
+      TYPE_OP type=kotlin.Unit origin=IMPLICIT_COERCION_TO_UNIT typeOperand=kotlin.Unit
+        WHEN type=kotlin.Any origin=IF
+          BRANCH
+            if: CALL 'public final fun less (arg0: kotlin.Int, arg1: kotlin.Int): kotlin.Boolean declared in kotlin.internal.ir' type=kotlin.Boolean origin=LT
+              ARG arg0: CALL 'public abstract fun invoke (): R of kotlin.Function0 declared in kotlin.Function0' type=kotlin.Int origin=null
+                ARG <this>: GET_VAR '<get-numDropped>: kotlin.Function0<kotlin.Int> declared in pkg.generated$loopAction$drop' type=kotlin.Function0<kotlin.Int> origin=VARIABLE_AS_FUNCTION
+              ARG arg1: GET_VAR '<arg-n>: kotlin.Int declared in pkg.generated$loopAction$drop' type=kotlin.Int origin=null
+            then: BLOCK type=kotlin.Int origin=PREFIX_INCR
+              CALL 'public abstract fun invoke (p1: P1 of kotlin.Function1): R of kotlin.Function1 declared in kotlin.Function1' type=kotlin.Unit origin=INVOKE
+                ARG <this>: GET_VAR '<set-numDropped>: kotlin.Function1<kotlin.Int, kotlin.Unit> declared in pkg.generated$loopAction$drop' type=kotlin.Function1<kotlin.Int, kotlin.Unit> origin=VARIABLE_AS_FUNCTION
+                ARG p1: CALL 'public final fun inc (): kotlin.Int declared in kotlin.Int' type=kotlin.Int origin=PREFIX_INCR
+                  ARG <this>: CALL 'public abstract fun invoke (): R of kotlin.Function0 declared in kotlin.Function0' type=kotlin.Int origin=null
+                    ARG <this>: GET_VAR '<get-numDropped>: kotlin.Function0<kotlin.Int> declared in pkg.generated$loopAction$drop' type=kotlin.Function0<kotlin.Int> origin=VARIABLE_AS_FUNCTION
+              CALL 'public abstract fun invoke (): R of kotlin.Function0 declared in kotlin.Function0' type=kotlin.Int origin=null
+                ARG <this>: GET_VAR '<get-numDropped>: kotlin.Function0<kotlin.Int> declared in pkg.generated$loopAction$drop' type=kotlin.Function0<kotlin.Int> origin=VARIABLE_AS_FUNCTION
+          BRANCH
+            if: CONST Boolean type=kotlin.Boolean value=true
+            then: BLOCK type=kotlin.Unit origin=null
+              CALL 'public abstract fun invoke (p1: P1 of kotlin.Function1): R of kotlin.Function1 declared in kotlin.Function1' type=kotlin.Unit origin=INVOKE
+                ARG <this>: GET_VAR 'downstreamAction: kotlin.Function1<T of pkg.generated$loopAction$drop, kotlin.Unit> declared in pkg.generated$loopAction$drop' type=kotlin.Function1<T of pkg.generated$loopAction$drop, kotlin.Unit> origin=VARIABLE_AS_FUNCTION
+                ARG p1: GET_VAR 'el: T of pkg.generated$loopAction$drop declared in pkg.generated$loopAction$drop' type=T of pkg.generated$loopAction$drop origin=null
   FUN GENERATED[io.github.cbrandt77.kt.inlinestreams.ir.visitors.StreamOpGeneratedLoopActionDeclarationKey] name:generated$loopAction$firstOrNull visibility:public modality:FINAL returnType:kotlin.Unit [inline]
     TYPE_PARAMETER name:T index:0 variance: superTypes:[kotlin.Any?] reified:false
     VALUE_PARAMETER kind:Regular name:el index:0 type:T of pkg.generated$loopAction$firstOrNull
@@ -60,21 +92,114 @@ FILE fqName:pkg fileName:/Main.kt
         CALL 'public final fun dsl (): kotlin.Int? declared in pkg' type=kotlin.Int? origin=null
       VAR name:fromTransformed type:kotlin.Int? [val]
         CALL 'public final fun transformed (): kotlin.Int? declared in pkg' type=kotlin.Int? origin=null
+      VAR name:fromSequence type:kotlin.Int? [val]
+        CALL 'public final fun sequence (): kotlin.Int? declared in pkg' type=kotlin.Int? origin=null
       WHEN type=kotlin.Nothing origin=IF
         BRANCH
-          if: CALL 'public final fun EQEQ (arg0: kotlin.Any?, arg1: kotlin.Any?): kotlin.Boolean declared in kotlin.internal.ir' type=kotlin.Boolean origin=EQEQ
-            ARG arg0: GET_VAR 'val fromDsl: kotlin.Int? declared in pkg.box' type=kotlin.Int? origin=null
-            ARG arg1: GET_VAR 'val fromTransformed: kotlin.Int? declared in pkg.box' type=kotlin.Int? origin=null
+          if: WHEN type=kotlin.Boolean origin=ANDAND
+            BRANCH
+              if: CALL 'public final fun EQEQ (arg0: kotlin.Any?, arg1: kotlin.Any?): kotlin.Boolean declared in kotlin.internal.ir' type=kotlin.Boolean origin=EQEQ
+                ARG arg0: GET_VAR 'val fromDsl: kotlin.Int? declared in pkg.box' type=kotlin.Int? origin=null
+                ARG arg1: GET_VAR 'val fromTransformed: kotlin.Int? declared in pkg.box' type=kotlin.Int? origin=null
+              then: CALL 'public final fun EQEQ (arg0: kotlin.Any?, arg1: kotlin.Any?): kotlin.Boolean declared in kotlin.internal.ir' type=kotlin.Boolean origin=EQEQ
+                ARG arg0: GET_VAR 'val fromDsl: kotlin.Int? declared in pkg.box' type=kotlin.Int? origin=null
+                ARG arg1: GET_VAR 'val fromSequence: kotlin.Int? declared in pkg.box' type=kotlin.Int? origin=null
+            BRANCH
+              if: CONST Boolean type=kotlin.Boolean value=true
+              then: CONST Boolean type=kotlin.Boolean value=false
           then: RETURN type=kotlin.Nothing from='public final fun box (): kotlin.String declared in pkg'
             CONST String type=kotlin.String value="OK"
         BRANCH
-          if: CONST Boolean type=kotlin.Boolean value=true
+          if: CALL 'public final fun not (): kotlin.Boolean declared in kotlin.Boolean' type=kotlin.Boolean origin=EXCLEQ
+            ARG <this>: CALL 'public final fun EQEQ (arg0: kotlin.Any?, arg1: kotlin.Any?): kotlin.Boolean declared in kotlin.internal.ir' type=kotlin.Boolean origin=EXCLEQ
+              ARG arg0: GET_VAR 'val fromTransformed: kotlin.Int? declared in pkg.box' type=kotlin.Int? origin=null
+              ARG arg1: GET_VAR 'val fromSequence: kotlin.Int? declared in pkg.box' type=kotlin.Int? origin=null
           then: RETURN type=kotlin.Nothing from='public final fun box (): kotlin.String declared in pkg'
             STRING_CONCATENATION type=kotlin.String
-              CONST String type=kotlin.String value="Expected "
+              CONST String type=kotlin.String value="The manually-transformed version is wrong. Got "
               GET_VAR 'val fromTransformed: kotlin.Int? declared in pkg.box' type=kotlin.Int? origin=null
-              CONST String type=kotlin.String value=", got "
+              CONST String type=kotlin.String value=" instead of "
+              GET_VAR 'val fromSequence: kotlin.Int? declared in pkg.box' type=kotlin.Int? origin=null
+        BRANCH
+          if: CALL 'public final fun not (): kotlin.Boolean declared in kotlin.Boolean' type=kotlin.Boolean origin=EXCLEQ
+            ARG <this>: CALL 'public final fun EQEQ (arg0: kotlin.Any?, arg1: kotlin.Any?): kotlin.Boolean declared in kotlin.internal.ir' type=kotlin.Boolean origin=EXCLEQ
+              ARG arg0: GET_VAR 'val fromDsl: kotlin.Int? declared in pkg.box' type=kotlin.Int? origin=null
+              ARG arg1: GET_VAR 'val fromSequence: kotlin.Int? declared in pkg.box' type=kotlin.Int? origin=null
+          then: RETURN type=kotlin.Nothing from='public final fun box (): kotlin.String declared in pkg'
+            STRING_CONCATENATION type=kotlin.String
+              CONST String type=kotlin.String value="Expected: "
+              GET_VAR 'val fromSequence: kotlin.Int? declared in pkg.box' type=kotlin.Int? origin=null
+              CONST String type=kotlin.String value=". From dsl function: "
               GET_VAR 'val fromDsl: kotlin.Int? declared in pkg.box' type=kotlin.Int? origin=null
+        BRANCH
+          if: CONST Boolean type=kotlin.Boolean value=true
+          then: RETURN type=kotlin.Nothing from='public final fun box (): kotlin.String declared in pkg'
+            CONST String type=kotlin.String value="Fallthrough"
+  FUN name:drop visibility:public modality:FINAL returnType:io.github.cbrandt77.kt.inlinestreams.InlineStream<T of pkg.drop>
+    TYPE_PARAMETER name:T index:0 variance: superTypes:[kotlin.Any?] reified:false
+    VALUE_PARAMETER kind:ExtensionReceiver name:<this> index:0 type:io.github.cbrandt77.kt.inlinestreams.InlineStream<T of pkg.drop>
+    VALUE_PARAMETER kind:Regular name:n index:1 type:kotlin.Int
+    annotations:
+      InlineStreamFunctionReference(id = -2133280414)
+    BLOCK_BODY
+      VAR name:numDropped type:kotlin.Int [var]
+        CONST Int type=kotlin.Int value=0
+      RETURN type=kotlin.Nothing from='public final fun drop <T> (<this>: io.github.cbrandt77.kt.inlinestreams.InlineStream<T of pkg.drop>, n: kotlin.Int): io.github.cbrandt77.kt.inlinestreams.InlineStream<T of pkg.drop> declared in pkg'
+        CALL 'public final fun intermediateOperation <T, U> (<this>: io.github.cbrandt77.kt.inlinestreams.InlineStream<T of io.github.cbrandt77.kt.inlinestreams.intermediateOperation>, action: kotlin.Function3<@[ParameterName(name = "element")] T of io.github.cbrandt77.kt.inlinestreams.intermediateOperation, @[ParameterName(name = "breakLoop")] kotlin.Function0<kotlin.Unit>, @[ParameterName(name = "downstreamAction")] kotlin.Function1<U of io.github.cbrandt77.kt.inlinestreams.intermediateOperation, kotlin.Unit>, kotlin.Unit>): io.github.cbrandt77.kt.inlinestreams.InlineStream<U of io.github.cbrandt77.kt.inlinestreams.intermediateOperation> declared in io.github.cbrandt77.kt.inlinestreams' type=io.github.cbrandt77.kt.inlinestreams.InlineStream<T of pkg.drop> origin=null
+          TYPE_ARG T: T of pkg.drop
+          TYPE_ARG U: T of pkg.drop
+          ARG <this>: GET_VAR '<this>: io.github.cbrandt77.kt.inlinestreams.InlineStream<T of pkg.drop> declared in pkg.drop' type=io.github.cbrandt77.kt.inlinestreams.InlineStream<T of pkg.drop> origin=IMPLICIT_ARGUMENT
+          ARG action: FUN_EXPR type=kotlin.Function3<T of pkg.drop, kotlin.Function0<kotlin.Unit>, kotlin.Function1<T of pkg.drop, kotlin.Unit>, kotlin.Unit> origin=LAMBDA
+            FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
+              VALUE_PARAMETER kind:Regular name:el index:0 type:T of pkg.drop
+              VALUE_PARAMETER UNDERSCORE_PARAMETER kind:Regular name:<unused var> index:1 type:kotlin.Function0<kotlin.Unit>
+              VALUE_PARAMETER kind:Regular name:downstreamAction index:2 type:kotlin.Function1<T of pkg.drop, kotlin.Unit>
+              BLOCK_BODY
+                TYPE_OP type=kotlin.Unit origin=IMPLICIT_COERCION_TO_UNIT typeOperand=kotlin.Unit
+                  WHEN type=kotlin.Any origin=IF
+                    BRANCH
+                      if: CALL 'public final fun less (arg0: kotlin.Int, arg1: kotlin.Int): kotlin.Boolean declared in kotlin.internal.ir' type=kotlin.Boolean origin=LT
+                        ARG arg0: GET_VAR 'var numDropped: kotlin.Int declared in pkg.drop' type=kotlin.Int origin=null
+                        ARG arg1: GET_VAR 'n: kotlin.Int declared in pkg.drop' type=kotlin.Int origin=null
+                      then: BLOCK type=kotlin.Int origin=PREFIX_INCR
+                        SET_VAR 'var numDropped: kotlin.Int declared in pkg.drop' type=kotlin.Unit origin=PREFIX_INCR
+                          CALL 'public final fun inc (): kotlin.Int declared in kotlin.Int' type=kotlin.Int origin=PREFIX_INCR
+                            ARG <this>: GET_VAR 'var numDropped: kotlin.Int declared in pkg.drop' type=kotlin.Int origin=PREFIX_INCR
+                        GET_VAR 'var numDropped: kotlin.Int declared in pkg.drop' type=kotlin.Int origin=PREFIX_INCR
+                    BRANCH
+                      if: CONST Boolean type=kotlin.Boolean value=true
+                      then: BLOCK type=kotlin.Unit origin=null
+                        CALL 'public abstract fun invoke (p1: P1 of kotlin.Function1): R of kotlin.Function1 declared in kotlin.Function1' type=kotlin.Unit origin=INVOKE
+                          ARG <this>: GET_VAR 'downstreamAction: kotlin.Function1<T of pkg.drop, kotlin.Unit> declared in pkg.drop.<anonymous>' type=kotlin.Function1<T of pkg.drop, kotlin.Unit> origin=VARIABLE_AS_FUNCTION
+                          ARG p1: GET_VAR 'el: T of pkg.drop declared in pkg.drop.<anonymous>' type=T of pkg.drop origin=null
+  FUN name:drop visibility:public modality:FINAL returnType:kotlin.Unit [inline]
+    TYPE_PARAMETER name:T index:0 variance: superTypes:[kotlin.Any?] reified:false
+    VALUE_PARAMETER kind:Regular name:arg-n index:0 type:kotlin.Int
+    VALUE_PARAMETER kind:Regular name:el index:1 type:T of pkg.drop
+    VALUE_PARAMETER kind:Regular name:breakLoop index:2 type:kotlin.Function0<kotlin.Unit>
+    VALUE_PARAMETER kind:Regular name:downstreamAction index:3 type:kotlin.Function1<T of pkg.drop, kotlin.Unit>
+    VALUE_PARAMETER kind:Regular name:get-numDropped index:4 type:kotlin.Function0<kotlin.Int>
+    VALUE_PARAMETER kind:Regular name:set-numDropped index:5 type:kotlin.Function1<kotlin.Int, kotlin.Unit>
+    BLOCK_BODY
+      WHEN type=kotlin.Unit origin=IF
+        BRANCH
+          if: CALL 'public final fun less (arg0: kotlin.Int, arg1: kotlin.Int): kotlin.Boolean declared in kotlin.internal.ir' type=kotlin.Boolean origin=LT
+            ARG arg0: CALL 'public abstract fun invoke (): R of kotlin.Function0 declared in kotlin.Function0' type=kotlin.Int origin=INVOKE
+              ARG <this>: GET_VAR 'get-numDropped: kotlin.Function0<kotlin.Int> declared in pkg.drop' type=kotlin.Function0<kotlin.Int> origin=VARIABLE_AS_FUNCTION
+            ARG arg1: GET_VAR 'arg-n: kotlin.Int declared in pkg.drop' type=kotlin.Int origin=null
+          then: BLOCK type=kotlin.Unit origin=null
+            CALL 'public abstract fun invoke (p1: P1 of kotlin.Function1): R of kotlin.Function1 declared in kotlin.Function1' type=kotlin.Unit origin=INVOKE
+              ARG <this>: GET_VAR 'set-numDropped: kotlin.Function1<kotlin.Int, kotlin.Unit> declared in pkg.drop' type=kotlin.Function1<kotlin.Int, kotlin.Unit> origin=VARIABLE_AS_FUNCTION
+              ARG p1: CALL 'public final fun plus (other: kotlin.Int): kotlin.Int declared in kotlin.Int' type=kotlin.Int origin=PLUS
+                ARG <this>: CALL 'public abstract fun invoke (): R of kotlin.Function0 declared in kotlin.Function0' type=kotlin.Int origin=INVOKE
+                  ARG <this>: GET_VAR 'get-numDropped: kotlin.Function0<kotlin.Int> declared in pkg.drop' type=kotlin.Function0<kotlin.Int> origin=VARIABLE_AS_FUNCTION
+                ARG other: CONST Int type=kotlin.Int value=1
+        BRANCH
+          if: CONST Boolean type=kotlin.Boolean value=true
+          then: BLOCK type=kotlin.Unit origin=null
+            CALL 'public abstract fun invoke (p1: P1 of kotlin.Function1): R of kotlin.Function1 declared in kotlin.Function1' type=kotlin.Unit origin=INVOKE
+              ARG <this>: GET_VAR 'downstreamAction: kotlin.Function1<T of pkg.drop, kotlin.Unit> declared in pkg.drop' type=kotlin.Function1<T of pkg.drop, kotlin.Unit> origin=VARIABLE_AS_FUNCTION
+              ARG p1: GET_VAR 'el: T of pkg.drop declared in pkg.drop' type=T of pkg.drop origin=null
   FUN name:dsl visibility:public modality:FINAL returnType:kotlin.Int?
     BLOCK_BODY
       RETURN type=kotlin.Nothing from='public final fun dsl (): kotlin.Int? declared in pkg'
@@ -83,7 +208,11 @@ FILE fqName:pkg fileName:/Main.kt
           ARG block: FUN_EXPR type=kotlin.Function0<kotlin.Int?> origin=LAMBDA
             FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Int?
               BLOCK_BODY
-                VAR name:3$firstOrNull$out type:kotlin.Int? [var]
+                VAR name:2$arg$drop$n type:kotlin.Int [val]
+                  CONST Int type=kotlin.Int value=4
+                VAR name:2$drop$numDropped type:kotlin.Int [var]
+                  CONST Int type=kotlin.Int value=0
+                VAR name:4$firstOrNull$out type:kotlin.Int? [var]
                   CONST Null type=kotlin.Nothing? value=null
                 CALL 'public final fun run <R> (block: kotlin.Function0<R of kotlin.run>): R of kotlin.run declared in kotlin' type=kotlin.Unit origin=null
                   TYPE_ARG R: kotlin.Unit
@@ -106,82 +235,107 @@ FILE fqName:pkg fileName:/Main.kt
                               VAR FOR_LOOP_VARIABLE name:element type:kotlin.String [val]
                                 CALL 'public abstract fun next (): T of kotlin.collections.Iterator declared in kotlin.collections.Iterator' type=kotlin.String origin=FOR_LOOP_NEXT
                                   ARG <this>: GET_VAR 'val tmp_1: kotlin.collections.Iterator<kotlin.String> declared in pkg.dsl.<anonymous>.<anonymous>' type=kotlin.collections.Iterator<kotlin.String> origin=null
-                              CALL 'public final fun generated$loopAction$map <T, U> (<arg-mapper>: kotlin.Function1<T of pkg.generated$loopAction$map, U of pkg.generated$loopAction$map>, el: T of pkg.generated$loopAction$map, <unused var>: kotlin.Function0<kotlin.Unit>, downstreamAction: kotlin.Function1<U of pkg.generated$loopAction$map, kotlin.Unit>): kotlin.Unit declared in pkg' type=kotlin.Unit origin=INLINE_STREAM_OPERATION
-                                TYPE_ARG T: kotlin.String
-                                TYPE_ARG U: kotlin.CharArray
-                                ARG <arg-mapper>: FUN_EXPR type=kotlin.Function1<kotlin.String, kotlin.CharArray> origin=LAMBDA
-                                  FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.CharArray
-                                    VALUE_PARAMETER kind:Regular name:it index:0 type:kotlin.String
-                                    BLOCK_BODY
-                                      RETURN type=kotlin.Nothing from='local final fun <anonymous> (it: kotlin.String): kotlin.CharArray declared in pkg.dsl.<anonymous>.<anonymous>'
-                                        CALL 'public final fun toCharArray (<this>: kotlin.String): kotlin.CharArray declared in kotlin.text' type=kotlin.CharArray origin=null
-                                          ARG <this>: GET_VAR 'it: kotlin.String declared in pkg.dsl.<anonymous>.<anonymous>.<anonymous>' type=kotlin.String origin=null
-                                ARG el: GET_VAR 'val element: kotlin.String declared in pkg.dsl.<anonymous>.<anonymous>' type=kotlin.String origin=null
-                                ARG <unused var>: FUN_EXPR type=kotlin.Function0<kotlin.Unit> origin=LAMBDA
-                                  FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
-                                    BLOCK_BODY
-                                      RETURN type=kotlin.Nothing from='local final fun <anonymous> (): kotlin.Unit declared in pkg.dsl.<anonymous>'
-                                        GET_OBJECT 'CLASS IR_EXTERNAL_DECLARATION_STUB OBJECT name:Unit modality:FINAL visibility:public superTypes:[kotlin.Any]' type=kotlin.Unit
-                                ARG downstreamAction: FUN_EXPR type=kotlin.Function1<kotlin.CharArray, kotlin.Unit> origin=LAMBDA
-                                  FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
-                                    VALUE_PARAMETER kind:Regular name:element index:0 type:kotlin.CharArray
-                                    BLOCK_BODY
-                                      CALL 'public final fun generated$loopAction$flatMap <T, U> (<arg-mapper>: kotlin.Function1<T of pkg.generated$loopAction$flatMap, kotlin.collections.Iterable<U of pkg.generated$loopAction$flatMap>>, el: T of pkg.generated$loopAction$flatMap, <unused var>: kotlin.Function0<kotlin.Unit>, downstreamAction: kotlin.Function1<U of pkg.generated$loopAction$flatMap, kotlin.Unit>): kotlin.Unit declared in pkg' type=kotlin.Unit origin=INLINE_STREAM_OPERATION
-                                        TYPE_ARG T: kotlin.CharArray
-                                        TYPE_ARG U: kotlin.Char
-                                        ARG <arg-mapper>: FUN_EXPR type=kotlin.Function1<kotlin.CharArray, kotlin.collections.Iterable<kotlin.Char>> origin=LAMBDA
-                                          FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.collections.Iterable<kotlin.Char>
-                                            VALUE_PARAMETER kind:Regular name:it index:0 type:kotlin.CharArray
-                                            BLOCK_BODY
-                                              RETURN type=kotlin.Nothing from='local final fun <anonymous> (it: kotlin.CharArray): kotlin.collections.Iterable<kotlin.Char> declared in pkg.dsl.<anonymous>.<anonymous>.<anonymous>'
-                                                CALL 'public final fun toList (<this>: kotlin.CharArray): kotlin.collections.List<kotlin.Char> declared in kotlin.collections' type=kotlin.collections.List<kotlin.Char> origin=null
-                                                  ARG <this>: GET_VAR 'it: kotlin.CharArray declared in pkg.dsl.<anonymous>.<anonymous>.<anonymous>.<anonymous>' type=kotlin.CharArray origin=null
-                                        ARG el: GET_VAR 'element: kotlin.CharArray declared in pkg.dsl.<anonymous>.<anonymous>.<anonymous>' type=kotlin.CharArray origin=null
-                                        ARG <unused var>: FUN_EXPR type=kotlin.Function0<kotlin.Unit> origin=LAMBDA
-                                          FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
-                                            BLOCK_BODY
-                                              RETURN type=kotlin.Nothing from='local final fun <anonymous> (): kotlin.Unit declared in pkg.dsl.<anonymous>'
-                                                GET_OBJECT 'CLASS IR_EXTERNAL_DECLARATION_STUB OBJECT name:Unit modality:FINAL visibility:public superTypes:[kotlin.Any]' type=kotlin.Unit
-                                        ARG downstreamAction: FUN_EXPR type=kotlin.Function1<kotlin.Char, kotlin.Unit> origin=LAMBDA
-                                          FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
-                                            VALUE_PARAMETER kind:Regular name:element index:0 type:kotlin.Char
-                                            BLOCK_BODY
-                                              CALL 'public final fun generated$loopAction$map <T, U> (<arg-mapper>: kotlin.Function1<T of pkg.generated$loopAction$map, U of pkg.generated$loopAction$map>, el: T of pkg.generated$loopAction$map, <unused var>: kotlin.Function0<kotlin.Unit>, downstreamAction: kotlin.Function1<U of pkg.generated$loopAction$map, kotlin.Unit>): kotlin.Unit declared in pkg' type=kotlin.Unit origin=INLINE_STREAM_OPERATION
-                                                TYPE_ARG T: kotlin.Char
-                                                TYPE_ARG U: kotlin.Int
-                                                ARG <arg-mapper>: FUN_EXPR type=kotlin.Function1<kotlin.Char, kotlin.Int> origin=LAMBDA
-                                                  FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Int
-                                                    VALUE_PARAMETER kind:Regular name:it index:0 type:kotlin.Char
-                                                    BLOCK_BODY
-                                                      RETURN type=kotlin.Nothing from='local final fun <anonymous> (it: kotlin.Char): kotlin.Int declared in pkg.dsl.<anonymous>.<anonymous>.<anonymous>.<anonymous>'
-                                                        CALL 'public final fun <get-code> (<this>: kotlin.Char): kotlin.Int declared in kotlin' type=kotlin.Int origin=GET_PROPERTY
-                                                          ARG <this>: GET_VAR 'it: kotlin.Char declared in pkg.dsl.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>' type=kotlin.Char origin=null
-                                                ARG el: GET_VAR 'element: kotlin.Char declared in pkg.dsl.<anonymous>.<anonymous>.<anonymous>.<anonymous>' type=kotlin.Char origin=null
-                                                ARG <unused var>: FUN_EXPR type=kotlin.Function0<kotlin.Unit> origin=LAMBDA
-                                                  FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
-                                                    BLOCK_BODY
-                                                      RETURN type=kotlin.Nothing from='local final fun <anonymous> (): kotlin.Unit declared in pkg.dsl.<anonymous>'
-                                                        GET_OBJECT 'CLASS IR_EXTERNAL_DECLARATION_STUB OBJECT name:Unit modality:FINAL visibility:public superTypes:[kotlin.Any]' type=kotlin.Unit
-                                                ARG downstreamAction: FUN_EXPR type=kotlin.Function1<kotlin.Int, kotlin.Unit> origin=LAMBDA
-                                                  FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
-                                                    VALUE_PARAMETER kind:Regular name:element index:0 type:kotlin.Int
-                                                    BLOCK_BODY
-                                                      CALL 'public final fun generated$loopAction$firstOrNull <T> (el: T of pkg.generated$loopAction$firstOrNull, breakLoop: kotlin.Function0<kotlin.Unit>, <set-out>: kotlin.Function1<T of pkg.generated$loopAction$firstOrNull?, kotlin.Unit>): kotlin.Unit declared in pkg' type=kotlin.Unit origin=INLINE_STREAM_OPERATION
-                                                        TYPE_ARG T: kotlin.Int
-                                                        ARG el: GET_VAR 'element: kotlin.Int declared in pkg.dsl.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>' type=kotlin.Int origin=null
-                                                        ARG breakLoop: FUN_EXPR type=kotlin.Function0<kotlin.Unit> origin=LAMBDA
-                                                          FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
-                                                            BLOCK_BODY
-                                                              RETURN type=kotlin.Nothing from='local final fun <anonymous> (): kotlin.Unit declared in pkg.dsl.<anonymous>'
-                                                                GET_OBJECT 'CLASS IR_EXTERNAL_DECLARATION_STUB OBJECT name:Unit modality:FINAL visibility:public superTypes:[kotlin.Any]' type=kotlin.Unit
-                                                        ARG <set-out>: FUN_EXPR type=kotlin.Function1<kotlin.Int?, kotlin.Unit> origin=LAMBDA
-                                                          FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
-                                                            VALUE_PARAMETER kind:Regular name:it index:0 type:kotlin.Int?
-                                                            BLOCK_BODY
-                                                              SET_VAR 'var 3$firstOrNull$out: kotlin.Int? declared in pkg.dsl.<anonymous>' type=kotlin.Unit origin=null
-                                                                GET_VAR 'it: kotlin.Int? declared in pkg.dsl.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>' type=kotlin.Int? origin=null
+                              BLOCK type=kotlin.Nothing origin=null
+                                CALL 'public final fun generated$loopAction$map <T, U> (<arg-mapper>: kotlin.Function1<T of pkg.generated$loopAction$map, U of pkg.generated$loopAction$map>, el: T of pkg.generated$loopAction$map, <unused var>: kotlin.Function0<kotlin.Unit>, downstreamAction: kotlin.Function1<U of pkg.generated$loopAction$map, kotlin.Unit>): kotlin.Unit declared in pkg' type=kotlin.Unit origin=INLINE_STREAM_OPERATION
+                                  TYPE_ARG T: kotlin.String
+                                  TYPE_ARG U: kotlin.CharArray
+                                  ARG <arg-mapper>: FUN_EXPR type=kotlin.Function1<kotlin.String, kotlin.CharArray> origin=LAMBDA
+                                    FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.CharArray
+                                      VALUE_PARAMETER kind:Regular name:it index:0 type:kotlin.String
+                                      BLOCK_BODY
+                                        RETURN type=kotlin.Nothing from='local final fun <anonymous> (it: kotlin.String): kotlin.CharArray declared in pkg.dsl.<anonymous>.<anonymous>'
+                                          CALL 'public final fun toCharArray (<this>: kotlin.String): kotlin.CharArray declared in kotlin.text' type=kotlin.CharArray origin=null
+                                            ARG <this>: GET_VAR 'it: kotlin.String declared in pkg.dsl.<anonymous>.<anonymous>.<anonymous>' type=kotlin.String origin=null
+                                  ARG el: GET_VAR 'val element: kotlin.String declared in pkg.dsl.<anonymous>.<anonymous>' type=kotlin.String origin=null
+                                  ARG <unused var>: FUN_EXPR type=kotlin.Function0<kotlin.Unit> origin=LAMBDA
+                                    FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
+                                      BLOCK_BODY
+                                        RETURN type=kotlin.Nothing from='local final fun <anonymous> (): kotlin.Unit declared in pkg.dsl.<anonymous>'
+                                          GET_OBJECT 'CLASS IR_EXTERNAL_DECLARATION_STUB OBJECT name:Unit modality:FINAL visibility:public superTypes:[kotlin.Any]' type=kotlin.Unit
+                                  ARG downstreamAction: FUN_EXPR type=kotlin.Function1<kotlin.CharArray, kotlin.Unit> origin=LAMBDA
+                                    FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
+                                      VALUE_PARAMETER kind:Regular name:element index:0 type:kotlin.CharArray
+                                      BLOCK_BODY
+                                        CALL 'public final fun generated$loopAction$flatMap <T, U> (<arg-mapper>: kotlin.Function1<T of pkg.generated$loopAction$flatMap, kotlin.collections.Iterable<U of pkg.generated$loopAction$flatMap>>, el: T of pkg.generated$loopAction$flatMap, <unused var>: kotlin.Function0<kotlin.Unit>, downstreamAction: kotlin.Function1<U of pkg.generated$loopAction$flatMap, kotlin.Unit>): kotlin.Unit declared in pkg' type=kotlin.Unit origin=INLINE_STREAM_OPERATION
+                                          TYPE_ARG T: kotlin.CharArray
+                                          TYPE_ARG U: kotlin.Char
+                                          ARG <arg-mapper>: FUN_EXPR type=kotlin.Function1<kotlin.CharArray, kotlin.collections.Iterable<kotlin.Char>> origin=LAMBDA
+                                            FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.collections.Iterable<kotlin.Char>
+                                              VALUE_PARAMETER kind:Regular name:it index:0 type:kotlin.CharArray
+                                              BLOCK_BODY
+                                                RETURN type=kotlin.Nothing from='local final fun <anonymous> (it: kotlin.CharArray): kotlin.collections.Iterable<kotlin.Char> declared in pkg.dsl.<anonymous>.<anonymous>.<anonymous>'
+                                                  CALL 'public final fun toList (<this>: kotlin.CharArray): kotlin.collections.List<kotlin.Char> declared in kotlin.collections' type=kotlin.collections.List<kotlin.Char> origin=null
+                                                    ARG <this>: GET_VAR 'it: kotlin.CharArray declared in pkg.dsl.<anonymous>.<anonymous>.<anonymous>.<anonymous>' type=kotlin.CharArray origin=null
+                                          ARG el: GET_VAR 'element: kotlin.CharArray declared in pkg.dsl.<anonymous>.<anonymous>.<anonymous>' type=kotlin.CharArray origin=null
+                                          ARG <unused var>: FUN_EXPR type=kotlin.Function0<kotlin.Unit> origin=LAMBDA
+                                            FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
+                                              BLOCK_BODY
+                                                RETURN type=kotlin.Nothing from='local final fun <anonymous> (): kotlin.Unit declared in pkg.dsl.<anonymous>'
+                                                  GET_OBJECT 'CLASS IR_EXTERNAL_DECLARATION_STUB OBJECT name:Unit modality:FINAL visibility:public superTypes:[kotlin.Any]' type=kotlin.Unit
+                                          ARG downstreamAction: FUN_EXPR type=kotlin.Function1<kotlin.Char, kotlin.Unit> origin=LAMBDA
+                                            FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
+                                              VALUE_PARAMETER kind:Regular name:element index:0 type:kotlin.Char
+                                              BLOCK_BODY
+                                                CALL 'public final fun generated$loopAction$drop <T> (<arg-n>: kotlin.Int, el: T of pkg.generated$loopAction$drop, <unused var>: kotlin.Function0<kotlin.Unit>, downstreamAction: kotlin.Function1<T of pkg.generated$loopAction$drop, kotlin.Unit>, <get-numDropped>: kotlin.Function0<kotlin.Int>, <set-numDropped>: kotlin.Function1<kotlin.Int, kotlin.Unit>): kotlin.Unit declared in pkg' type=kotlin.Unit origin=INLINE_STREAM_OPERATION
+                                                  TYPE_ARG T: kotlin.Char
+                                                  ARG <arg-n>: GET_VAR 'val 2$arg$drop$n: kotlin.Int declared in pkg.dsl.<anonymous>' type=kotlin.Int origin=null
+                                                  ARG el: GET_VAR 'element: kotlin.Char declared in pkg.dsl.<anonymous>.<anonymous>.<anonymous>.<anonymous>' type=kotlin.Char origin=null
+                                                  ARG <unused var>: FUN_EXPR type=kotlin.Function0<kotlin.Unit> origin=LAMBDA
+                                                    FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
+                                                      BLOCK_BODY
+                                                        RETURN type=kotlin.Nothing from='local final fun <anonymous> (): kotlin.Unit declared in pkg.dsl.<anonymous>'
+                                                          GET_OBJECT 'CLASS IR_EXTERNAL_DECLARATION_STUB OBJECT name:Unit modality:FINAL visibility:public superTypes:[kotlin.Any]' type=kotlin.Unit
+                                                  ARG downstreamAction: FUN_EXPR type=kotlin.Function1<kotlin.Char, kotlin.Unit> origin=LAMBDA
+                                                    FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
+                                                      VALUE_PARAMETER kind:Regular name:element index:0 type:kotlin.Char
+                                                      BLOCK_BODY
+                                                        CALL 'public final fun generated$loopAction$map <T, U> (<arg-mapper>: kotlin.Function1<T of pkg.generated$loopAction$map, U of pkg.generated$loopAction$map>, el: T of pkg.generated$loopAction$map, <unused var>: kotlin.Function0<kotlin.Unit>, downstreamAction: kotlin.Function1<U of pkg.generated$loopAction$map, kotlin.Unit>): kotlin.Unit declared in pkg' type=kotlin.Unit origin=INLINE_STREAM_OPERATION
+                                                          TYPE_ARG T: kotlin.Char
+                                                          TYPE_ARG U: kotlin.Int
+                                                          ARG <arg-mapper>: FUN_EXPR type=kotlin.Function1<kotlin.Char, kotlin.Int> origin=LAMBDA
+                                                            FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Int
+                                                              VALUE_PARAMETER kind:Regular name:it index:0 type:kotlin.Char
+                                                              BLOCK_BODY
+                                                                RETURN type=kotlin.Nothing from='local final fun <anonymous> (it: kotlin.Char): kotlin.Int declared in pkg.dsl.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>'
+                                                                  CALL 'public final fun <get-code> (<this>: kotlin.Char): kotlin.Int declared in kotlin' type=kotlin.Int origin=GET_PROPERTY
+                                                                    ARG <this>: GET_VAR 'it: kotlin.Char declared in pkg.dsl.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>' type=kotlin.Char origin=null
+                                                          ARG el: GET_VAR 'element: kotlin.Char declared in pkg.dsl.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>' type=kotlin.Char origin=null
+                                                          ARG <unused var>: FUN_EXPR type=kotlin.Function0<kotlin.Unit> origin=LAMBDA
+                                                            FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
+                                                              BLOCK_BODY
+                                                                RETURN type=kotlin.Nothing from='local final fun <anonymous> (): kotlin.Unit declared in pkg.dsl.<anonymous>'
+                                                                  GET_OBJECT 'CLASS IR_EXTERNAL_DECLARATION_STUB OBJECT name:Unit modality:FINAL visibility:public superTypes:[kotlin.Any]' type=kotlin.Unit
+                                                          ARG downstreamAction: FUN_EXPR type=kotlin.Function1<kotlin.Int, kotlin.Unit> origin=LAMBDA
+                                                            FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
+                                                              VALUE_PARAMETER kind:Regular name:element index:0 type:kotlin.Int
+                                                              BLOCK_BODY
+                                                                CALL 'public final fun generated$loopAction$firstOrNull <T> (el: T of pkg.generated$loopAction$firstOrNull, breakLoop: kotlin.Function0<kotlin.Unit>, <set-out>: kotlin.Function1<T of pkg.generated$loopAction$firstOrNull, kotlin.Unit>): kotlin.Unit declared in pkg' type=kotlin.Unit origin=INLINE_STREAM_OPERATION
+                                                                  TYPE_ARG T: kotlin.Int
+                                                                  ARG el: GET_VAR 'element: kotlin.Int declared in pkg.dsl.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>' type=kotlin.Int origin=null
+                                                                  ARG breakLoop: FUN_EXPR type=kotlin.Function0<kotlin.Unit> origin=LAMBDA
+                                                                    FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
+                                                                      BLOCK_BODY
+                                                                        RETURN type=kotlin.Nothing from='local final fun <anonymous> (): kotlin.Unit declared in pkg.dsl.<anonymous>'
+                                                                          GET_OBJECT 'CLASS IR_EXTERNAL_DECLARATION_STUB OBJECT name:Unit modality:FINAL visibility:public superTypes:[kotlin.Any]' type=kotlin.Unit
+                                                                  ARG <set-out>: FUN_EXPR type=kotlin.Function1<kotlin.Int, kotlin.Unit> origin=LAMBDA
+                                                                    FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
+                                                                      VALUE_PARAMETER kind:Regular name:it index:0 type:kotlin.Int
+                                                                      BLOCK_BODY
+                                                                        SET_VAR 'var 4$firstOrNull$out: kotlin.Int? declared in pkg.dsl.<anonymous>' type=kotlin.Unit origin=null
+                                                                          GET_VAR 'it: kotlin.Int declared in pkg.dsl.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>' type=kotlin.Int origin=null
+                                                  ARG <get-numDropped>: FUN_EXPR type=kotlin.Function0<kotlin.Int> origin=LAMBDA
+                                                    FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Int
+                                                      BLOCK_BODY
+                                                        RETURN type=kotlin.Nothing from='local final fun <anonymous> (): kotlin.Int declared in pkg.dsl.<anonymous>.<anonymous>.<anonymous>.<anonymous>'
+                                                          GET_VAR 'var 2$drop$numDropped: kotlin.Int declared in pkg.dsl.<anonymous>' type=kotlin.Int origin=null
+                                                  ARG <set-numDropped>: FUN_EXPR type=kotlin.Function1<kotlin.Int, kotlin.Unit> origin=LAMBDA
+                                                    FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
+                                                      VALUE_PARAMETER kind:Regular name:it index:0 type:kotlin.Int
+                                                      BLOCK_BODY
+                                                        SET_VAR 'var 2$drop$numDropped: kotlin.Int declared in pkg.dsl.<anonymous>' type=kotlin.Unit origin=null
+                                                          GET_VAR 'it: kotlin.Int declared in pkg.dsl.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>' type=kotlin.Int origin=null
                 RETURN type=kotlin.Nothing from='local final fun <anonymous> (): kotlin.Int? declared in pkg.dsl'
-                  GET_VAR 'var 3$firstOrNull$out: kotlin.Int? declared in pkg.dsl.<anonymous>' type=kotlin.Int? origin=null
+                  GET_VAR 'var 4$firstOrNull$out: kotlin.Int? declared in pkg.dsl.<anonymous>' type=kotlin.Int? origin=null
   FUN name:firstOrNull visibility:public modality:FINAL returnType:T of pkg.firstOrNull?
     TYPE_PARAMETER name:T index:0 variance: superTypes:[kotlin.Any?] reified:false
     VALUE_PARAMETER kind:ExtensionReceiver name:<this> index:0 type:io.github.cbrandt77.kt.inlinestreams.InlineStream<T of pkg.firstOrNull>
@@ -331,6 +485,50 @@ FILE fqName:pkg fileName:/Main.kt
         ARG p1: CALL 'public abstract fun invoke (p1: P1 of kotlin.Function1): R of kotlin.Function1 declared in kotlin.Function1' type=U of pkg.map origin=INVOKE
           ARG <this>: GET_VAR 'mapper: kotlin.Function1<T of pkg.map, U of pkg.map> declared in pkg.map' type=kotlin.Function1<T of pkg.map, U of pkg.map> origin=VARIABLE_AS_FUNCTION
           ARG p1: GET_VAR 'el: T of pkg.map declared in pkg.map' type=T of pkg.map origin=null
+  FUN name:sequence visibility:public modality:FINAL returnType:kotlin.Int?
+    BLOCK_BODY
+      RETURN type=kotlin.Nothing from='public final fun sequence (): kotlin.Int? declared in pkg'
+        CALL 'public final fun firstOrNull <T> (<this>: kotlin.sequences.Sequence<T of kotlin.sequences.firstOrNull>): T of kotlin.sequences.firstOrNull? declared in kotlin.sequences' type=kotlin.Int? origin=null
+          TYPE_ARG T: kotlin.Int
+          ARG <this>: CALL 'public final fun map <T, R> (<this>: kotlin.sequences.Sequence<T of kotlin.sequences.map>, transform: kotlin.Function1<T of kotlin.sequences.map, R of kotlin.sequences.map>): kotlin.sequences.Sequence<R of kotlin.sequences.map> declared in kotlin.sequences' type=kotlin.sequences.Sequence<kotlin.Int> origin=null
+            TYPE_ARG T: kotlin.Char
+            TYPE_ARG R: kotlin.Int
+            ARG <this>: CALL 'public final fun drop <T> (<this>: kotlin.sequences.Sequence<T of kotlin.sequences.drop>, n: kotlin.Int): kotlin.sequences.Sequence<T of kotlin.sequences.drop> declared in kotlin.sequences' type=kotlin.sequences.Sequence<kotlin.Char> origin=null
+              TYPE_ARG T: kotlin.Char
+              ARG <this>: CALL 'public final fun flatMap <T, R> (<this>: kotlin.sequences.Sequence<T of kotlin.sequences.flatMap>, transform: kotlin.Function1<T of kotlin.sequences.flatMap, kotlin.collections.Iterable<R of kotlin.sequences.flatMap>>): kotlin.sequences.Sequence<R of kotlin.sequences.flatMap> declared in kotlin.sequences' type=kotlin.sequences.Sequence<kotlin.Char> origin=null
+                TYPE_ARG T: kotlin.CharArray
+                TYPE_ARG R: kotlin.Char
+                ARG <this>: CALL 'public final fun map <T, R> (<this>: kotlin.sequences.Sequence<T of kotlin.sequences.map>, transform: kotlin.Function1<T of kotlin.sequences.map, R of kotlin.sequences.map>): kotlin.sequences.Sequence<R of kotlin.sequences.map> declared in kotlin.sequences' type=kotlin.sequences.Sequence<kotlin.CharArray> origin=null
+                  TYPE_ARG T: kotlin.String
+                  TYPE_ARG R: kotlin.CharArray
+                  ARG <this>: CALL 'public final fun sequenceOf <T> (vararg elements: T of kotlin.sequences.sequenceOf): kotlin.sequences.Sequence<T of kotlin.sequences.sequenceOf> declared in kotlin.sequences' type=kotlin.sequences.Sequence<kotlin.String> origin=null
+                    TYPE_ARG T: kotlin.String
+                    ARG elements: VARARG type=kotlin.Array<out kotlin.String> varargElementType=kotlin.String
+                      CONST String type=kotlin.String value="hi"
+                      CONST String type=kotlin.String value="there"
+                      CONST String type=kotlin.String value="gamer"
+                  ARG transform: FUN_EXPR type=kotlin.Function1<kotlin.String, kotlin.CharArray> origin=LAMBDA
+                    FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.CharArray
+                      VALUE_PARAMETER kind:Regular name:it index:0 type:kotlin.String
+                      BLOCK_BODY
+                        RETURN type=kotlin.Nothing from='local final fun <anonymous> (it: kotlin.String): kotlin.CharArray declared in pkg.sequence'
+                          CALL 'public final fun toCharArray (<this>: kotlin.String): kotlin.CharArray declared in kotlin.text' type=kotlin.CharArray origin=null
+                            ARG <this>: GET_VAR 'it: kotlin.String declared in pkg.sequence.<anonymous>' type=kotlin.String origin=null
+                ARG transform: FUN_EXPR type=kotlin.Function1<kotlin.CharArray, kotlin.collections.Iterable<kotlin.Char>> origin=LAMBDA
+                  FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.collections.Iterable<kotlin.Char>
+                    VALUE_PARAMETER kind:Regular name:it index:0 type:kotlin.CharArray
+                    BLOCK_BODY
+                      RETURN type=kotlin.Nothing from='local final fun <anonymous> (it: kotlin.CharArray): kotlin.collections.Iterable<kotlin.Char> declared in pkg.sequence'
+                        CALL 'public final fun toList (<this>: kotlin.CharArray): kotlin.collections.List<kotlin.Char> declared in kotlin.collections' type=kotlin.collections.List<kotlin.Char> origin=null
+                          ARG <this>: GET_VAR 'it: kotlin.CharArray declared in pkg.sequence.<anonymous>' type=kotlin.CharArray origin=null
+              ARG n: CONST Int type=kotlin.Int value=4
+            ARG transform: FUN_EXPR type=kotlin.Function1<kotlin.Char, kotlin.Int> origin=LAMBDA
+              FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Int
+                VALUE_PARAMETER kind:Regular name:it index:0 type:kotlin.Char
+                BLOCK_BODY
+                  RETURN type=kotlin.Nothing from='local final fun <anonymous> (it: kotlin.Char): kotlin.Int declared in pkg.sequence'
+                    CALL 'public final fun <get-code> (<this>: kotlin.Char): kotlin.Int declared in kotlin' type=kotlin.Int origin=GET_PROPERTY
+                      ARG <this>: GET_VAR 'it: kotlin.Char declared in pkg.sequence.<anonymous>' type=kotlin.Char origin=null
   FUN name:transformed visibility:public modality:FINAL returnType:kotlin.Int?
     BLOCK_BODY
       RETURN type=kotlin.Nothing from='public final fun transformed (): kotlin.Int? declared in pkg'
@@ -339,7 +537,11 @@ FILE fqName:pkg fileName:/Main.kt
           ARG block: FUN_EXPR type=kotlin.Function0<kotlin.Int?> origin=LAMBDA
             FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Int?
               BLOCK_BODY
-                VAR name:out type:kotlin.Int? [var]
+                VAR name:2$arg$drop$n type:kotlin.Int [val]
+                  CONST Int type=kotlin.Int value=4
+                VAR name:2$drop$numDropped type:kotlin.Int [var]
+                  CONST Int type=kotlin.Int value=0
+                VAR name:4$firstOrNull$out type:kotlin.Int? [var]
                   CONST Null type=kotlin.Nothing? value=null
                 CALL 'public final fun run <R> (block: kotlin.Function0<R of kotlin.run>): R of kotlin.run declared in kotlin' type=kotlin.Unit origin=null
                   TYPE_ARG R: kotlin.Unit
@@ -403,39 +605,63 @@ FILE fqName:pkg fileName:/Main.kt
                                             FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
                                               VALUE_PARAMETER kind:Regular name:it index:0 type:kotlin.Char
                                               BLOCK_BODY
-                                                CALL 'public final fun map <T, U> (mapper: kotlin.Function1<T of pkg.map, U of pkg.map>, el: T of pkg.map, breakLoop: kotlin.Function0<kotlin.Unit>, downstreamAction: kotlin.Function1<U of pkg.map, kotlin.Unit>): kotlin.Unit declared in pkg' type=kotlin.Unit origin=null
+                                                CALL 'public final fun drop <T> (arg-n: kotlin.Int, el: T of pkg.drop, breakLoop: kotlin.Function0<kotlin.Unit>, downstreamAction: kotlin.Function1<T of pkg.drop, kotlin.Unit>, get-numDropped: kotlin.Function0<kotlin.Int>, set-numDropped: kotlin.Function1<kotlin.Int, kotlin.Unit>): kotlin.Unit declared in pkg' type=kotlin.Unit origin=null
                                                   TYPE_ARG T: kotlin.Char
-                                                  TYPE_ARG U: kotlin.Int
-                                                  ARG mapper: FUN_EXPR type=kotlin.Function1<kotlin.Char, kotlin.Int> origin=LAMBDA
-                                                    FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Int
-                                                      VALUE_PARAMETER kind:Regular name:it index:0 type:kotlin.Char
-                                                      BLOCK_BODY
-                                                        RETURN type=kotlin.Nothing from='local final fun <anonymous> (it: kotlin.Char): kotlin.Int declared in pkg.transformed.<anonymous>.<anonymous>.<anonymous>.<anonymous>'
-                                                          CALL 'public final fun <get-code> (<this>: kotlin.Char): kotlin.Int declared in kotlin' type=kotlin.Int origin=GET_PROPERTY
-                                                            ARG <this>: GET_VAR 'it: kotlin.Char declared in pkg.transformed.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>' type=kotlin.Char origin=null
+                                                  ARG arg-n: GET_VAR 'val 2$arg$drop$n: kotlin.Int declared in pkg.transformed.<anonymous>' type=kotlin.Int origin=null
                                                   ARG el: GET_VAR 'it: kotlin.Char declared in pkg.transformed.<anonymous>.<anonymous>.<anonymous>.<anonymous>' type=kotlin.Char origin=null
                                                   ARG breakLoop: FUN_EXPR type=kotlin.Function0<kotlin.Unit> origin=LAMBDA
                                                     FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
                                                       BLOCK_BODY
                                                         RETURN type=kotlin.Nothing from='local final fun <anonymous> (): kotlin.Unit declared in pkg.transformed.<anonymous>'
                                                           GET_OBJECT 'CLASS IR_EXTERNAL_DECLARATION_STUB OBJECT name:Unit modality:FINAL visibility:public superTypes:[kotlin.Any]' type=kotlin.Unit
-                                                  ARG downstreamAction: FUN_EXPR type=kotlin.Function1<kotlin.Int, kotlin.Unit> origin=LAMBDA
+                                                  ARG downstreamAction: FUN_EXPR type=kotlin.Function1<kotlin.Char, kotlin.Unit> origin=LAMBDA
                                                     FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
-                                                      VALUE_PARAMETER kind:Regular name:it index:0 type:kotlin.Int
+                                                      VALUE_PARAMETER kind:Regular name:it index:0 type:kotlin.Char
                                                       BLOCK_BODY
-                                                        CALL 'public final fun firstOrNull <T> (el: T of pkg.firstOrNull, breakLoop: kotlin.Function0<kotlin.Unit>, set-out: kotlin.Function1<T of pkg.firstOrNull, kotlin.Unit>): kotlin.Unit declared in pkg' type=kotlin.Unit origin=null
-                                                          TYPE_ARG T: kotlin.Int
-                                                          ARG el: GET_VAR 'it: kotlin.Int declared in pkg.transformed.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>' type=kotlin.Int origin=null
+                                                        CALL 'public final fun map <T, U> (mapper: kotlin.Function1<T of pkg.map, U of pkg.map>, el: T of pkg.map, breakLoop: kotlin.Function0<kotlin.Unit>, downstreamAction: kotlin.Function1<U of pkg.map, kotlin.Unit>): kotlin.Unit declared in pkg' type=kotlin.Unit origin=null
+                                                          TYPE_ARG T: kotlin.Char
+                                                          TYPE_ARG U: kotlin.Int
+                                                          ARG mapper: FUN_EXPR type=kotlin.Function1<kotlin.Char, kotlin.Int> origin=LAMBDA
+                                                            FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Int
+                                                              VALUE_PARAMETER kind:Regular name:it index:0 type:kotlin.Char
+                                                              BLOCK_BODY
+                                                                RETURN type=kotlin.Nothing from='local final fun <anonymous> (it: kotlin.Char): kotlin.Int declared in pkg.transformed.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>'
+                                                                  CALL 'public final fun <get-code> (<this>: kotlin.Char): kotlin.Int declared in kotlin' type=kotlin.Int origin=GET_PROPERTY
+                                                                    ARG <this>: GET_VAR 'it: kotlin.Char declared in pkg.transformed.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>' type=kotlin.Char origin=null
+                                                          ARG el: GET_VAR 'it: kotlin.Char declared in pkg.transformed.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>' type=kotlin.Char origin=null
                                                           ARG breakLoop: FUN_EXPR type=kotlin.Function0<kotlin.Unit> origin=LAMBDA
                                                             FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
                                                               BLOCK_BODY
                                                                 RETURN type=kotlin.Nothing from='local final fun <anonymous> (): kotlin.Unit declared in pkg.transformed.<anonymous>'
                                                                   GET_OBJECT 'CLASS IR_EXTERNAL_DECLARATION_STUB OBJECT name:Unit modality:FINAL visibility:public superTypes:[kotlin.Any]' type=kotlin.Unit
-                                                          ARG set-out: FUN_EXPR type=kotlin.Function1<kotlin.Int, kotlin.Unit> origin=LAMBDA
+                                                          ARG downstreamAction: FUN_EXPR type=kotlin.Function1<kotlin.Int, kotlin.Unit> origin=LAMBDA
                                                             FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
                                                               VALUE_PARAMETER kind:Regular name:it index:0 type:kotlin.Int
                                                               BLOCK_BODY
-                                                                SET_VAR 'var out: kotlin.Int? declared in pkg.transformed.<anonymous>' type=kotlin.Unit origin=EQ
-                                                                  GET_VAR 'it: kotlin.Int declared in pkg.transformed.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>' type=kotlin.Int origin=null
+                                                                CALL 'public final fun firstOrNull <T> (el: T of pkg.firstOrNull, breakLoop: kotlin.Function0<kotlin.Unit>, set-out: kotlin.Function1<T of pkg.firstOrNull, kotlin.Unit>): kotlin.Unit declared in pkg' type=kotlin.Unit origin=null
+                                                                  TYPE_ARG T: kotlin.Int
+                                                                  ARG el: GET_VAR 'it: kotlin.Int declared in pkg.transformed.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>' type=kotlin.Int origin=null
+                                                                  ARG breakLoop: FUN_EXPR type=kotlin.Function0<kotlin.Unit> origin=LAMBDA
+                                                                    FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
+                                                                      BLOCK_BODY
+                                                                        RETURN type=kotlin.Nothing from='local final fun <anonymous> (): kotlin.Unit declared in pkg.transformed.<anonymous>'
+                                                                          GET_OBJECT 'CLASS IR_EXTERNAL_DECLARATION_STUB OBJECT name:Unit modality:FINAL visibility:public superTypes:[kotlin.Any]' type=kotlin.Unit
+                                                                  ARG set-out: FUN_EXPR type=kotlin.Function1<kotlin.Int, kotlin.Unit> origin=LAMBDA
+                                                                    FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
+                                                                      VALUE_PARAMETER kind:Regular name:it index:0 type:kotlin.Int
+                                                                      BLOCK_BODY
+                                                                        SET_VAR 'var 4$firstOrNull$out: kotlin.Int? declared in pkg.transformed.<anonymous>' type=kotlin.Unit origin=EQ
+                                                                          GET_VAR 'it: kotlin.Int declared in pkg.transformed.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>' type=kotlin.Int origin=null
+                                                  ARG get-numDropped: FUN_EXPR type=kotlin.Function0<kotlin.Int> origin=LAMBDA
+                                                    FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Int
+                                                      BLOCK_BODY
+                                                        RETURN type=kotlin.Nothing from='local final fun <anonymous> (): kotlin.Int declared in pkg.transformed.<anonymous>.<anonymous>.<anonymous>.<anonymous>'
+                                                          GET_VAR 'var 2$drop$numDropped: kotlin.Int declared in pkg.transformed.<anonymous>' type=kotlin.Int origin=null
+                                                  ARG set-numDropped: FUN_EXPR type=kotlin.Function1<kotlin.Int, kotlin.Unit> origin=LAMBDA
+                                                    FUN LOCAL_FUNCTION_FOR_LAMBDA name:<anonymous> visibility:local modality:FINAL returnType:kotlin.Unit
+                                                      VALUE_PARAMETER kind:Regular name:it index:0 type:kotlin.Int
+                                                      BLOCK_BODY
+                                                        SET_VAR 'var 2$drop$numDropped: kotlin.Int declared in pkg.transformed.<anonymous>' type=kotlin.Unit origin=EQ
+                                                          GET_VAR 'it: kotlin.Int declared in pkg.transformed.<anonymous>.<anonymous>.<anonymous>.<anonymous>.<anonymous>' type=kotlin.Int origin=null
                 RETURN type=kotlin.Nothing from='local final fun <anonymous> (): kotlin.Int? declared in pkg.transformed'
-                  GET_VAR 'var out: kotlin.Int? declared in pkg.transformed.<anonymous>' type=kotlin.Int? origin=null
+                  GET_VAR 'var 4$firstOrNull$out: kotlin.Int? declared in pkg.transformed.<anonymous>' type=kotlin.Int? origin=null

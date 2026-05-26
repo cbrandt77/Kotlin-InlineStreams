@@ -19,6 +19,18 @@ inline fun <T, U> InlineStream<T>.flatMap(mapper: (T) -> Iterable<U>): InlineStr
 	}
 }
 
+fun <T> InlineStream<T>.drop(n: Int): InlineStream<T> {
+	var numDropped = 0
+	
+	return intermediateOperation { el, _, downstreamAction ->
+		if (numDropped < n) {
+			++numDropped
+		} else {
+			downstreamAction(el)
+		}
+	}
+}
+
 fun <T> InlineStream<T>.firstOrNull(): T? {
 	var out: T? = null;
 	
@@ -35,6 +47,7 @@ public fun dsl(): Int? {
 		.inlineStream()
 		.map { it.toCharArray() }
 		.flatMap { it.toList() }
+		.drop(4)
 		.map { it.code }
 		.firstOrNull()
 }
@@ -58,29 +71,56 @@ public inline fun <T> firstOrNull(el: T, breakLoop: () -> Unit, `set-out`: (T) -
 	breakLoop()
 }
 
+public inline fun <T> drop(`arg-n`: Int, el: T, breakLoop: () -> Unit, downstreamAction: (T) -> Unit, `get-numDropped`: () -> Int, `set-numDropped`: (Int) -> Unit) {
+	if (`get-numDropped`() < `arg-n`) {
+		`set-numDropped`(`get-numDropped`() + 1)
+	} else {
+		downstreamAction(el)
+	}
+}
+
 public fun transformed(): Int? {
 	return run {
-		var out: Int? = null
+		val `2$arg$drop$n` = 4
+		var `2$drop$numDropped` = 0
+		
+		var `4$firstOrNull$out`: Int? = null
 		run inlineStream2@ {
 			for (el in listOf("hi", "there", "gamer")) {
 				map({ it.toCharArray() }, el, { return@inlineStream2 }) {
 					flatMap({ it.toList() }, it, { return@inlineStream2 }, {
-						map({ it.code }, it, { return@inlineStream2 }) {
-							firstOrNull(it, { return@inlineStream2 }, { out = it })
-						}
+						drop(`2$arg$drop$n`, it, { return@inlineStream2 }, {
+							map({ it.code }, it, { return@inlineStream2 }) {
+								firstOrNull(it, { return@inlineStream2 }, { `4$firstOrNull$out` = it })
+							}
+						}, { `2$drop$numDropped` }, { `2$drop$numDropped` = it })
 					})
 				}
 			}
 		}
-		return@run out
+		return@run `4$firstOrNull$out`
 	}
+}
+
+fun sequence(): Int? {
+	 return sequenceOf("hi", "there", "gamer")
+		.map { it.toCharArray() }
+		.flatMap { it.toList() }
+		.drop(4)
+		.map { it.code }
+		.firstOrNull()
 }
 
 fun box(): String {
 	val fromDsl = dsl()
 	val fromTransformed = transformed()
-	if (fromDsl == fromTransformed)
+	val fromSequence = sequence()
+	if (fromDsl == fromTransformed && fromDsl == fromSequence)
 		return "OK"
+	else if (fromTransformed != fromSequence)
+		return "The manually-transformed version is wrong. Got $fromTransformed instead of $fromSequence"
+	else if (fromDsl != fromSequence)
+		return "Expected: $fromSequence. From dsl function: $fromDsl"
 	else
-		return "Expected $fromTransformed, got $fromDsl"
+		return "Fallthrough"
 }

@@ -8,6 +8,7 @@ import io.github.cbrandt77.kt.inlinestreams.ir.types.calls.TerminalOperationChai
 import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.chain.IntermediateOperationChainFunction
 import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.chain.StreamOperationChainFunction
 import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.chain.TerminalOperationChainFunction
+import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.chain.evaluateValue
 import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.loop.IntermediateOperationLoopFunction
 import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.loop.StreamOperationLoopFunction
 import io.github.cbrandt77.kt.inlinestreams.ir.types.declarations.loop.TerminalOperationLoopFunction
@@ -22,6 +23,7 @@ import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.builders.declarations.addValueParameter
 import org.jetbrains.kotlin.ir.builders.declarations.buildFun
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
+import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin.Companion.DEFINED
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin.Companion.FOR_LOOP_VARIABLE
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin.Companion.LOCAL_FUNCTION_FOR_LAMBDA
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationParent
@@ -64,11 +66,11 @@ import org.jetbrains.kotlin.ir.types.typeWith
 import org.jetbrains.kotlin.ir.util.AbstractTypeRemapper
 import org.jetbrains.kotlin.ir.util.deepCopyWithSymbols
 import org.jetbrains.kotlin.ir.util.irError
+import org.jetbrains.kotlin.ir.util.isFunctionOrKFunction
 import org.jetbrains.kotlin.ir.util.isSubtypeOfClass
 import org.jetbrains.kotlin.ir.visitors.IrElementTransformerVoid
 import org.jetbrains.kotlin.ir.visitors.IrTransformer
 import org.jetbrains.kotlin.name.Name
-import org.jetbrains.kotlin.types.model.withNullability
 import kotlin.collections.plus
 
 class InlineStreamLoopCreationException(cause: Throwable) : RuntimeException("Failure creating loop for InlineStream.", cause)
@@ -115,7 +117,7 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 			/**
              * Map of "variables declared inside the dsl function" to "their new location outside the loop"
              */
-            val stateVariablesMap: MutableMap<IrVariableSymbol, IrVariableSymbol>
+            val stateVariablesMap: MutableMap<IrValueSymbol, IrVariableSymbol> = mutableMapOf()
 		) {
 			operator fun component4() = stateVariablesMap
 			
@@ -147,8 +149,7 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 			val chainCall: IntermediateOperationChainCall,
 			val chainFunction: IntermediateOperationChainFunction,
 			val loopFunction: IntermediateOperationLoopFunction,
-			stateVariablesMap: MutableMap<IrVariableSymbol, IrVariableSymbol> = mutableMapOf()
-		) : OperationWithState(stateVariablesMap) {
+		) : OperationWithState() {
 			operator fun component1() = chainCall
 			operator fun component2() = chainFunction
 			operator fun component3() = loopFunction
@@ -157,8 +158,7 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 			val chainCall: TerminalOperationChainCall,
 			val chainFunction: TerminalOperationChainFunction,
 			val loopFunction: TerminalOperationLoopFunction,
-			stateVariablesMap: MutableMap<IrVariableSymbol, IrVariableSymbol> = mutableMapOf()
-		) : OperationWithState(stateVariablesMap) {
+		) : OperationWithState() {
 			operator fun component1() = chainCall
 			operator fun component2() = chainFunction
 			operator fun component3() = loopFunction
@@ -215,8 +215,29 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 							outerBlock.statements += allOperations.flatMapIndexed { operationIndex, operation ->
 								val typeArgRealizer = TypeArgRealizer(operation.chainCall_general.ir)
 								val stateRedirector = StateVariableReferenceRedirector(operation.stateVariablesMap)
-								operation.preamble
-									.map { preambleStatement ->
+								
+								if (operation.chainFunc_general.ir.isInline) {
+									operation.chainFunc_general.parameters.filterNot { it.type.isFunctionOrKFunction() && !it.isNoinline && !it.isCrossinline }
+								} else {
+									operation.chainFunc_general.parameters
+								}
+								.map { param ->
+									IrVariableImpl(
+										-1, -1,
+										DEFINED,
+										IrVariableSymbolImpl(),
+										makeParameterName(operationIndex, operation.chainFunc_general.ir.name, param.name),
+										param.type.let(typeArgRealizer::remapType),
+										isVar = false,
+										isConst = false,
+										isLateinit = false
+									).apply {
+										parent = outerReturnTarget
+										initializer = param.evaluateValue(operation.chainCall_general.ir).deepCopyWithSymbols(outerReturnTarget) { typeArgRealizer }
+										
+										operation.stateVariablesMap[param.symbol] = symbol
+									}
+								} + operation.preamble.map { preambleStatement ->
 										if (preambleStatement is IrVariable) {
 											val newStatement = preambleStatement.deepCopyWithSymbols(outerReturnTarget) { typeArgRealizer }
 											// sidenote: retroactive generic-sensitive smart-casting! this function returns the same type that's put in, so asserting one of them `is X` should smart-cast the other to `X` retroactively
@@ -227,7 +248,7 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 										} else {
 											preambleStatement.deepCopyWithSymbols(outerReturnTarget) { typeArgRealizer }
 										}.transformStatement(stateRedirector)
-									}
+									};
 							}
 							
 							outerBlock.statements += IrCallImpl(-1, -1, context.irBuiltIns.unitType, kotlinRunFunction).also { breakLoopRunBlock ->
@@ -260,103 +281,108 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 												
 												forLoopWrapperBlock.statements += IrWhileLoopImpl(-1, -1, unitType, FOR_LOOP_INNER_WHILE).also { forLoopWhileBody ->
 													forLoopWhileBody.condition = IrCallImpl(-1, -1, context.irBuiltIns.booleanType, context.symbols.iterator.functionByName("hasNext"), origin = FOR_LOOP_HAS_NEXT).withReceiver(IrGetValueImpl(-1, -1, iterVar.symbol))
-													forLoopWhileBody.body = IrBlockImpl(-1, -1, unitType, FOR_LOOP_INNER_WHILE).also { innermostBlock ->
+													forLoopWhileBody.body = IrBlockImpl(-1, -1, unitType, FOR_LOOP_INNER_WHILE).also { whileBlock ->
 														val var_currentElementFromIterator = IrVariableImpl(-1, -1, FOR_LOOP_VARIABLE, IrVariableSymbolImpl(), NAME_element, originalInputElementType, isVar = false, isConst = false, isLateinit = false)
 															.withParent(breakLoopReturnTarget)
 															.withInitializer(
 																IrCallImpl(-1, -1, originalInputElementType, context.symbols.iterator.functionByName("next"), origin = FOR_LOOP_NEXT)
 																	.withReceiver(IrGetValueImpl(-1, -1, iterVar.symbol)))
 														
-														innermostBlock.statements += var_currentElementFromIterator
+														whileBlock.statements += var_currentElementFromIterator
 														
-														
-														tailrec fun callLoopOperationRecursive(parentScope: IrFunction?, parentElSymbol: IrValueSymbol?, operations: Iterator<OperationWithState>) {
-															if (parentScope == null || parentElSymbol == null || !operations.hasNext())
-																return;
-															
-															val operation = operations.next()
-															
-															val chainCallGeneral = operation.chainCall_general
-															val chainFunGeneral = operation.chainFunc_general
-															val loopFunGeneral = operation.loopFunc_general
-															
-															
-															
-															val loopActionCall = IrCallImpl(chainCallGeneral.ir.startOffset, chainCallGeneral.ir.endOffset, unitType, loopFunGeneral.ir.symbol, origin=INLINE_STREAM_OPERATION).apply {
-																assert(loopFunGeneral.ir.typeParameters.size == chainFunGeneral.ir.typeParameters.size) { "Expected generated loop-action function to have exact same type parameters as the original chain function." }
+														whileBlock.statements += IrBlockImpl(-1, -1, context.irBuiltIns.nothingType).also { innermostBlock ->
+															tailrec fun callLoopOperationRecursive(parentScope: IrFunction?, parentElSymbol: IrValueSymbol?, operations: Iterator<OperationWithState>) {
+																if (parentScope == null || parentElSymbol == null || !operations.hasNext())
+																	return;
 																
-																chainCallGeneral.ir.typeArguments.forEachIndexed { index, type ->
-																	typeArguments[index] = type
-																}
-															}
-															
-															
-															var ourDownstreamActionLambdaElementSymbol: IrValueSymbol? = null
-															var ourDownstreamActionLambda: IrFunction? = null
-															val downstreamActionArg = when (operation) {
-																is IntermediateOperationWithState -> {
-																	val uType = operation.chainCall.outputElementType
-																	val downstreamActionLambda = makeLambdaFunction {
-																		parent = parentScope
-																		ourDownstreamActionLambdaElementSymbol = addValueParameter(NAME_element, uType).symbol
+																val operation = operations.next()
+																
+																val chainCallGeneral = operation.chainCall_general
+																val chainFunGeneral = operation.chainFunc_general
+																val loopFunGeneral = operation.loopFunc_general
+																
+																val loopActionCall = IrCallImpl(chainCallGeneral.ir.startOffset, chainCallGeneral.ir.endOffset, unitType, loopFunGeneral.ir.symbol, origin=INLINE_STREAM_OPERATION).apply {
+																	assert(loopFunGeneral.ir.typeParameters.size == chainFunGeneral.ir.typeParameters.size) { "Expected generated loop-action function to have exact same type parameters as the original chain function." }
+																	
+																	chainCallGeneral.ir.typeArguments.forEachIndexed { index, type ->
+																		typeArguments[index] = type
 																	}
-																	ourDownstreamActionLambda = downstreamActionLambda
-																	sequenceOf(IrFunctionExpressionImpl(-1, -1, context.irBuiltIns.functionN(1).typeWith(uType, unitType), downstreamActionLambda, LAMBDA))
-																}
-																else -> emptySequence()
-															}
-															
-															// add parameters: [...chainFunArgs], el, breakloop, (downstreamAction), [...state functions]
-															var numArgsBeforeState = 0
-															sequenceOf(
-																chainCallGeneral.arguments.map { it?.deepCopyWithSymbols(parentScope) },
-																sequenceOf(IrGetValueImpl(-1, -1, parentElSymbol), makeBreakLoopArg(parentScope)),
-																downstreamActionArg
-															).flatten().forEachIndexed { index, expression ->
-																++numArgsBeforeState
-																loopActionCall.arguments[index] = expression
-															}
-															
-															
-															val `needs -etters` = loopFunGeneral.parameters.drop(numArgsBeforeState).toList()
-															if (`needs -etters`.isNotEmpty()) {
-																val currentVariablesByName: Map<String, IrVariableSymbol> = operation.stateVariablesMap.mapKeys {
-																	it.key.owner.name.asString()
 																}
 																
-																`needs -etters`.forEach { param ->
-																	param.name.nameThisIsGetterFor?.let {
-																		val correspondingVar = currentVariablesByName[it] ?: irError("No variable found for requested getter.") {
-																			withIrEntry("loop_function", loopFunGeneral.ir)
-																			withIrEntry("getter_parameter", param)
+																
+																var ourDownstreamActionLambdaElementSymbol: IrValueSymbol? = null
+																var ourDownstreamActionLambda: IrFunction? = null
+																val downstreamActionArg = when (operation) {
+																	is IntermediateOperationWithState -> {
+																		val uType = operation.chainCall.outputElementType
+																		val downstreamActionLambda = makeLambdaFunction {
+																			parent = parentScope
+																			ourDownstreamActionLambdaElementSymbol = addValueParameter(NAME_element, uType).symbol
 																		}
-																		loopActionCall.arguments[param] = makeGetterLambda(correspondingVar.owner.type, correspondingVar.owner, parentScope)
-																	} ?: param.name.nameThisIsSetterFor?.let {
-																		val correspondingVar = currentVariablesByName[it]
-																		                       ?: irError("No variable found for requested setter.") {
-																			                       withIrEntry("loop_function", loopFunGeneral.ir)
-																			                       withIrEntry("setter_parameter", param)
-																		                       }
-																		loopActionCall.arguments[param] = makeSetterLambda(correspondingVar.owner.type, correspondingVar.owner, parentScope)
-																	} ?: irError("Parameter is not a getter nor setter") {
-																		withIrEntry("parameter", param)
-																		withIrEntry("loop_function", loopFunGeneral.ir)
+																		ourDownstreamActionLambda = downstreamActionLambda
+																		sequenceOf(IrFunctionExpressionImpl(-1, -1, context.irBuiltIns.functionN(1).typeWith(uType, unitType), downstreamActionLambda, LAMBDA))
+																	}
+																	else -> emptySequence()
+																}
+																
+																// add parameters: [...chainFunArgs], el, breakloop, (downstreamAction), [...state functions]
+																var numArgsBeforeState = 0
+																sequenceOf(
+																	chainFunGeneral.parameters.map { param ->
+																		operation.stateVariablesMap[param.symbol]?.let { IrGetValueImpl(-1, -1, it) } // non-inline parameters get remapped to variables outside the loop
+																		?: chainCallGeneral.ir.arguments[param.indexInParameters]?.deepCopyWithSymbols(parentScope) // inline function parameters are just transplanted raw
+																	},
+																	sequenceOf(
+																		IrGetValueImpl(-1, -1, parentElSymbol),
+																		makeBreakLoopArg(parentScope)
+																	),
+																	downstreamActionArg
+																).flatten().forEachIndexed { index, expression ->
+																	++numArgsBeforeState
+																	loopActionCall.arguments[index] = expression
+																}
+																
+																
+																val `needs -etters` = loopFunGeneral.parameters.drop(numArgsBeforeState).toList()
+																if (`needs -etters`.isNotEmpty()) {
+																	val currentVariablesByName: Map<String, IrVariableSymbol> = operation.stateVariablesMap.mapKeys {
+																		it.key.owner.name.asString()
+																	}
+																	
+																	`needs -etters`.forEach { param ->
+																		param.name.nameThisIsGetterFor?.let {
+																			val correspondingVar = currentVariablesByName[it] ?: irError("No variable found for requested getter.") {
+																				withIrEntry("loop_function", loopFunGeneral.ir)
+																				withIrEntry("getter_parameter", param)
+																			}
+																			loopActionCall.arguments[param] = makeGetterLambda(correspondingVar.owner.type, correspondingVar.owner, parentScope)
+																		} ?: param.name.nameThisIsSetterFor?.let {
+																			val correspondingVar = currentVariablesByName[it]
+																			                       ?: irError("No variable found for requested setter.") {
+																				                       withIrEntry("loop_function", loopFunGeneral.ir)
+																				                       withIrEntry("setter_parameter", param)
+																			                       }
+																			loopActionCall.arguments[param] = makeSetterLambda(correspondingVar.owner.type, correspondingVar.owner, parentScope)
+																		} ?: irError("Parameter is not a getter nor setter") {
+																			withIrEntry("parameter", param)
+																			withIrEntry("loop_function", loopFunGeneral.ir)
+																		}
 																	}
 																}
-															}
-															
-															if (parentScope == breakLoopReturnTarget) {
-																innermostBlock.statements += loopActionCall
-															} else {
-																parentScope.body = context.irFactory.createBlockBody(-1, -1).also {
-																	it.statements += loopActionCall
+																
+																if (parentScope == breakLoopReturnTarget) {
+																	innermostBlock.statements += loopActionCall
+																} else {
+																	parentScope.body = context.irFactory.createBlockBody(-1, -1).also {
+																		it.statements += loopActionCall
+																	}
 																}
+																
+																callLoopOperationRecursive(ourDownstreamActionLambda, ourDownstreamActionLambdaElementSymbol, operations)
 															}
 															
-															callLoopOperationRecursive(ourDownstreamActionLambda, ourDownstreamActionLambdaElementSymbol, operations)
+															callLoopOperationRecursive(breakLoopReturnTarget, var_currentElementFromIterator.symbol, allOperations.iterator())
 														}
-														
-														callLoopOperationRecursive(breakLoopReturnTarget, var_currentElementFromIterator.symbol, allOperations.iterator())
 													}
 												};
 												
@@ -411,7 +437,7 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 	/**
 	 * Converts references to variables within the DSL function to their corresponding variables outside the loop
 	 */
-	class StateVariableReferenceRedirector(val oldVarsToNewVarsMap: Map<IrVariableSymbol, IrVariableSymbol>) : IrElementTransformerVoid() {
+	class StateVariableReferenceRedirector(val oldVarsToNewVarsMap: Map<IrValueSymbol, IrValueSymbol>) : IrElementTransformerVoid() {
 		override fun visitElement(element: IrElement): IrElement {
 			element.transformChildrenVoid()
 			return element;
@@ -435,7 +461,10 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 	}
 }
 
-fun makeStateVariableName(operationIndex: Int, chainFunName: Name, varName: Name): Name {
+private fun makeParameterName(operationIndex: Int, chainFunName: Name, paramName: Name): Name {
+	return Name.identifier("${operationIndex}\$arg$${chainFunName.asStringStripSpecialMarkers()}$${paramName.asStringStripSpecialMarkers()}")
+}
+private fun makeStateVariableName(operationIndex: Int, chainFunName: Name, varName: Name): Name {
 	return Name.identifier("${operationIndex}$${chainFunName.asStringStripSpecialMarkers()}$${varName.asStringStripSpecialMarkers()}")
 }
 
