@@ -14,7 +14,7 @@ import org.jetbrains.kotlin.ir.types.classOrFail
 import org.jetbrains.kotlin.ir.util.callableId
 import org.jetbrains.kotlin.ir.util.statements
 
-@JvmInline value class TerminalOperationChainFunction private constructor(val internal: StreamOperationChainFunction) {
+@JvmInline value class TerminalOperationChainFunction(val internal: StreamOperationChainFunction) {
 	companion object {
 		context(data: StreamOpContext)
 		operator fun invoke(ir: IrFunction): Result<TerminalOperationChainFunction> = with (data) {

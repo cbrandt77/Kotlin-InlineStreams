@@ -38,7 +38,7 @@ import org.jetbrains.kotlin.ir.util.render
 		get() = ir.type
 	
 	context(_: StreamOpContext)
-	val target get() = TerminalOperationChainFunction(internal._targetFunc)
+	val target get() = TerminalOperationChainFunction(internal.target)
 	
 	override fun toString() = internal.toString()
 }

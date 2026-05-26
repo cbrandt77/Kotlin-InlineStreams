@@ -105,19 +105,11 @@ class LoopCreator(val context: IrPluginContext, val data: StreamOpContext) : IrE
 			val terminalOperationChainCall = TerminalOperationChainCall(expression).getOrElse {
 				throw InlineStreamLoopCreationException(it)
 			}
-			val terminalOperation = run {
-				val terminalOperationChainCall = TerminalOperationChainCall(expression).getOrElse {
-					throw InlineStreamLoopCreationException(it)
-				}
-				val terminalOperationChainFun = terminalOperationChainCall.target.getOrThrow()
-				val terminalOperationLoopFun = terminalOperationChainFun.getLoopFunction().getOrThrow()
-				
-				TerminalOperationWithState(terminalOperationChainCall, terminalOperationChainFun, terminalOperationLoopFun)
-			}
+			val terminalOperation = TerminalOperationWithState(terminalOperationChainCall)
 			
 			
 			val intermediatesLastToFirst = generateSequence(terminalOperationChainCall.previousOperation) { it.previousOperation }
-				.map { val chainFun = it.target; IntermediateOperationWithState(it, chainFun, chainFun.getLoopFunction().getOrThrow()) }
+				.map { IntermediateOperationWithState(it) }
 				.toList()
 			val entranceFunction = (intermediatesLastToFirst.last().chainCall.receiver as? IrCall)
 				                       ?.takeIf { it.callsInlineStreamEntranceFunction }

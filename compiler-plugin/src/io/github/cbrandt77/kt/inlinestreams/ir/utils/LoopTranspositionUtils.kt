@@ -45,6 +45,7 @@ import org.jetbrains.kotlin.ir.util.irError
 import org.jetbrains.kotlin.ir.util.isFunctionOrKFunction
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.utils.addToStdlib.butIf
+import java.util.stream.Stream
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -182,6 +183,9 @@ object LoopTranspositionUtils {
 		)
 	}
 	
+	/**
+	 * A call of either an intermediate operation or a terminal operation's DSL function
+	 */
 	sealed class OperationWithState(
 		/**
 		 * Map of "variables declared inside the dsl function" to "their new location outside the loop"
@@ -214,20 +218,36 @@ object LoopTranspositionUtils {
 		}
 	}
 	
-	class IntermediateOperationWithState(
+	class IntermediateOperationWithState private constructor(
 		val chainCall: IntermediateOperationChainCall,
 		val chainFunction: IntermediateOperationChainFunction,
 		val loopFunction: IntermediateOperationLoopFunction,
 	) : OperationWithState() {
+		companion object {
+			context(ctx: StreamOpContext)
+		    operator fun invoke(chainCall: IntermediateOperationChainCall): IntermediateOperationWithState = with (ctx) {
+		        val chainFun = chainCall.target
+				return IntermediateOperationWithState(chainCall, chainFun, chainFun.getLoopFunction().getOrThrow());
+		    }
+		}
+		
 		operator fun component1() = chainCall
 		operator fun component2() = chainFunction
 		operator fun component3() = loopFunction
 	}
-	class TerminalOperationWithState(
+	class TerminalOperationWithState private constructor(
 		val chainCall: TerminalOperationChainCall,
 		val chainFunction: TerminalOperationChainFunction,
 		val loopFunction: TerminalOperationLoopFunction,
 	) : OperationWithState() {
+		companion object {
+			context(ctx: StreamOpContext)
+		    operator fun invoke(chainCall: TerminalOperationChainCall): TerminalOperationWithState = with (ctx) {
+				val chainFun = chainCall.target
+				return TerminalOperationWithState(chainCall, chainFun, chainFun.getLoopFunction().getOrThrow())
+		    }
+		}
+		
 		operator fun component1() = chainCall
 		operator fun component2() = chainFunction
 		operator fun component3() = loopFunction
