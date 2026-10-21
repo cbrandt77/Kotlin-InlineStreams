@@ -107,30 +107,6 @@ Or is there something that can be done with an actual object??? I guess it's a "
 
 What would we need for `InlineStream<T>` to work here? Let's work with this, then we can focus on other monads...
 
-```kotlin
-// CompileTimeOnly classes used in non-constexpr functions may not escape the function in which they were created. 
-@CompileTimeOnly class InlineStream<out T> {
-	@InlineStreamInternals
-	val _source: Generator<KtExpression<out T>>
-	
-	/**
-	 * Contains each mapping function in order
-	 */
-	@InlineStreamInternals
-	val _mappings: List<(el: KtExpression<*>, `break`: KtExpression<*>, nextAction: KtLambda) -> KtExpression<Unit>>
-	
-	@Macro fun build(): KtExpression<out T> {
-		val setup = _source.init() // sets up the for..in loop
-	
-	}
-}
-
-@Macro inline fun <T, U> InlineStream<T>.map(transform: (T) -> U): InlineStream<U> {
-	return this.withMapping(transform) // fuckin whatever aaaaaaaaa my brainnnnnnnnnn
-}
-```
-
-
 # InlineStream Strategy
 Create a chain of functions from first to last that retroactively inserts the next action's lambda into the previous one's expression
 
@@ -156,10 +132,18 @@ callMapFunction(args, callFlatMapFunction(args, forEachAction()))
 WHICH MEANS WE DON'T EVEN NEED TO DO THE JANKY "TRANSFORM THE DSL FUNCTION" THING!!!  WE CAN JUST MAKE IT A MACRO BUILDER!!!
 
 ```kotlin
-@MacroBuilder class InlineStream<I, T>(
-	private val sourceIterator: Iterator<I>,
+@Macro fun Iterable<T>.inlineStream(): InlineStream<T, T> {
+	return InlineStream(MacroUtils.expr(this), { it } /* I == T */, listOf(), listOf())
+}
+
+@MacroBuilder class InlineStream<I, T> private constructor(
+	private val sourceIterator: KtExpression<Iterator<I>>,
 	/* With constexpr, possibly model typed lambdas as morphisms of actual lambda types?
-	 * Use constexpr functions to extract the args of the lambda type for use later on? */
+	 * Use constexpr functions to extract the args of the lambda type for use later on? 
+	 * 
+	 * actually, is that even necessary? 
+	 * embed() is the only one that'll need that, and the generics system is good enough 
+	 * to let us convert it into the source lambda type when embedding if give the lambda as a type parameter */
 	private val giveNextToPrev: (KtLambda<(T, BreakLoop) -> Unit>) -> KtLambda<(I, BreakLoop) -> Unit>,
 	private val setupState: List<KtStatement>,
 	private val teardownState: List<KtStatement>
@@ -170,16 +154,16 @@ WHICH MEANS WE DON'T EVEN NEED TO DO THE JANKY "TRANSFORM THE DSL FUNCTION" THIN
 		}, this.setupState + setupState, this.teardownState + teardownState)
 	}
 	
-	/* @Macro */ fun terminal(terminalAction: (returnTarget: KtBlock) -> KtLambda<out Unit>): KtStatement {
+	/* @Macro */ fun terminal(terminalAction: (returnTarget: KtReturnTarget) -> KtLambda<out Unit>): KtStatement {
 		// now the question is, how do we make this easy to write?
 		return MacroUtils.compile {
 			run {
-				@MacroHelper val firstAction: KtLambda<(I, BreakLoop) -> Unit> = constEvaluate {
+				@MacroUtils.Helper val firstAction: KtLambda<(I, BreakLoop) -> Unit> = constEvaluate {
 					// need to evaluate this inside the code block to get a static reference to the @run target
 					giveNextToPrev(terminalAction(symbol(this@run)))
 				}
 				evaluateAll(setupState) // just add the raw statements. any variables in here should already be referenced statically by the operation functions
-				for (el in embed(sourceIterator) /*  */) {
+				for (el in embed(sourceIterator)) {
 					firstAction.invokeExpr(el, { break })
 				}
 				evaluate(teardownState)
@@ -188,12 +172,13 @@ WHICH MEANS WE DON'T EVEN NEED TO DO THE JANKY "TRANSFORM THE DSL FUNCTION" THIN
 	}
 }
 
-@Macro // meta? macro? I think we allow @Macro functions to return "macro builders". this is SUCH A COOL IDEA!!!
+@Macro // meta? macro? I think we allow @Macro functions to return "macro builders".
 inline fun <T> InlineStream<T>.drop(numToDrop: Int): InlineStream<T> {
 	val toDropExpr = expr(numToDrop)
-	val (setupStatements: List<KtStatement>, leftToDropSymbol: KtMutablePropertyRef<Int>) = MacroUtils.compile { /* a macro in itself. returns (statements defined, *typed declarations in order) */
+	val (setupStatements: List<KtStatement>, symbols: List<KtCallable>) = MacroUtils.compile { /* a macro in itself. returns (statements defined, ...typed declarations in order? I don't know if "changes call signature based on BODY of block given to it" is a thing we could even REMOTELY do...) */
 		var leftToDrop = embed(toDropExpr) // forcibly embed it as a constant into the thing. could `compile` be `UtilsObject.()`, and `embed` be `UtilsObject#embed`?
 	}
+	val (leftToDropSymbol: KtMutablePropertyRef<Int>) = symbols
 	
 	// `using`: macro to let you reference the target of a symbol inside a code block. 
 	//          remaps references to its variable to the original symbol.
@@ -209,7 +194,7 @@ inline fun <T> InlineStream<T>.drop(numToDrop: Int): InlineStream<T> {
 				if (leftToDrop.get() == 0) {
 					embed(nextAction)(el)
 				} else {
-					leftToDrop.set(leftToDrop.get() + 1) // I think you can define `++` operators on types? like `operator VarRef<Int>.inc() = this.set(this.get() + 1)`
+					leftToDrop.set(leftToDrop.get() + 1) // lambdaWithShape needs to map `VarRef#get` and `VarRef#set` to KtGetValueExpr and KtSetValueExpr
 				}
 			}
 		}
@@ -228,8 +213,28 @@ Macro requirements:
 Macro utils requirements:
 - Can retrieve the expression for a symbol not directly passed to it, but that is referenced inside a lambda
   - `fun x(i: Int)` -> `embedConst(i)`
-- Can convert code to expressions and manipulate them (might be inherent to the design, since it'll have to compile the macro calls first anyway to execute them)
+  - `@Helper val x: KtLiteral; embed(x)`
+- Can convert code to expressions and manipulate them 
+  - (might be inherent to the design, since it'll have to compile the macro calls first anyway to execute them)
 - Can use a macro to retrieve expressions INSIDE the code it's building and then manipulate them
 - `embed`: Embed an expression into the code being generated and allow it to be manipulated in code.
   - For example, `embed<KtLambda<() -> Unit>>(foo).invoke()`
   - Needs to be able to retrieve the value the variable it's given holds.
+- Must evaluate all macros given to it first...
+- Must be able to const-evaluate functions in the context of the block it's been given.........
+  - For example: `MacroUtils.compile { run { @Helper val x = symbol(this@run) } }`
+    - Do we extract the raw IR for that and compile and run it on its own???
+- `compile` blocks may not reference variables declared outside the block.
+  - Exception: Variable references from `using`
+  - Exception: Variables holding expressions, referenced by other utils consuming them to return a constant value
+
+Macro builder requirements:
+- Instances may not even escape the **expression** in which they were declared. 
+  - They must remain in a chain, and may not even be assigned to variables, since they do not exist at runtime. 
+  - Exception: May escape into or from `@Macro` functions, including functions of the macro builder.
+  - Exception: May be "saved" to `@Helper` vars declared in `compile` blocks
+- Allowed to hold expressions
+  - We can safely say that no runtime code is going to give it expressions, since it's compiler-only, so we don't need to restrict input there
+- No restrictions needed on what types it's allowed to hold
+- All methods of the object must be constexpr-correct
+- Must be consumed and discarded by a macro
