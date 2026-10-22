@@ -132,11 +132,13 @@ callMapFunction(args, callFlatMapFunction(args, forEachAction()))
 WHICH MEANS WE DON'T EVEN NEED TO DO THE JANKY "TRANSFORM THE DSL FUNCTION" THING!!!  WE CAN JUST MAKE IT A MACRO BUILDER!!!
 
 ```kotlin
-@Macro fun Iterable<T>.inlineStream(): InlineStream<T, T> {
+@Macro
+fun Iterable<T>.inlineStream(): InlineStream<T, T> {
 	return InlineStream(MacroUtils.expr(this), { it } /* I == T */, listOf(), listOf())
 }
 
-@MacroBuilder class InlineStream<I, T> private constructor(
+@MacroBuilder
+class InlineStream<I, T> private constructor(
 	private val sourceIterator: KtExpression<Iterator<I>>,
 	/* With constexpr, possibly model typed lambdas as morphisms of actual lambda types?
 	 * Use constexpr functions to extract the args of the lambda type for use later on? 
@@ -154,13 +156,13 @@ WHICH MEANS WE DON'T EVEN NEED TO DO THE JANKY "TRANSFORM THE DSL FUNCTION" THIN
 		}, this.setupState + setupState, this.teardownState + teardownState)
 	}
 	
-	/* @Macro */ fun terminal(terminalAction: (returnTarget: KtReturnTarget) -> KtLambda<out Unit>): KtStatement {
+	/* @Macro */ fun terminal(terminalAction: (returnStatement: KtLambda<(T) -> Unit>) -> KtLambda<out Unit>): KtStatement {
 		// now the question is, how do we make this easy to write?
 		return MacroUtils.compile {
 			run {
 				@MacroUtils.Helper val firstAction: KtLambda<(I, BreakLoop) -> Unit> = constEvaluate {
 					// need to evaluate this inside the code block to get a static reference to the @run target
-					giveNextToPrev(terminalAction(symbol(this@run)))
+					giveNextToPrev(terminalAction(expr { return@run it }))
 				}
 				evaluateAll(setupState) // just add the raw statements. any variables in here should already be referenced statically by the operation functions
 				for (el in embed(sourceIterator)) {
@@ -238,3 +240,37 @@ Macro builder requirements:
 - No restrictions needed on what types it's allowed to hold
 - All methods of the object must be constexpr-correct
 - Must be consumed and discarded by a macro
+
+
+
+# Alt form of injecting expressions from macro invocations
+Alt form of getting expressions from macro invocations, to reduce the amount of reflection needed on the compiler's part?
+or does it even matter if we just make them intrinsics?
+I think intrinsics work better, cause we get the direct expresssssss no wait we don't get the direct expression...
+though I _think_ macros are going to end up being intrinsics _anyway_, just to interface with the whole system?
+```kotlin
+@Macro inline fun someMacro(iParam: Int, iParamExpr: KtExpression<Int> = MacroUtils.calc())
+```
+yeah, intrinsics are the best way to handle macros, since you actually get access to the full call's tree and have the opportunity to evaluate it fully
+also, I think this will also allow us to evaluate macros inside the code blocks 
+before the code block itself gets evaluated by the macro?
+
+WAIT, HOLD UP...
+IF MACROS CAN ALTER FUNCTION PARAMETERS... :D
+```kotlin
+@Macro inline fun someMacro(
+	iParam: Int, 
+	/* injected by @Macro macro: 
+	`expr_iParam: KtExpression<Int> = MacroUtils.calc()` 
+	*/
+)
+```
+
+
+I don't think macros can alter function parameters, though, so this might not be a good idea.
+Plus, having it in the macro's signature now requires the consumer to depend on us tooooooo... wait no they'd HAVE TO to have the macro work anyway, so this isn't a problem
+but it does introduce it as part of the interface when it's an implementation detail regardless
+So no, we should use `MacroUtils.expr(iParam)`.
+
+Or, do one better: produce an object `CallInfo` that contains expressions for ALL params given to the macro. 
+That way we don't have to look up some symbol being passed to it.

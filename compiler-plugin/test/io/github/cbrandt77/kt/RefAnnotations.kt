@@ -39,7 +39,6 @@ annotation class FunctionReference(
 	val contextParams: Array<TypeRef> = []
 )
 
-
 // describing `map` below:
 @FunctionReference(
 	qualifiedName="io.github.cbrandt77.kt.map",
@@ -51,18 +50,4 @@ annotation class FunctionReference(
 )
 inline fun <T, U> Sequence<T>.map(functor: (T) -> U): Sequence<U> { // Macro functions can accept real args, but they can't access their members. They can only use them as arguments to other macros, since really it's working with their expressions
 	TODO()
-}
-
-class example
-
-
-fun <FUNC> performAction(action: FUNC) {
-
-}
-
-fun foo() {
-	// !!!!!
-	performAction<(String, Int) -> Unit> { string, i ->
-	
-	}
 }
